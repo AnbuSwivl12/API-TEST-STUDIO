@@ -288,7 +288,7 @@
     <div class="brand">
       <div class="brand-logo">A</div>
       <span>API Test Studio</span>
-      <span id="appVersion" class="hint-chip" style="margin-left:6px;font-size:10px;background:var(--panel);color:var(--text-dim)">v2.0</span>
+      <span id="appVersion" class="hint-chip" style="margin-left:6px;font-size:10px;background:var(--panel);color:var(--text-dim)">v1.8</span>
     </div>
     <div class="tb-field">
       <label>Base URL</label>
@@ -403,13 +403,10 @@
       <div class="form-row">
         <label>CORS proxy URL (optional)</label>
         <input id="set_proxy" placeholder="https://your-proxy.example.com/?url=" oninput="proxyHint(this.value)" />
-        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
-          <button class="btn small" type="button" onclick="useCloudProxy()" title="Your deployed worker /v1/proxy">☁ Use cloud proxy (worker)</button>
-          <button class="btn small" type="button" onclick="document.getElementById('set_proxy').value='';proxyHint('')">Clear</button>
-        </div>
         <div id="proxy_hint" style="display:none;margin-top:6px;padding:8px 10px;border-radius:4px;background:rgba(230,183,62,.12);border:1px solid rgba(230,183,62,.4);color:var(--warn,#e6b73e);font-size:11px;line-height:1.5"></div>
         <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.5">
-          Routes browser → API calls through a proxy that adds CORS headers. Use the <b>cloud proxy</b> (deployed worker) for any public API that doesn't return CORS headers, or leave this blank if your API already supports CORS. Public free proxies like <code class="mono">corsproxy.io</code> are GET-only — the app auto-skips them for write methods.
+          Browsers block cross-origin API calls from <code class="mono">file://</code> pages. If your API doesn't allow CORS from your origin, set a proxy URL here (e.g. <code class="mono">https://corsproxy.io/?</code>) and requests will be routed through it. <b>Leave blank</b> if your API already returns the right CORS headers, or if you run this page behind your own dev server.<br>
+          <b>Heads up:</b> public proxies like <code class="mono">corsproxy.io</code> and <code class="mono">allorigins.win</code> only forward <b>GET</b>. For POST/PUT/PATCH/DELETE, either clear this field or host your own proxy.
         </small>
       </div>
       <div class="form-row">
@@ -2014,14 +2011,6 @@ function applyProxy(url) {
   if (p.endsWith("/")) return p + url;
   // ambiguous — default to query-style with ?
   return p + (p.includes("?") ? "&" : "?") + "url=" + encodeURIComponent(url);
-}
-/* Settings → "Use cloud proxy" quick button. */
-function useCloudProxy() {
-  const sync = (state.syncUrl || (document.getElementById("set_sync_url") && document.getElementById("set_sync_url").value || "")).trim().replace(/\/$/, "");
-  if (!sync) { toast("Set the Sync server URL first (your deployed worker)", "error"); return; }
-  const u = `${sync}/v1/proxy?url=`;
-  const f = document.getElementById("set_proxy"); if (f) { f.value = u; proxyHint(u); }
-  toast("Set to cloud proxy via your worker", "success");
 }
 /* Live warning shown in Settings when the proxy is a known GET-only service. */
 function proxyHint(val) {

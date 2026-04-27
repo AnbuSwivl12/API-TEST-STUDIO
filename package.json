@@ -1,9 +1,14 @@
 {
   "name": "api-test-studio",
-  "version": "2.0.0",
+  "version": "1.8.0",
   "private": true,
-  "description": "Single-file Scalar/Postman-style API test runner. Static page hosted on GitHub Pages.",
+  "description": "Single-file Scalar/Postman-style runner for the Swivl Template API.",
   "scripts": {
+    "start": "npx --yes serve . -l 5173 --no-clipboard",
+    "dev": "npx --yes serve . -l 5173 --no-clipboard",
+    "preview": "open http://localhost:5173 || xdg-open http://localhost:5173 || true",
+    "tunnel": "npx --yes localtunnel --port 5173",
+    "deploy:pages": "echo 'Push this folder to GitHub and enable Pages — see README.md'",
     "worker:install": "cd worker && npm install",
     "worker:deploy": "cd worker && npx wrangler deploy",
     "worker:kv": "cd worker && npx wrangler kv:namespace create STATE"
