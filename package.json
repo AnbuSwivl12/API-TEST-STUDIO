@@ -4,8 +4,9 @@
   "private": true,
   "description": "Single-file Scalar/Postman-style runner for the Swivl Template API.",
   "scripts": {
-    "start": "npx --yes serve . -l 5173 --no-clipboard",
-    "dev": "npx --yes serve . -l 5173 --no-clipboard",
+    "start": "bash start.sh",
+    "dev": "bash start.sh",
+    "serve": "npx --yes serve . -l 5173 --no-clipboard",
     "preview": "open http://localhost:5173 || xdg-open http://localhost:5173 || true",
     "tunnel": "npx --yes localtunnel --port 5173",
     "deploy:pages": "echo 'Push this folder to GitHub and enable Pages — see README.md'",

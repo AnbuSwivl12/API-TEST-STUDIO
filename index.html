@@ -39,14 +39,14 @@
   .dim{color:var(--text-dim)}
 
   /* ---------- top bar ---------- */
-  .topbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--bg-elev);border-bottom:1px solid var(--border);height:56px;flex-shrink:0}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;padding-right:14px;border-right:1px solid var(--border)}
+  .topbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;row-gap:6px;padding:8px 16px;background:var(--bg-elev);border-bottom:1px solid var(--border);min-height:56px;flex-shrink:0}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;padding-right:14px;border-right:1px solid var(--border);flex-shrink:0}
   .brand-logo{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--accent),#ec4899);display:grid;place-items:center;color:#fff;font-weight:700;font-size:12px}
-  .tb-field{display:flex;align-items:center;gap:6px}
+  .tb-field{display:flex;align-items:center;gap:6px;flex-shrink:1;min-width:0}
   .tb-field label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
-  .tb-field input{min-width:220px;height:30px;font-size:12px}
-  .tb-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
-  .btn{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:6px;background:var(--bg-elev-2);color:var(--text);border:1px solid var(--border);font-size:12px;font-weight:500;transition:all .15s;white-space:nowrap}
+  .tb-field input{min-width:160px;height:30px;font-size:12px}
+  .tb-actions{margin-left:auto;display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:6px;row-gap:6px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 11px;border-radius:6px;background:var(--bg-elev-2);color:var(--text);border:1px solid var(--border);font-size:12px;font-weight:500;line-height:1;transition:all .15s;white-space:nowrap;flex-shrink:0}
   .btn:hover{background:var(--bg-hover);border-color:var(--border-strong)}
   .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
   .btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
@@ -306,7 +306,7 @@
         <option value="basic">Basic</option>
         <option value="none">None</option>
       </select>
-      <input id="authToken" placeholder="paste token / key / user:pass" style="min-width:180px" />
+      <input id="authToken" placeholder="paste token / key / user:pass" style="min-width:160px;max-width:240px;flex:1 1 160px" />
     </div>
     <button class="btn ghost small" onclick="openModal('settings')" title="CORS proxy, defaults"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     <div class="tb-actions">
