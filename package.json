@@ -1,14 +1,9 @@
 {
   "name": "api-test-studio",
-  "version": "1.9.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Single-file Scalar/Postman-style runner. App lives on GitHub Pages; only the local CORS proxy runs on this machine so you can hit localhost / private APIs from the deployed page.",
+  "description": "Single-file Scalar/Postman-style API test runner. Static page hosted on GitHub Pages.",
   "scripts": {
-    "start": "node proxy.js",
-    "proxy": "node proxy.js",
-    "dev": "npx --yes concurrently -k -n web,proxy -c green,blue \"npx --yes serve . -l 5173 --no-clipboard\" \"node proxy.js\"",
-    "web": "npx --yes serve . -l 5173 --no-clipboard",
-    "tunnel": "npx --yes localtunnel --port 5174",
     "worker:install": "cd worker && npm install",
     "worker:deploy": "cd worker && npx wrangler deploy",
     "worker:kv": "cd worker && npx wrangler kv:namespace create STATE"
