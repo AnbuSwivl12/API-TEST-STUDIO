@@ -45,6 +45,15 @@
   .tb-field{display:flex;align-items:center;gap:6px;flex-shrink:1;min-width:0}
   .tb-field label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
   .tb-field input{min-width:160px;height:30px;font-size:12px}
+  .env-select{height:30px;font-size:12px;font-weight:600;width:auto;padding-right:22px}
+  .env-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--text-muted)}
+  .env-dot.stage{background:#e6b73e}
+  .env-dot.local{background:var(--accent)}
+  .env-dot.custom{background:var(--text-muted)}
+  /* first-run welcome strip */
+  .welcome{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;background:linear-gradient(90deg,rgba(99,102,241,.14),rgba(236,72,153,.08));border-bottom:1px solid var(--border);font-size:12px;color:var(--text-dim);flex-shrink:0}
+  .welcome b{color:var(--text)}
+  .welcome .sp{margin-left:auto;display:flex;gap:6px}
   .tb-actions{margin-left:auto;display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:6px;row-gap:6px}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 11px;border-radius:6px;background:var(--bg-elev-2);color:var(--text);border:1px solid var(--border);font-size:12px;font-weight:500;line-height:1;transition:all .15s;white-space:nowrap;flex-shrink:0}
   .btn:hover{background:var(--bg-hover);border-color:var(--border-strong)}
@@ -288,7 +297,16 @@
     <div class="brand">
       <div class="brand-logo">A</div>
       <span>API Test Studio</span>
-      <span id="appVersion" class="hint-chip" style="margin-left:6px;font-size:10px;background:var(--panel);color:var(--text-dim)">v1.8</span>
+      <span id="appVersion" class="hint-chip" style="margin-left:6px;font-size:10px;background:var(--panel);color:var(--text-dim)">v1.9</span>
+    </div>
+    <div class="tb-field" title="Pick which environment every request goes to">
+      <label>Env</label>
+      <span class="env-dot" id="envDot"></span>
+      <select id="envSelect" class="env-select">
+        <option value="stage">Stage</option>
+        <option value="local">Local</option>
+        <option value="custom">Custom…</option>
+      </select>
     </div>
     <div class="tb-field">
       <label>Base URL</label>
@@ -317,6 +335,15 @@
       <button class="btn small" onclick="exportReport()" title="Download CSV report of all cases + statuses"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
       <button class="btn ghost small" onclick="toggleTheme()" title="Toggle dark / light" id="themeBtn"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
     </div>
+  </div>
+
+  <!-- first-run welcome (hidden once dismissed) -->
+  <div class="welcome" id="welcomeBar" style="display:none">
+    <span>👋 <b>Welcome!</b> You're pointed at the <b id="welcomeEnv">Stage</b> API (<span class="mono" id="welcomeBase"></span>). Paste your <b>bearer token</b> in the top bar, then hit <b>Run All</b> — nothing to install, everything is saved in this browser.</span>
+    <span class="sp">
+      <button class="btn small" onclick="checkEnvHealth(true)">Test connection</button>
+      <button class="btn small primary" onclick="dismissWelcome()">Got it</button>
+    </span>
   </div>
 
   <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
@@ -405,6 +432,7 @@
         <input id="set_proxy" placeholder="https://your-proxy.example.com/?url=" oninput="proxyHint(this.value)" />
         <div id="proxy_hint" style="display:none;margin-top:6px;padding:8px 10px;border-radius:4px;background:rgba(230,183,62,.12);border:1px solid rgba(230,183,62,.4);color:var(--warn,#e6b73e);font-size:11px;line-height:1.5"></div>
         <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.5">
+          <b>Leave this empty for Stage and Local</b> — the Swivl stage API already returns <code class="mono">Access-Control-Allow-Origin: *</code>, so the browser can call it directly from anywhere.<br>
           Browsers block cross-origin API calls from <code class="mono">file://</code> pages. If your API doesn't allow CORS from your origin, set a proxy URL here (e.g. <code class="mono">https://corsproxy.io/?</code>) and requests will be routed through it. <b>Leave blank</b> if your API already returns the right CORS headers, or if you run this page behind your own dev server.<br>
           <b>Heads up:</b> public proxies like <code class="mono">corsproxy.io</code> and <code class="mono">allorigins.win</code> only forward <b>GET</b>. For POST/PUT/PATCH/DELETE, either clear this field or host your own proxy.
         </small>
@@ -891,11 +919,30 @@ function loadBuiltinSwivlSpec() {
    State + persistence
    ========================================================================= */
 const STORAGE_KEY = "apiTestStudio.v1";
-const DEFAULT_BASE = "https://template.dev.swivlconnect.com";
+
+/* Named environments. Stage is the default so the hosted (public) build works
+   out of the box — the stage API sends `Access-Control-Allow-Origin: *`, so no
+   CORS proxy is needed from any origin. */
+const ENVS = {
+  stage: { label: "Stage",  base: "https://template.dev.swivlconnect.com" },
+  local: { label: "Local",  base: "http://localhost:3000" },
+};
+const LEGACY_LOCAL_BASE = "http://localhost:3000";
+const IS_LOCAL_PAGE = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || location.protocol === "file:";
+const DEFAULT_ENV = IS_LOCAL_PAGE ? "local" : "stage";
+const DEFAULT_BASE = ENVS[DEFAULT_ENV].base;
+
+/* Which env does a base URL correspond to? "custom" when it matches none. */
+function envForBase(url) {
+  const u = (url || "").trim().replace(/\/+$/, "");
+  for (const k of Object.keys(ENVS)) if (ENVS[k].base === u) return k;
+  return "custom";
+}
 
 const state = (() => {
   const defaults = {
     theme: "dark",
+    env: DEFAULT_ENV,
     baseUrl: DEFAULT_BASE,
     authType: "bearer",
     authToken: "",
@@ -916,10 +963,18 @@ const state = (() => {
     activeTab: "params",
     collapsedTags: {},
     selection: [],
+    welcomeSeen: false,
   };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    if (saved && Array.isArray(saved.cases)) return { ...defaults, ...saved, selection: [] };
+    if (saved && Array.isArray(saved.cases)) {
+      const st = { ...defaults, ...saved, selection: [] };
+      // Migration: users who saved the old localhost default but are now on the
+      // hosted build would see every request fail. Move them onto Stage.
+      if (!IS_LOCAL_PAGE && st.baseUrl === LEGACY_LOCAL_BASE) st.baseUrl = ENVS.stage.base;
+      st.env = envForBase(st.baseUrl);
+      return st;
+    }
   } catch (e) {}
   return defaults;
 })();
@@ -997,9 +1052,11 @@ async function cloudPull() {
     const incoming = payload && payload.state ? payload.state : payload;
     if (!incoming || !Array.isArray(incoming.cases)) throw new Error("Unexpected payload shape");
     Object.assign(state, incoming);
+    state.env = envForBase(state.baseUrl);
     state.lastSyncAt = Date.now();
     save();
-    renderSidebar(); renderDoc(); renderTry();
+    if ($("#baseUrl")) $("#baseUrl").value = state.baseUrl || "";
+    renderEnv(); renderSidebar(); renderDoc(); renderTry();
     _syncStatus("Pulled " + new Date().toLocaleTimeString(), "success");
     toast(`Pulled ${incoming.cases.length} cases from cloud`, "success");
   } catch (e) {
@@ -1916,7 +1973,12 @@ document.addEventListener("click", e => {
 });
 
 $("#search").addEventListener("input", e => { state.search = e.target.value; renderSidebar(); });
-$("#baseUrl").addEventListener("input", e => { state.baseUrl = e.target.value; save(); renderDoc(); });
+$("#baseUrl").addEventListener("input", e => {
+  state.baseUrl = e.target.value;
+  state.env = envForBase(state.baseUrl);
+  save(); renderDoc(); renderEnv();
+});
+$("#envSelect").addEventListener("change", e => switchEnv(e.target.value));
 $("#authToken").addEventListener("input", e => { state.authToken = e.target.value; save(); });
 $("#authType").addEventListener("change", e => { state.authType = e.target.value; save(); });
 $("#apiVersion").addEventListener("input", e => { state.apiVersion = e.target.value; save(); renderDoc(); });
@@ -3291,10 +3353,81 @@ function copyTextToBtn(btn, text) {
 }
 
 /* =========================================================================
+   Environments (Stage / Local / Custom)
+   ========================================================================= */
+function switchEnv(env) {
+  if (ENVS[env]) {
+    state.env = env;
+    state.baseUrl = ENVS[env].base;
+    // Named envs allow CORS directly — a stale proxy would only break writes.
+    if (state.proxyUrl) { state.proxyUrl = ""; toast("CORS proxy cleared — not needed for " + ENVS[env].label, "info"); }
+  } else {
+    state.env = "custom";
+  }
+  save();
+  $("#baseUrl").value = state.baseUrl || "";
+  renderEnv(); renderDoc(); renderTry();
+  const c = currentCase(); if (c) renderUrlPreview(c);
+  if (ENVS[env]) toast(`Switched to ${ENVS[env].label} — ${ENVS[env].base}`, "success");
+}
+
+/* Keeps the dropdown, the dot colour and the welcome strip in sync with state. */
+function renderEnv() {
+  const sel = $("#envSelect"); if (!sel) return;
+  sel.value = state.env || "custom";
+  const dot = $("#envDot");
+  if (dot) dot.className = "env-dot " + (state.env || "custom");
+  const label = ENVS[state.env] ? ENVS[state.env].label : "Custom";
+  sel.title = `${label} — ${state.baseUrl || "no base URL set"}`;
+  const wb = $("#welcomeBase"); if (wb) wb.textContent = state.baseUrl || "";
+  const we = $("#welcomeEnv"); if (we) we.textContent = label;
+}
+
+/* Fire one lightweight request at the current base URL just to prove it is
+   reachable from this browser. Any HTTP status (even 401) counts as reachable —
+   only a network/CORS failure means "can't get there from here". */
+async function checkEnvHealth(loud) {
+  const base = (state.baseUrl || "").replace(/\/+$/, "");
+  if (!base) { if (loud) toast("Set a Base URL first", "error"); return false; }
+  const probe = (state.cases.find(c => (c.method || "GET") === "GET" && c.path) || {}).path || "/";
+  const dot = $("#envDot");
+  if (loud) toast("Checking " + base + " …", "info");
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 12000);
+    const r = await fetch(base + probe.replace(/\{[^}]+\}/g, "1"), { method: "GET", signal: ctl.signal });
+    clearTimeout(t);
+    if (dot) dot.style.background = "var(--success)";
+    if (loud) toast(`Reachable — ${base} responded ${r.status}${r.status === 401 ? " (paste a token to authenticate)" : ""}`, "success");
+    return true;
+  } catch (e) {
+    if (dot) dot.style.background = "var(--danger)";
+    if (loud) toast(`Can't reach ${base} — ${state.env === "local" ? "is your local API running?" : "network or CORS blocked the request"}`, "error");
+    return false;
+  }
+}
+
+function dismissWelcome() {
+  state.welcomeSeen = true; save();
+  const el = $("#welcomeBar"); if (el) el.style.display = "none";
+}
+
+/* =========================================================================
    Boot
    ========================================================================= */
 function boot() {
   document.documentElement.dataset.theme = state.theme;
+  // Shareable deep link: ...index.html?env=stage  (or ?base=https://...)
+  try {
+    const q = new URLSearchParams(location.search);
+    const qEnv = q.get("env"), qBase = q.get("base");
+    if (qBase) { state.baseUrl = qBase; state.env = envForBase(qBase); save(); }
+    else if (qEnv && ENVS[qEnv]) { state.env = qEnv; state.baseUrl = ENVS[qEnv].base; save(); }
+  } catch (e) {}
+  renderEnv();
+  if (!state.welcomeSeen && !IS_LOCAL_PAGE) {
+    const wb = $("#welcomeBar"); if (wb) wb.style.display = "flex";
+  }
   $("#baseUrl").value = state.baseUrl || "";
   $("#authToken").value = state.authToken || "";
   $("#authType").value = state.authType || "bearer";

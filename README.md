@@ -2,10 +2,45 @@
 
 Single-file Scalar/Postman-style runner for the Swivl Template API.
 
+## 🌍 Live — open this on any device
+
+**https://anbuswivl12.github.io/API-TEST-STUDIO/**
+
+No install, no local server, nothing to configure. The app opens pointed at the
+**Stage** API (`https://template.dev.swivlconnect.com`), which allows browser
+calls from any origin — so requests work straight from the hosted page.
+
+To start testing:
+
+1. Open the link above.
+2. Paste your **bearer token** in the top bar (`Auth: Bearer`).
+3. Hit **Run All**, or pick a case and **Send**.
+
+Everything you edit is saved in that browser's `localStorage`. Want the same
+cases on your laptop *and* your phone? Set up [cross-device sync](#part-2--cross-device-sync-via-cloudflare-worker).
+
+### Environments
+
+The **Env** dropdown in the top bar switches where every request goes:
+
+| Env | Base URL | Notes |
+|-----|----------|-------|
+| **Stage** | `https://template.dev.swivlconnect.com` | Default on the hosted page. CORS-open, works everywhere. |
+| **Local** | `http://localhost:3000` | Default when you open the app from localhost. Needs your API running. |
+| **Custom…** | anything you type in **Base URL** | The dropdown flips to *Custom* automatically. |
+
+- Switching to a named env clears any leftover CORS proxy — none is needed.
+- **Test connection** (in the welcome strip) fires one request at the current
+  base URL and tells you whether it's reachable. A `401` means reachable but
+  unauthenticated → paste a token.
+- Deep links work: `…/API-TEST-STUDIO/?env=stage` or `?base=https://my-api.example.com`
+  open the app pre-pointed at that environment. Handy for sharing with the team.
+
 ```
 API test studio/
-├── index.html         ← the app (single self-contained file, v1.8)
+├── index.html         ← the app (single self-contained file, v1.9)
 ├── package.json       ← npm scripts to run/deploy
+├── deploy.sh          ← commit + push → GitHub Pages redeploys
 ├── start.sh           ← bash launcher (no Node required)
 ├── .nojekyll          ← tells GitHub Pages to serve files as-is
 ├── .gitignore
@@ -44,11 +79,25 @@ Same thing (uses `npx serve` on port 5173).
 
 ---
 
+## Ship a change to the live site
+
+The live page is GitHub Pages serving `main` at the repo root. To publish edits:
+
+```bash
+./deploy.sh              # commits any changes and pushes to main
+# or: npm run deploy
+```
+
+Pages rebuilds in ~30–60 s, then hard-reload
+https://anbuswivl12.github.io/API-TEST-STUDIO/ (⌘⇧R) to bypass the CDN cache.
+
+---
+
 ## Make it accessible globally
 
 Two parts:
 
-1. **Hosting the page** — GitHub Pages serves `index.html` so any device can open it from a public URL.
+1. **Hosting the page** — GitHub Pages serves `index.html` so any device can open it from a public URL. ✅ already done, see the live link above.
 2. **Cross-device sync** — a tiny Cloudflare Worker stores your test cases per-user-token, so the same data follows you across devices.
 
 You can do part 1 alone if you only want a public URL. Add part 2 when you want sync.
@@ -56,6 +105,9 @@ You can do part 1 alone if you only want a public URL. Add part 2 when you want 
 ---
 
 ## Part 1 — Host the page on GitHub Pages
+
+Already set up for this repo (`main` / root → https://anbuswivl12.github.io/API-TEST-STUDIO/).
+The steps below are for standing up your own copy.
 
 ### Option A: brand-new repo (cleanest)
 
