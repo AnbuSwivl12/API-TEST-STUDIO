@@ -1166,12 +1166,17 @@ const DEFAULT_BASE = ENVS[DEFAULT_ENV].base;
 /* Which env does a base URL correspond to? "custom" when it matches none. */
 function envForBase(url) {
   const u = (url || "").trim().replace(/\/+$/, "");
-  const m = (typeof activeModule === "function") ? activeModule() : null;
-  for (const k of Object.keys(ENVS)) {
-    if (ENVS[k].base === u) return k;
-    // A module can sit on a different host for the same env (Templates is on
-    // template.dev, everything else on api.dev) — that's still "Stage".
-    if (m && (baseUrlFor(m, k) || "").replace(/\/+$/, "") === u) return k;
+  for (const k of Object.keys(ENVS)) if (ENVS[k].base === u) return k;
+  // A module can sit on a different host for the same env (Templates is on
+  // template.dev, everything else on api.dev) — that's still "Stage".
+  // This runs during state construction too, when `state` is still in its
+  // temporal dead zone; touching it there throws, so guard rather than assume.
+  let m = null;
+  try { m = activeModule(); } catch (e) { m = null; }
+  if (m) {
+    for (const k of Object.keys(ENVS)) {
+      if ((baseUrlFor(m, k) || "").replace(/\/+$/, "") === u) return k;
+    }
   }
   return "custom";
 }
@@ -1231,7 +1236,12 @@ const state = (() => {
       if (!st.rpBuckets || typeof st.rpBuckets !== "object") st.rpBuckets = {};
       return st;
     }
-  } catch (e) {}
+  } catch (e) {
+    // Swallowing this is how a throw in here once wiped everyone's saved work
+    // on every reload without a word. Keep the fallback, but never silently.
+    window.__loadError = e;
+    try { console.error("API Test Studio — could not read saved data:", e); } catch (e2) {}
+  }
   return defaults;
 })();
 /* Modules are wired up at boot — SEED_MODULES and friends are consts declared
@@ -4741,6 +4751,10 @@ function boot() {
   renderSidebar(); renderDoc(); renderTry(); renderResp();
   renderModuleChip(); renderViewBadge();
   setView(state.view === "report" && state.runs.length ? "report" : "cases");
+
+  if (window.__loadError) {
+    toast("Your saved data couldn't be read, so this session started fresh. Details are in the browser console.", "error");
+  }
 
   // keyboard shortcut: ctrl/cmd + enter = send
   document.addEventListener("keydown", e => {
