@@ -1,0 +1,1956 @@
+<title>API Test Studio — round three: exploration first</title>
+<style>
+/* ============================== document tokens ============================
+   Same paper/ink shell as rounds one and two so the three docs read as a set.
+   App mockups below re-declare index.html's own custom properties verbatim. */
+:root{
+  --paper:#eceef0; --paper-2:#f6f7f8; --edge:#d3d8dc; --edge-2:#bfc6cc;
+  --ink:#14181b; --ink-2:#4b555d; --ink-3:#78848c;
+  --brass:#8a6413; --brass-bg:rgba(200,146,42,.14); --anno-ink:#fff8ec;
+  --good:#0f7a58; --bad:#c0392f;
+  --mono:"SF Mono","JetBrains Mono",Menlo,Monaco,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --gutter:clamp(18px,4vw,44px);
+  --col:1120px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0f1214; --paper-2:#161a1d; --edge:#262c31; --edge-2:#363e45;
+    --ink:#e6eaec; --ink-2:#9aa5ac; --ink-3:#78848c;
+    --brass:#e6b73e; --brass-bg:rgba(230,183,62,.13); --anno-ink:#1a1206;
+    --good:#3ec99a; --bad:#f2776b;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f1214; --paper-2:#161a1d; --edge:#262c31; --edge-2:#363e45;
+  --ink:#e6eaec; --ink-2:#9aa5ac; --ink-3:#78848c;
+  --brass:#e6b73e; --brass-bg:rgba(230,183,62,.13); --anno-ink:#1a1206;
+  --good:#3ec99a; --bad:#f2776b;
+}
+:root[data-theme="light"]{
+  --paper:#eceef0; --paper-2:#f6f7f8; --edge:#d3d8dc; --edge-2:#bfc6cc;
+  --ink:#14181b; --ink-2:#4b555d; --ink-3:#78848c;
+  --brass:#8a6413; --brass-bg:rgba(200,146,42,.14); --anno-ink:#fff8ec;
+  --good:#0f7a58; --bad:#c0392f;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--col);margin:0 auto;padding:0 var(--gutter)}
+.bleed{max-width:1500px;margin:0 auto;padding:0 var(--gutter)}
+p{margin:0 0 1em}
+a{color:var(--brass)}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:3px}
+code{font-family:var(--mono);font-size:.88em;background:var(--paper-2);border:1px solid var(--edge);
+  border-radius:4px;padding:1px 5px}
+
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--brass);margin:0 0 14px}
+h1{font-family:var(--mono);font-size:clamp(28px,4.2vw,48px);line-height:1.05;letter-spacing:-.03em;
+  font-weight:600;margin:0 0 18px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--brass)}
+.deck{font-size:18px;line-height:1.55;color:var(--ink-2);max-width:66ch;margin:0 0 22px}
+header.doc{padding:clamp(40px,6.5vw,78px) 0 30px;border-bottom:1px solid var(--edge)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 10px;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.meta span{border:1px solid var(--edge);border-radius:999px;padding:3px 10px;background:var(--paper-2)}
+
+h2{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;margin:0 0 16px}
+h3{font-size:22px;line-height:1.2;letter-spacing:-.015em;margin:0 0 10px;font-weight:600}
+h4{font-size:15px;margin:0 0 6px;font-weight:600}
+h5{font-size:13px;margin:22px 0 8px;font-weight:600;letter-spacing:.01em}
+section.band{padding:44px 0 8px;border-top:1px solid var(--edge)}
+section.band:first-of-type{border-top:0}
+.sec-no{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--brass);
+  text-transform:uppercase;margin:0 0 10px}
+.lede{font-size:17px;color:var(--ink-2);max-width:68ch;margin:0 0 24px}
+ul.plain{margin:0 0 20px;padding-left:19px}
+ul.plain li{margin-bottom:7px;color:var(--ink-2);font-size:14px;line-height:1.55}
+ul.plain li b{color:var(--ink)}
+
+/* problem / claim cards */
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;
+  background:var(--edge);border:1px solid var(--edge);border-radius:10px;overflow:hidden;margin:0 0 26px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin:0 0 26px;
+  align-items:start}
+.card{background:var(--paper-2);padding:15px 17px 17px}
+.card p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.card p+p{margin-top:8px}
+.card h4{font-size:14.5px}
+.card .tagn{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--brass);display:block;margin-bottom:7px}
+
+/* figure frame */
+figure{margin:0 0 12px}
+figcaption{font-size:13px;color:var(--ink-3);margin-top:9px;max-width:88ch;line-height:1.5}
+figcaption b{color:var(--ink-2);font-weight:600}
+.fig-h{display:flex;align-items:baseline;gap:10px;margin:26px 0 11px;flex-wrap:wrap}
+.fig-h .n{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--brass);border:1px solid var(--brass);border-radius:4px;padding:2px 7px;white-space:nowrap}
+.fig-h h4{margin:0;font-size:16px}
+
+/* annotation callouts */
+.anno{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;
+  background:var(--brass);color:var(--anno-ink);font-family:var(--mono);font-size:10px;
+  font-weight:700;flex:none;vertical-align:middle}
+ol.annos{list-style:none;margin:12px 0 0;padding:0;display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:9px 22px}
+ol.annos li{display:flex;gap:9px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+ol.annos li b{color:var(--ink);font-weight:600}
+
+/* tables */
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin:0 0 20px}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;padding:0 12px 8px;border-bottom:1px solid var(--edge-2);vertical-align:bottom}
+td{padding:10px 12px;border-bottom:1px solid var(--edge);vertical-align:top;color:var(--ink-2)}
+td:first-child,th:first-child{padding-left:0}
+td:last-child,th:last-child{padding-right:0}
+td b{color:var(--ink);font-weight:600}
+td.mono,th.mono{font-family:var(--mono);font-size:12px}
+.tscroll{overflow-x:auto;margin:0 0 20px}
+.tscroll table{margin:0;min-width:640px}
+.chip{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  border-radius:999px;padding:2px 8px;border:1px solid var(--edge-2);color:var(--ink-3);
+  background:var(--paper-2);white-space:nowrap}
+.chip.gone{border-color:var(--bad);color:var(--bad)}
+.chip.moved{border-color:var(--brass);color:var(--brass)}
+.chip.stays{border-color:var(--good);color:var(--good)}
+.chip.srv{border-color:var(--bad);color:var(--bad)}
+.chip.cli{border-color:var(--good);color:var(--good)}
+
+/* code block */
+pre.src{font-family:var(--mono);font-size:12px;line-height:1.62;background:var(--paper-2);
+  border:1px solid var(--edge);border-radius:9px;padding:13px 15px;overflow-x:auto;margin:0 0 18px}
+pre.src .c{color:var(--ink-3)}
+pre.src .k{color:var(--brass)}
+pre.src .s{color:var(--good)}
+
+/* callout */
+.note{border-left:3px solid var(--brass);background:var(--brass-bg);padding:12px 15px;border-radius:0 8px 8px 0;
+  font-size:13.5px;color:var(--ink-2);margin:0 0 20px;max-width:92ch}
+.note b{color:var(--ink)}
+.note.bad{border-left-color:var(--bad);background:rgba(192,57,47,.1)}
+.note.good{border-left-color:var(--good);background:rgba(15,122,88,.1)}
+
+/* ======================= browser chrome around mockups ==================== */
+.mk-frame{border:1px solid var(--edge-2);border-radius:11px;overflow:hidden;background:#0a0e14;
+  box-shadow:0 18px 44px rgba(0,0,0,.22)}
+.mk-chrome{display:flex;align-items:center;gap:9px;padding:8px 12px;background:#161b22;
+  border-bottom:1px solid #21262d}
+.mk-dots{display:flex;gap:6px}
+.mk-dots i{width:9px;height:9px;border-radius:50%;background:#2b3543;display:block}
+.mk-url{font-family:var(--mono);font-size:10.5px;color:#64748b;background:#0a0e14;border:1px solid #1f2937;
+  border-radius:5px;padding:3px 10px;margin:0 auto}
+
+/* app tokens, fixed dark — index.html's :root values verbatim, plus the four
+   tokens the code already references but never defines (see §0). */
+.mk{
+  --bg:#0a0e14; --bg-elev:#10161f; --bg-elev-2:#1a2330; --bg-hover:#1f2937; --bg-deep:#0d1117;
+  --border:#1f2937; --border-strong:#334155;
+  --panel:#1a2330; --line:#1f2937;
+  --text:#e5e7eb; --text-muted:#94a3b8; --text-dim:#78859a;
+  --accent:#8b5cf6; --accent-text:#a78bfa; --accent-fill:#7c3aed; --accent-soft:rgba(139,92,246,.12);
+  --success:#10b981; --warning:#f59e0b; --warn:#f59e0b; --danger:#ef4444; --info:#3b82f6;
+  --success-soft:rgba(16,185,129,.12); --danger-soft:rgba(239,68,68,.12);
+  --warning-soft:rgba(245,158,11,.12); --warn-soft:rgba(245,158,11,.12); --info-soft:rgba(59,130,246,.12);
+  font-family:var(--sans);font-size:13px;color:var(--text);line-height:1.45;position:relative;
+}
+.mk.light{
+  --bg:#f8fafc; --bg-elev:#ffffff; --bg-elev-2:#f1f5f9; --bg-hover:#e2e8f0; --bg-deep:#f1f5f9;
+  --border:#e2e8f0; --border-strong:#cbd5e1; --panel:#f1f5f9; --line:#e2e8f0;
+  --text:#0f172a; --text-muted:#475569; --text-dim:#64748b;
+  --accent:#7c3aed; --accent-text:#6d28d9; --accent-fill:#6d28d9; --accent-soft:rgba(124,58,237,.10);
+  --success:#059669; --warning:#d97706; --warn:#d97706; --danger:#dc2626; --info:#2563eb;
+  --success-soft:rgba(5,150,105,.12); --danger-soft:rgba(220,38,38,.12);
+  --warning-soft:rgba(217,119,6,.12); --warn-soft:rgba(217,119,6,.12); --info-soft:rgba(37,99,235,.12);
+}
+.mk *{box-sizing:border-box}
+.mk .mono{font-family:var(--mono)}
+.mk .dim{color:var(--text-dim)}
+.mk ::-webkit-scrollbar{width:9px;height:9px}
+.mk ::-webkit-scrollbar-thumb{background:#243043;border-radius:9px;border:2px solid var(--bg)}
+.mk ::-webkit-scrollbar-track{background:transparent}
+.mk .anno{background:#e6b73e;color:#1a1206;width:15px;height:15px;font-size:9.5px}
+
+/* shared app atoms (mirror index.html classes) */
+.m-brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:13px;flex:none}
+.m-logo{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  display:grid;place-items:center;color:#fff;font-weight:700;font-size:11px}
+.m-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;
+  background:var(--bg-elev-2);border:1px solid var(--border);font-size:11.5px;font-weight:500;
+  color:var(--text);white-space:nowrap}
+.m-btn.primary{background:var(--accent-fill);border-color:var(--accent-fill);color:#fff}
+.m-btn.ghost{background:transparent;border-color:transparent;color:var(--text-muted)}
+.m-btn.sm{padding:3px 8px;font-size:11px}
+.m-btn.danger{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.m-in{background:var(--bg-elev-2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;
+  font-size:11.5px;color:var(--text-muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.method{font-family:var(--mono);font-size:9.5px;font-weight:700;padding:2px 4px;border-radius:3px;
+  min-width:44px;text-align:center;flex:none;letter-spacing:.02em;display:inline-block}
+.method.GET{background:var(--success-soft);color:var(--success)}
+.method.POST{background:var(--warning-soft);color:var(--warning)}
+.method.PUT{background:var(--info-soft);color:var(--info)}
+.method.PATCH{background:var(--accent-soft);color:var(--accent-text)}
+.method.DELETE{background:var(--danger-soft);color:var(--danger)}
+.dot{width:7px;height:7px;border-radius:50%;flex:none;background:#3b4655;display:inline-block}
+.dot.pass{background:var(--success)}
+.dot.fail{background:var(--danger);box-shadow:0 0 6px rgba(239,68,68,.7)}
+.dot.skip{background:var(--warning)}
+.dot.run{background:var(--accent);box-shadow:0 0 7px rgba(139,92,246,.8)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.02em;white-space:nowrap}
+.pill.pass{background:var(--success-soft);color:var(--success)}
+.pill.fail{background:var(--danger-soft);color:var(--danger)}
+.pill.skip{background:var(--warning-soft);color:var(--warning)}
+.pill.info{background:var(--info-soft);color:var(--info)}
+.pill.run{background:var(--accent-soft);color:var(--accent-text)}
+.pill.neutral{background:var(--bg-hover);color:var(--text-muted)}
+.lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-dim);font-weight:600}
+
+/* ---------------- topbar ---------------- */
+.w-top{display:flex;align-items:center;gap:9px;padding:8px 13px;background:var(--bg-elev);
+  border-bottom:1px solid var(--border);min-height:50px;flex-wrap:wrap}
+.mod-chip{display:inline-flex;align-items:center;gap:8px;padding:4px 9px;border-radius:8px;
+  background:var(--bg-elev-2);border:1px solid var(--border-strong);font-size:11.5px;white-space:nowrap}
+.mod-chip .nm{font-weight:600}
+.mod-chip .mt{font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+.env-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:8px;
+  background:var(--bg-elev-2);border:1px solid var(--border);font-size:11.5px;white-space:nowrap}
+.viewsw{display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;
+  background:var(--bg-elev-2);flex:none}
+.viewsw span{padding:4px 11px;font-size:11.5px;font-weight:500;color:var(--text-muted);
+  border-right:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
+.viewsw span:last-child{border-right:0}
+.viewsw span.on{background:var(--accent-fill);color:#fff}
+.viewsw .b{font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:8px;
+  background:var(--danger-soft);color:var(--danger)}
+
+/* ---------------- three-pane workspace ---------------- */
+.w3{display:grid;grid-template-columns:246px minmax(0,1fr) minmax(0,1fr);background:var(--border);gap:1px}
+.w3>*{background:var(--bg);min-width:0}
+@media (max-width:900px){.w3{grid-template-columns:1fr}}
+
+/* explorer */
+.ex{display:flex;flex-direction:column;background:var(--bg-elev);height:620px;overflow:hidden}
+.ex-h{padding:9px 11px;border-bottom:1px solid var(--border);display:grid;gap:7px}
+.ex-search{display:flex;align-items:center;gap:7px;background:var(--bg-elev-2);border:1px solid var(--border);
+  border-radius:7px;padding:5px 9px;font-size:11.5px;color:var(--text-dim)}
+.ex-search .kbd{margin-left:auto;font-family:var(--mono);font-size:9.5px;border:1px solid var(--border-strong);
+  border-radius:4px;padding:0 4px;color:var(--text-dim)}
+.ex-meth{display:flex;flex-wrap:wrap;gap:4px}
+.ex-meth i{font-style:normal;font-family:var(--mono);font-size:9.5px;font-weight:700;padding:2px 6px;
+  border-radius:5px;border:1px solid var(--border);color:var(--text-dim);background:var(--bg-elev-2)}
+.ex-meth i.on{border-color:var(--success);color:var(--success);background:var(--success-soft)}
+.ex-list{overflow-y:auto;flex:1;padding-bottom:10px}
+.ex-grp{display:flex;align-items:center;gap:7px;padding:8px 11px 5px;font-family:var(--mono);
+  font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:600}
+.ex-grp .ct{margin-left:auto;font-size:9.5px;color:var(--text-dim);opacity:.8}
+.ex-grp.first{padding-top:10px}
+.ex-op{display:flex;align-items:center;gap:7px;padding:4px 11px;font-size:11.5px;
+  border-left:2px solid transparent;cursor:default}
+.ex-op .pt{font-family:var(--mono);font-size:11px;color:var(--text-muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.ex-op .pt b{color:var(--text);font-weight:500}
+.ex-op.on{background:var(--accent-soft);border-left-color:var(--accent)}
+.ex-op.on .pt b{color:var(--text)}
+.ex-op .star{margin-left:auto;font-size:10px;color:var(--warning);flex:none}
+.ex-op .st{margin-left:auto;font-family:var(--mono);font-size:9.5px;flex:none}
+.ex-foot{border-top:1px solid var(--border);padding:7px 11px;display:flex;align-items:center;gap:8px;
+  font-size:10.5px;color:var(--text-dim);background:var(--bg-elev-2)}
+
+/* builder */
+.bd{display:flex;flex-direction:column;height:620px;overflow:hidden;background:var(--bg)}
+.bd-h{padding:10px 13px;border-bottom:1px solid var(--border);display:grid;gap:9px;background:var(--bg-elev)}
+.bd-crumb{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-dim);flex-wrap:wrap}
+.bd-crumb .sc{display:inline-flex;align-items:center;gap:5px;border:1px dashed var(--accent);
+  color:var(--accent-text);border-radius:999px;padding:1px 8px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.bd-url{display:flex;align-items:stretch;gap:0;border:1px solid var(--border-strong);border-radius:8px;
+  overflow:hidden;background:var(--bg-elev-2)}
+.bd-url .mth{display:flex;align-items:center;gap:5px;padding:0 9px;font-family:var(--mono);font-size:11px;
+  font-weight:700;color:var(--success);border-right:1px solid var(--border);background:var(--bg-elev)}
+.bd-url .base{display:flex;align-items:center;padding:0 0 0 9px;font-family:var(--mono);font-size:11px;
+  color:var(--text-dim);white-space:nowrap}
+.bd-url .pth{flex:1;display:flex;align-items:center;padding:7px 9px 7px 1px;font-family:var(--mono);
+  font-size:11.5px;color:var(--text);min-width:0;overflow:hidden;gap:1px}
+.bd-url .send{display:flex;align-items:center;gap:7px;padding:0 14px;background:var(--accent-fill);
+  color:#fff;font-size:12px;font-weight:600;border-left:1px solid var(--border);white-space:nowrap}
+.bd-url .send .kbd{font-family:var(--mono);font-size:9.5px;opacity:.75}
+.tok{display:inline-flex;align-items:center;background:var(--accent-soft);color:var(--accent-text);
+  border:1px solid rgba(139,92,246,.4);border-radius:4px;padding:0 4px;font-family:var(--mono);
+  font-size:10.5px;line-height:16px;margin:0 1px}
+.tok.unset{background:var(--warning-soft);color:var(--warning);border-color:rgba(245,158,11,.45)}
+.bd-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.bd-tabs{display:flex;align-items:center;gap:2px;padding:0 13px;border-bottom:1px solid var(--border);
+  background:var(--bg-elev);overflow-x:auto}
+.bd-tabs span{padding:7px 9px;font-size:11.5px;color:var(--text-muted);border-bottom:2px solid transparent;
+  white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.bd-tabs span.on{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
+.bd-tabs span .b{font-family:var(--mono);font-size:9px;padding:1px 5px;border-radius:7px;
+  background:var(--bg-hover);color:var(--text-dim)}
+.bd-tabs span.on .b{background:var(--accent-soft);color:var(--accent-text)}
+.bd-tabs .sp{margin-left:auto}
+.bd-body{flex:1;overflow-y:auto;padding:11px 13px 18px}
+.sec-lbl{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:600;margin:0 0 7px}
+.sec-lbl .r{margin-left:auto;display:flex;gap:6px}
+.kvrow{display:grid;grid-template-columns:16px 1fr 1.25fr 18px;gap:7px;align-items:center;margin-bottom:5px}
+.kvrow .cb{width:13px;height:13px;border-radius:3px;border:1px solid var(--border-strong);
+  background:var(--bg-elev-2);display:grid;place-items:center;font-size:9px;color:#fff}
+.kvrow .cb.on{background:var(--accent-fill);border-color:var(--accent-fill)}
+.kvrow .f{background:var(--bg-elev-2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;
+  font-family:var(--mono);font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kvrow .f.ph{color:var(--text-dim)}
+.kvrow .f.auto{background:transparent;border-style:dashed;color:var(--text-dim)}
+.kvrow .x{text-align:center;color:var(--text-dim);font-size:12px}
+.kvrow .req{color:var(--danger);font-family:var(--mono);font-size:10px}
+.hint{font-size:10.5px;color:var(--text-dim);margin:5px 0 14px;line-height:1.5}
+.hint code{background:var(--bg-elev-2);border:1px solid var(--border);border-radius:3px;padding:0 4px;
+  font-family:var(--mono);font-size:10px;color:var(--text-muted)}
+
+/* response */
+.rs{display:flex;flex-direction:column;height:620px;overflow:hidden;background:var(--bg-deep)}
+.rs-h{padding:9px 13px;border-bottom:1px solid var(--border);background:var(--bg-elev);display:grid;gap:8px}
+.rs-stat{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.rs-code{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:13px;
+  font-weight:700;padding:3px 10px;border-radius:6px}
+.rs-code.ok{background:var(--success-soft);color:var(--success)}
+.rs-code.err{background:var(--danger-soft);color:var(--danger)}
+.rs-code.warn{background:var(--warning-soft);color:var(--warning)}
+.rs-m{font-family:var(--mono);font-size:11px;color:var(--text-muted)}
+.rs-m b{color:var(--text);font-weight:600}
+.rs-tabs{display:flex;align-items:center;gap:2px;overflow-x:auto}
+.rs-tabs span{padding:4px 8px;font-size:11px;color:var(--text-muted);border-radius:6px;white-space:nowrap}
+.rs-tabs span.on{background:var(--bg-elev-2);color:var(--text);font-weight:600}
+.rs-tabs .sp{margin-left:auto;display:flex;gap:5px}
+.rs-body{flex:1;overflow:auto;padding:10px 0 16px;font-family:var(--mono);font-size:11.5px;line-height:1.62}
+.jl{display:flex;padding:0 13px}
+.jl .g{width:26px;flex:none;text-align:right;padding-right:11px;color:#3b4655;user-select:none;font-size:10.5px}
+.jl:hover{background:rgba(255,255,255,.025)}
+.jl.hi{background:var(--warning-soft)}
+.jk{color:#7dd3fc}.js{color:#86efac}.jn{color:#fca5a5}.jb{color:#c4b5fd}.jp{color:var(--text-dim)}
+.mk.light .jk{color:#0369a1}.mk.light .js{color:#15803d}.mk.light .jn{color:#b91c1c}.mk.light .jb{color:#6d28d9}
+
+/* generic small panels used across figures */
+.pnl{background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.pnl-h{padding:9px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;
+  font-size:12px;font-weight:600;background:var(--bg-elev-2);flex-wrap:wrap}
+.pnl-h .sp{margin-left:auto;display:flex;gap:6px;align-items:center}
+.pnl-b{padding:12px 13px}
+.pnl-b.tight{padding:0}
+.stack{display:grid;gap:12px}
+
+/* body playground */
+.ed{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg-deep)}
+.ed.bad{border-color:var(--danger)}
+.ed-bar{display:flex;align-items:center;gap:5px;padding:5px 8px;background:var(--bg-elev-2);
+  border-bottom:1px solid var(--border);flex-wrap:wrap}
+.ed-bar .sp{margin-left:auto;display:flex;gap:5px;align-items:center}
+.ed-body{padding:9px 0;font-family:var(--mono);font-size:11.5px;line-height:1.62;overflow-x:auto}
+.ed-err{display:flex;align-items:flex-start;gap:8px;padding:8px 11px;background:var(--danger-soft);
+  border-top:1px solid var(--danger);font-size:11px;color:var(--danger)}
+.ed-err b{font-weight:600}
+.ed-err .mono{font-size:10.5px}
+.caret{display:inline-block;width:1px;height:13px;background:var(--danger);vertical-align:-2px;
+  box-shadow:0 0 4px var(--danger)}
+
+/* history */
+.hist{display:grid;gap:1px;background:var(--border)}
+.hrow{display:grid;grid-template-columns:52px 1fr auto auto auto;gap:10px;align-items:center;
+  padding:7px 13px;background:var(--bg-elev);font-size:11.5px}
+.hrow .p{font-family:var(--mono);font-size:11px;color:var(--text-muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.hrow .p b{color:var(--text);font-weight:500}
+.hrow .t{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);white-space:nowrap}
+.hrow.grp{background:var(--bg-elev-2)}
+.hrow .rerun{opacity:.55}
+
+/* assertions */
+.asrt{display:grid;grid-template-columns:16px 118px 96px 1fr 74px 18px;gap:7px;align-items:center;
+  margin-bottom:6px}
+.asrt .f{background:var(--bg-elev-2);border:1px solid var(--border);border-radius:6px;padding:4px 8px;
+  font-family:var(--mono);font-size:10.5px;color:var(--text);overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.asrt .f.sel{display:flex;align-items:center;justify-content:space-between;gap:5px;color:var(--text-muted)}
+.asrt .v{font-family:var(--mono);font-size:10px;text-align:right}
+.asrt .v.pass{color:var(--success)}
+.asrt .v.fail{color:var(--danger)}
+@media (max-width:760px){.asrt{grid-template-columns:16px 1fr 1fr;}.asrt .v,.asrt .x{grid-column:span 3}}
+
+/* state gallery */
+.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;margin-bottom:8px}
+.stbox{border:1px solid var(--edge-2);border-radius:10px;overflow:hidden}
+.stbox .cap{padding:7px 11px;background:var(--paper-2);border-bottom:1px solid var(--edge);
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.stpane{background:var(--bg);min-height:186px;display:grid;place-items:center;padding:20px 16px;text-align:center}
+.stpane .ic{font-size:20px;color:var(--text-dim);margin-bottom:8px}
+.stpane h6{margin:0 0 6px;font-size:12.5px;font-weight:600;color:var(--text)}
+.stpane p{margin:0 0 11px;font-size:11px;color:var(--text-dim);max-width:36ch;line-height:1.55}
+.stpane .row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.skel{height:9px;border-radius:5px;background:linear-gradient(90deg,var(--bg-elev-2),var(--bg-hover),var(--bg-elev-2));
+  margin:0 auto 7px}
+
+/* design system */
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;
+  background:var(--border);border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:14px}
+.sw{background:var(--bg-elev);padding:9px 11px}
+.sw .b{height:26px;border-radius:5px;margin-bottom:7px;border:1px solid rgba(255,255,255,.07)}
+.sw .n{font-family:var(--mono);font-size:10px;color:var(--text);display:block}
+.sw .h{font-family:var(--mono);font-size:9.5px;color:var(--text-dim);display:block}
+.sw .r{font-family:var(--mono);font-size:9.5px;display:block;margin-top:3px}
+.sw .r.ok{color:var(--success)} .sw .r.no{color:var(--danger)}
+.scale{display:grid;gap:8px;margin-bottom:8px}
+.scale .rw{display:flex;align-items:baseline;gap:13px;border-bottom:1px dashed var(--border);padding-bottom:7px}
+.scale .rw .tk{font-family:var(--mono);font-size:10px;color:var(--text-dim);width:118px;flex:none}
+.compset{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;
+  background:var(--border);border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.cs{background:var(--bg-elev);padding:12px 13px}
+.cs .t{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-dim);margin-bottom:9px;font-weight:600}
+.cs .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:7px}
+.toast{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:9px;background:var(--bg-elev-2);
+  border:1px solid var(--border-strong);font-size:11.5px;box-shadow:0 8px 24px rgba(0,0,0,.35);max-width:340px}
+.toast .bar{width:3px;align-self:stretch;border-radius:3px;background:var(--success)}
+.toast.err .bar{background:var(--danger)}
+.statlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:9px}
+.statlist .s{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text-muted);
+  background:var(--bg-elev-2);border:1px solid var(--border);border-radius:7px;padding:6px 9px}
+.gly{width:16px;height:16px;flex:none;display:grid;place-items:center;font-family:var(--mono);
+  font-size:10px;font-weight:700}
+.gly.pass{color:var(--success)}.gly.fail{color:var(--danger)}.gly.skip{color:var(--warning)}
+.gly.blocked{color:var(--info)}.gly.pend{color:var(--text-dim)}.gly.run{color:var(--accent-text)}
+
+/* keyboard map */
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--edge-2);border-bottom-width:2px;
+  border-radius:5px;padding:1px 6px;background:var(--paper-2);color:var(--ink);white-space:nowrap}
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:2px 22px;margin-bottom:18px}
+.keys .k{display:flex;align-items:baseline;gap:11px;padding:7px 0;border-bottom:1px solid var(--edge);
+  font-size:13.5px;color:var(--ink-2)}
+.keys .k .kk{flex:none;width:108px;text-align:right}
+footer.doc{padding:36px 0 60px;border-top:1px solid var(--edge);color:var(--ink-3);font-size:13px}
+</style>
+
+<header class="doc">
+  <div class="wrap">
+    <p class="eyebrow">API Test Studio · round three · 12 Aug 2026</p>
+    <h1>A test case is a <em>saved request</em>, not a&nbsp;prerequisite</h1>
+    <p class="deck">Today the request playground is a modal bound to a selected case, and a second,
+      weaker builder sits in the right-hand pane. This round collapses both into one inline builder,
+      puts an unsaved <em>scratch request</em> at the centre of the workspace, and demotes “save as
+      test case” to what it should always have been: an optional act you perform on a request that
+      already works.</p>
+    <div class="meta">
+      <span>index.html · 4 686 lines · no build step</span>
+      <span>SWIVL_SPEC · 19 paths · 22 operations · 6 tags</span>
+      <span>PRESET_CASES · 102 cases</span>
+      <span>preserves modules · run report · pool · chaining</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ============================== §0 ============================== -->
+<section class="band">
+  <p class="sec-no">§0 — what the code says before I draw anything</p>
+  <h3 style="max-width:26ch">Four findings from the source, three of which are shipping bugs</h3>
+  <p class="lede">I grepped before I sketched. Two of these change the design; two are defects you
+    can fix in an afternoon regardless of whether any of this gets built.</p>
+
+  <div class="grid3">
+    <div class="card">
+      <span class="tagn">finding 1 · design</span>
+      <h4><code>currentCase()</code> is the chokepoint</h4>
+      <p>46 call sites. Every <code>exec*</code> function, <code>renderTry</code>,
+        <code>renderResp</code> and <code>renderExecBody</code> reach for it. Nothing can be edited
+        that is not a case, because nothing knows how to read anything else.</p>
+      <p>But <code>sendRequest(caseOverride)</code> already takes any case-shaped object. The send
+        path does not need to change at all — only what feeds it.</p>
+    </div>
+    <div class="card">
+      <span class="tagn">finding 2 · bug</span>
+      <h4>Four CSS tokens are used but never defined</h4>
+      <p><code>--panel</code> (11 uses), <code>--warn</code> (7), <code>--line</code> (5),
+        <code>--warn-soft</code> (1). Nineteen of those uses have no fallback, so the declaration
+        is invalid at computed-value time and drops.</p>
+      <p>Visible effect: in the Preview tab and the execute modal, “⚠ Not found in loaded spec”
+        renders as plain body-coloured text, and every <code>background:var(--panel)</code>
+        code surface is transparent. <code>border:1px solid var(--line)</code> draws no border.</p>
+    </div>
+    <div class="card">
+      <span class="tagn">finding 3 · bug</span>
+      <h4>The response viewer reports two numbers it cannot know</h4>
+      <p>Size is <code>(run.body||"").length</code> — that is UTF-16 code units, not bytes. A
+        response with any multi-byte character is mis-sized. Use
+        <code>new Blob([text]).size</code>.</p>
+      <p>And <code>lastRun.body</code> is <code>text.slice(0,20000)</code>. A larger response is
+        silently truncated with no indication in the UI. Both are fixed in §1.5.</p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <span class="tagn">finding 4 · bug</span>
+      <h4>The request tabs are not reachable by keyboard</h4>
+      <p><code>.tp-tab</code> is a bare <code>&lt;div&gt;</code> with <code>data-tab</code> and a
+        delegated click handler — no <code>tabindex</code>, no <code>role</code>, no
+        <code>aria-selected</code>. Params, Headers, Body and Preview are mouse-only. The whole app
+        has exactly one keyboard shortcut, <code>⌘↵</code> at line 4680.</p>
+    </div>
+    <div class="card">
+      <span class="tagn">the shape of the fix</span>
+      <h4>One rename carries most of the change</h4>
+      <p><code>currentCase()</code> → <code>activeRequest()</code>, returning
+        <code>state.draft</code> when nothing is selected and the selected case when something is.
+        The 46 call sites keep working because both objects have the same shape. Everything in §1
+        is downstream of that one function.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>What I am not touching.</b> Modules and their <code>service × env</code> base URLs, the Run
+    Report and its failure grouping, the 6-lane pool with timing/load cases pinned serial, capture
+    chaining, CSV/Sheet import, CSV export, spec-driven sync and coverage, and the spec-vs-response
+    check. Round two shipped those. Every screen below is additive or a straight substitution.
+  </div>
+</section>
+
+<!-- ============================== §1 ============================== -->
+<section class="band">
+  <p class="sec-no">§1 — the workspace · the centrepiece</p>
+  <h3 style="max-width:24ch">Explorer, builder, response — and a request that belongs to nobody</h3>
+  <p class="lede">The exploratory loop is <b>pick → edit → Send → read → edit → Send</b>. Nothing in
+    that loop mentions a test case, so nothing in the UI should either. The three panes are always
+    present; the middle one always holds an editable request, whether or not it has a name.</p>
+</section>
+</div>
+
+<div class="bleed">
+  <div class="fig-h">
+    <span class="n">Fig 1 · workspace</span>
+    <h4>Exploring <code>GET /templates</code> — no test case exists, and none will unless asked</h4>
+  </div>
+  <figure>
+  <div class="mk-frame">
+    <div class="mk-chrome">
+      <div class="mk-dots"><i></i><i></i><i></i></div>
+      <div class="mk-url">apitest.swivl.tech</div>
+    </div>
+    <div class="mk">
+      <!-- topbar -->
+      <div class="w-top">
+        <div class="m-brand"><div class="m-logo">A</div><span>API Test Studio</span></div>
+        <div class="mod-chip"><span class="nm">Template API</span><span class="mt">v5.0.0 · 22 ops</span><span class="dim" style="font-size:9px">▾</span></div>
+        <div class="env-chip"><span class="dot skip"></span>Stage<span class="mt mono dim" style="font-size:10px">template.dev.swivlconnect.com</span></div>
+        <div class="env-chip"><span class="dot pass"></span>bearerAuth<span class="mono dim" style="font-size:10px">eyJhb…9f2c</span></div>
+        <div class="viewsw">
+          <span class="on">Explore</span><span>Cases <span class="b">3</span></span><span>Runs</span>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+          <span class="anno">1</span>
+          <span class="m-btn sm">History <span class="mono dim" style="font-size:9.5px">⌘Y</span></span>
+          <span class="m-btn sm">Connect API</span>
+          <span class="m-btn ghost sm">⋯</span>
+        </div>
+      </div>
+
+      <div class="w3">
+        <!-- ============ explorer ============ -->
+        <div class="ex">
+          <div class="ex-h">
+            <div class="ex-search"><span>⌕</span><span>Search endpoints…</span><span class="kbd">⌘K</span></div>
+            <div class="ex-meth">
+              <i class="on">GET</i><i>POST</i><i>PUT</i><i>PATCH</i><i>DEL</i>
+              <span class="anno" style="margin-left:auto">2</span>
+            </div>
+          </div>
+          <div class="ex-list">
+            <div class="ex-grp first">★ Favourites <span class="ct">2</span></div>
+            <div class="ex-op"><span class="method GET">GET</span><span class="pt">/templates<b></b></span><span class="star">★</span></div>
+            <div class="ex-op"><span class="method POST">POST</span><span class="pt">/templates/generate</span><span class="star">★</span></div>
+
+            <div class="ex-grp">↻ Recent <span class="ct">3</span> <span class="anno">3</span></div>
+            <div class="ex-op"><span class="method GET">GET</span><span class="pt">/templates/types</span><span class="st" style="color:var(--success)">200</span></div>
+            <div class="ex-op"><span class="method PATCH">PATCH</span><span class="pt">/templates/{id}/publish</span><span class="st" style="color:var(--danger)">409</span></div>
+            <div class="ex-op"><span class="method POST">POST</span><span class="pt">/submissions/init</span><span class="st" style="color:var(--success)">201</span></div>
+
+            <div class="ex-grp">TemplateOperations <span class="ct">5</span></div>
+            <div class="ex-op on"><span class="method GET">GET</span><span class="pt"><b>/templates</b></span></div>
+            <div class="ex-op"><span class="method GET">GET</span><span class="pt">/templates/types</span></div>
+            <div class="ex-op"><span class="method GET">GET</span><span class="pt">/templates/{id}</span></div>
+            <div class="ex-op"><span class="method POST">POST</span><span class="pt">/templates/generate</span></div>
+            <div class="ex-op"><span class="method PATCH">PATCH</span><span class="pt">/templates/{id}/publish</span></div>
+
+            <div class="ex-grp">Template &gt; Sections <span class="ct">5</span></div>
+            <div class="ex-op"><span class="method GET">GET</span><span class="pt">/templates/{templateId}/sections</span></div>
+            <div class="ex-op"><span class="method POST">POST</span><span class="pt">/templates/{templateId}/section</span></div>
+            <div class="ex-op"><span class="method PUT">PUT</span><span class="pt">…/sections/{sectionId}</span></div>
+            <div class="ex-op"><span class="method DELETE">DEL</span><span class="pt">…/sections/{sectionId}</span></div>
+            <div class="ex-op"><span class="method PATCH">PATCH</span><span class="pt">…/sections/reorder</span></div>
+
+            <div class="ex-grp">Template &gt; Section Items <span class="ct">6</span></div>
+            <div class="ex-op"><span class="method GET">GET</span><span class="pt">/templates/items/types</span></div>
+            <div class="ex-op"><span class="method GET">GET</span><span class="pt">…/{sectionId}/items</span></div>
+            <div class="ex-op"><span class="method POST">POST</span><span class="pt">…/{sectionId}/items</span></div>
+
+            <div class="ex-grp">Submission <span class="ct">4</span></div>
+            <div class="ex-op"><span class="method POST">POST</span><span class="pt">/submissions/init</span></div>
+            <div class="ex-op"><span class="method GET">GET</span><span class="pt">/submissions/{submissionId}</span></div>
+
+            <div class="ex-grp">Category <span class="ct">1</span> · Health <span class="ct">1</span></div>
+          </div>
+          <div class="ex-foot"><span>19 paths · 22 ops</span><span style="margin-left:auto" class="mono">⌘\ hide</span></div>
+        </div>
+
+        <!-- ============ builder ============ -->
+        <div class="bd">
+          <div class="bd-h">
+            <div class="bd-crumb">
+              <span class="sc">● scratch</span>
+              <span class="anno">4</span>
+              <span>TemplateOperations · List all templates</span>
+              <span style="margin-left:auto" class="pill neutral">not saved</span>
+            </div>
+            <div class="bd-url">
+              <span class="mth">GET ▾</span>
+              <span class="base">…swivlconnect.com</span>
+              <span class="pth">/templates</span>
+              <span class="send">Send <span class="kbd">⌘↵</span></span>
+            </div>
+            <div class="bd-actions">
+              <span class="m-btn sm">Save as test case <span class="mono dim" style="font-size:9.5px">⌘S</span></span>
+              <span class="anno">5</span>
+              <span class="m-btn sm">Copy as cURL</span>
+              <span class="m-btn sm">↻ Reset from spec</span>
+              <span style="margin-left:auto" class="pill pass">✓ in spec</span>
+            </div>
+          </div>
+          <div class="bd-tabs">
+            <span class="on">Params <span class="b">3</span></span>
+            <span>Headers <span class="b">3</span></span>
+            <span>Auth <span class="b">↑</span></span>
+            <span>Body <span class="b">—</span></span>
+            <span>Assertions <span class="b">0</span></span>
+            <span>Preview</span>
+            <span class="sp anno">6</span>
+          </div>
+          <div class="bd-body">
+            <div class="sec-lbl">Query parameters <span class="r"><span class="m-btn sm">+ Add</span></span></div>
+            <div class="kvrow"><span class="cb on">✓</span><span class="f">page <span class="req">*</span></span><span class="f">1</span><span class="x">×</span></div>
+            <div class="kvrow"><span class="cb on">✓</span><span class="f">limit <span class="req">*</span></span><span class="f">10</span><span class="x">×</span></div>
+            <div class="kvrow"><span class="cb on">✓</span><span class="f">type</span><span class="f">CHECKLIST</span><span class="x">×</span></div>
+            <div class="kvrow"><span class="cb"></span><span class="f ph">key</span><span class="f ph">value</span><span class="x">×</span></div>
+            <p class="hint"><code>page</code> and <code>limit</code> are marked <code>required</code>
+              in the spec and pre-filled from their <code>default</code>. <code>type</code> is an
+              enum with one member — <code>CHECKLIST</code> — offered as a dropdown, not free text.</p>
+
+            <div class="sec-lbl">Sent with every request in this module <span class="r"><span class="m-btn sm">Edit in topbar</span></span></div>
+            <div class="kvrow"><span class="cb on">✓</span><span class="f auto">Authorization</span><span class="f auto">Bearer eyJhb…9f2c</span><span class="x"></span></div>
+            <div class="kvrow"><span class="cb on">✓</span><span class="f auto">x-api-version</span><span class="f auto">5.0.0</span><span class="x"></span></div>
+            <p class="hint">Shown greyed and dashed so it is obvious they are inherited, not typed
+              here. Overriding one adds a real row above with the same key — the local row wins,
+              exactly as <code>buildHeaders()</code> already resolves it.</p>
+          </div>
+        </div>
+
+        <!-- ============ response ============ -->
+        <div class="rs">
+          <div class="rs-h">
+            <div class="rs-stat">
+              <span class="rs-code ok">✓ 200 OK</span>
+              <span class="rs-m"><b>412</b> ms</span>
+              <span class="rs-m"><b>482</b> B</span>
+              <span class="pill pass">✓ matches spec</span>
+              <span class="anno" style="margin-left:auto">7</span>
+            </div>
+            <div class="rs-tabs">
+              <span class="on">Body</span><span>Headers <span class="mono dim">7</span></span><span>Timeline</span><span>Raw</span>
+              <span class="sp"><span class="m-btn sm">⌕</span><span class="m-btn sm">Copy</span><span class="m-btn sm">↓</span></span>
+            </div>
+          </div>
+          <div class="rs-body">
+            <div class="jl"><span class="g">1</span><span><span class="jp">{</span></span></div>
+            <div class="jl"><span class="g">2</span><span>  <span class="jk">"success"</span><span class="jp">: </span><span class="jb">true</span><span class="jp">,</span></span></div>
+            <div class="jl"><span class="g">3</span><span>  <span class="jk">"data"</span><span class="jp">: {</span></span></div>
+            <div class="jl"><span class="g">4</span><span>    <span class="jk">"items"</span><span class="jp">: [</span></span></div>
+            <div class="jl"><span class="g">5</span><span>      <span class="jp">{</span></span></div>
+            <div class="jl hi"><span class="g">6</span><span>        <span class="jk">"id"</span><span class="jp">: </span><span class="js">"a23dba7f-52e7-45c8-8a36-88d45ac09111"</span><span class="jp">,</span></span></div>
+            <div class="jl"><span class="g">7</span><span>        <span class="jk">"name"</span><span class="jp">: </span><span class="js">"HVAC Maintenance Inspection Checklist"</span><span class="jp">,</span></span></div>
+            <div class="jl"><span class="g">8</span><span>        <span class="jk">"description"</span><span class="jp">: </span><span class="js">"A comprehensive checklist for HVAC technicians."</span><span class="jp">,</span></span></div>
+            <div class="jl"><span class="g">9</span><span>        <span class="jk">"status"</span><span class="jp">: </span><span class="js">"DRAFT"</span><span class="jp">,</span></span></div>
+            <div class="jl"><span class="g">10</span><span>        <span class="jk">"createdAt"</span><span class="jp">: </span><span class="js">"2026-04-09T10:16:53.289Z"</span><span class="jp">,</span></span></div>
+            <div class="jl"><span class="g">11</span><span>        <span class="jk">"category"</span><span class="jp">: {</span></span></div>
+            <div class="jl"><span class="g">12</span><span>          <span class="jk">"id"</span><span class="jp">: </span><span class="js">"01ea652c-fdab-4030-b0ed-8cd3185e1986"</span><span class="jp">,</span></span></div>
+            <div class="jl"><span class="g">13</span><span>          <span class="jk">"name"</span><span class="jp">: </span><span class="js">"Checklist"</span></span></div>
+            <div class="jl"><span class="g">14</span><span>        <span class="jp">}</span></span></div>
+            <div class="jl"><span class="g">15</span><span>      <span class="jp">}</span></span></div>
+            <div class="jl"><span class="g">16</span><span>    <span class="jp">],</span></span></div>
+            <div class="jl"><span class="g">17</span><span>    <span class="jk">"pagination"</span><span class="jp">: { </span><span class="jk">"page"</span><span class="jp">: </span><span class="jn">1</span><span class="jp">, </span><span class="jk">"limit"</span><span class="jp">: </span><span class="jn">10</span><span class="jp">, </span><span class="jk">"total"</span><span class="jp">: </span><span class="jn">1</span><span class="jp">, </span><span class="jk">"totalPages"</span><span class="jp">: </span><span class="jn">1</span><span class="jp"> }</span></span></div>
+            <div class="jl"><span class="g">18</span><span>  <span class="jp">},</span></span></div>
+            <div class="jl"><span class="g">19</span><span>  <span class="jk">"error"</span><span class="jp">: </span><span class="jb">null</span><span class="jp">,</span></span></div>
+            <div class="jl"><span class="g">20</span><span>  <span class="jk">"message"</span><span class="jp">: </span><span class="js">"Operation successful"</span><span class="jp">,</span></span></div>
+            <div class="jl"><span class="g">21</span><span>  <span class="jk">"statusCode"</span><span class="jp">: </span><span class="jn">200</span></span></div>
+            <div class="jl"><span class="g">22</span><span><span class="jp">}</span></span></div>
+          </div>
+          <div class="ex-foot" style="background:var(--bg-elev)">
+            <span class="anno">8</span>
+            <span class="mono" style="font-size:10px">$.data.items[0].id</span>
+            <span class="m-btn sm" style="margin-left:auto">Capture as <span class="mono">{id}</span></span>
+            <span class="m-btn sm">Assert</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <ol class="annos">
+    <li><span class="anno">1</span><span><b>Three views, not two.</b> <em>Explore</em> is new and is
+      the landing view. <em>Cases</em> is the existing sidebar-plus-doc screen. <em>Runs</em> is the
+      Run Report, unchanged. The failure badge stays on Cases where it already lives.</span></li>
+    <li><span class="anno">2</span><span><b>Method filter is a toggle set,</b> not a dropdown —
+      the common act is “show me only the writes”, which is three taps on a dropdown and one gesture
+      here. Filter state is per-module and persists.</span></li>
+    <li><span class="anno">3</span><span><b>Recent lives in the rail,</b> not behind a menu, and
+      carries the last status per operation. This is the cheap surface of History (§4); the full
+      list is <code>⌘Y</code>.</span></li>
+    <li><span class="anno">4</span><span><b>The scratch badge is the whole product change.</b> A
+      dashed accent pill means “this request is not saved anywhere”. It is the default state of the
+      builder and it is not an error.</span></li>
+    <li><span class="anno">5</span><span><b>Save is an action, not a mode.</b> It is one button
+      among four, the same visual weight as Copy as cURL. You reach it after the request works.</span></li>
+    <li><span class="anno">6</span><span><b>Assertions is a tab showing 0,</b> not a required
+      step. A count of zero is a legitimate resting state and is styled as neutral, not as a
+      warning.</span></li>
+    <li><span class="anno">7</span><span><b>Status, time, size, spec verdict in one strip.</b>
+      Size comes from <code>new Blob([text]).size</code>, not string length (§0, finding 3).</span></li>
+    <li><span class="anno">8</span><span><b>Selecting a value in the body</b> offers the two things
+      you actually do with it: capture it into the chain as <code>{id}</code> — the existing
+      <code>applyCaptures</code> mechanism — or turn it into an assertion.</span></li>
+  </ol>
+  <figcaption>Every path, tag, parameter and response value above is read from the embedded
+    <code>SWIVL_SPEC</code>. The tag counts sum to 22: Health 1, Category 1, TemplateOperations 5,
+    Sections 5, Section Items 6, Submission 4.</figcaption>
+  </figure>
+</div>
+
+<div class="wrap">
+<section class="band" style="border-top:0;padding-top:32px">
+  <h5>1.1 · The scratch request, in state</h5>
+  <p>One object, the same shape as a case, minus the things that make a case a case: no
+    <code>id</code>, no <code>scenario</code>, no <code>expected</code>, no <code>status</code>.
+    That is the entire model change.</p>
+
+  <pre class="src"><span class="c">// state.draft — the scratch request. Persisted with the module so a reload
+// does not lose what you were poking at. Never appears in state.cases.</span>
+state.draft = {
+  method:<span class="s">"GET"</span>, path:<span class="s">"/templates"</span>,
+  query:[{key:<span class="s">"page"</span>,value:<span class="s">"1"</span>,enabled:<span class="k">true</span>}, …],
+  headers:[], pathVars:{}, body:<span class="s">""</span>, bodyMode:<span class="s">"json"</span>,
+  <span class="k">ephemeral</span>:<span class="k">true</span>,      <span class="c">// ← the only new field</span>
+  lastRun:{…}
+};
+
+<span class="c">// replaces currentCase() at all 46 call sites</span>
+<span class="k">function</span> activeRequest(){
+  <span class="k">return</span> state.selectedId ? moduleCaseById(state.selectedId) : (state.draft ||= newDraft());
+}
+
+<span class="c">// sendRequest() needs exactly one guard added, at line 2848:</span>
+<span class="k">const</span> verdict = c.ephemeral ? <span class="k">null</span>            <span class="c">// a scratch send has no verdict…</span>
+  : (error ? <span class="s">"fail"</span> : expectedIncludes(status) ? <span class="s">"pass"</span> : <span class="s">"fail"</span>);
+<span class="k">if</span> (!c.ephemeral && (c.status===<span class="s">"pending"</span> || !c.status)) c.status = verdict;
+</pre>
+
+  <div class="note good">
+    <b>Why this is cheap.</b> <code>buildUrl</code>, <code>buildHeaders</code>,
+    <code>buildBody</code>, <code>buildCurl</code>, <code>caseTimeoutMs</code>,
+    <code>applyCaptures</code> and <code>checkResponseAgainstSpec</code> all take a case-shaped
+    object and never look at <code>id</code>. The scratch request flows through the existing send
+    path untouched. Without the <code>ephemeral</code> guard, an unsaved GET that returns 200 would
+    be recorded as a “pass”, which is the one thing that would poison the Run Report.
+  </div>
+
+  <h5>1.2 · Loading an endpoint does not create anything</h5>
+  <p>Clicking <code>GET /templates</code> in the explorer calls <code>syncCaseWithSpec()</code> —
+    the function that already fills query, path vars and body from the spec — against
+    <code>state.draft</code> instead of against a case. Path params, required-flags, enums,
+    defaults and the sample body arrive for free.</p>
+  <p>If the scratch request has unsaved edits, loading a different endpoint over it shows an
+    inline undo affordance in the crumb strip — <em>“Replaced <code>POST /submissions/init</code>
+    · Undo”</em> — for eight seconds. No modal. The previous scratch is one entry deep in History
+    anyway (§4), so this is a convenience, not a safety net.</p>
+
+  <h5>1.3 · Path parameters are edited in the URL, not below it</h5>
+</section>
+</div>
+
+<div class="bleed">
+  <div class="fig-h">
+    <span class="n">Fig 2 · url bar</span>
+    <h4>Three states of the same operation, <code>PUT …/sections/{sectionId}</code></h4>
+  </div>
+  <figure>
+  <div class="mk" style="display:grid;gap:14px;background:var(--paper-2);border:1px solid var(--edge-2);border-radius:11px;padding:16px">
+    <div>
+      <div class="lbl" style="margin-bottom:6px">a · both path params unset — Send is disabled</div>
+      <div class="bd-url">
+        <span class="mth" style="color:var(--info)">PUT ▾</span>
+        <span class="base">…swivlconnect.com</span>
+        <span class="pth">/templates/<span class="tok unset">templateId</span>/sections/<span class="tok unset">sectionId</span></span>
+        <span class="send" style="background:var(--bg-hover);color:var(--text-dim)">Send <span class="kbd">⌘↵</span></span>
+      </div>
+      <p class="hint" style="margin:6px 0 0">Amber token = required and empty. The URL is not a
+        valid URL yet, so Send is disabled rather than firing a request at a literal
+        <code>%7BtemplateId%7D</code>. Today the app sends it and returns a 404 you have to
+        diagnose.</p>
+    </div>
+    <div>
+      <div class="lbl" style="margin-bottom:6px">b · filled — one from the spec example, one from the capture chain</div>
+      <div class="bd-url">
+        <span class="mth" style="color:var(--info)">PUT ▾</span>
+        <span class="base">…swivlconnect.com</span>
+        <span class="pth">/templates/<span class="tok">a23dba7f-…-88d45ac09111</span>/sections/<span class="tok">{sectionId}</span></span>
+        <span class="send">Send <span class="kbd">⌘↵</span></span>
+      </div>
+      <p class="hint" style="margin:6px 0 0">A token holding a live capture keeps its brace form
+        <code>{sectionId}</code> and gets a hover card reading <em>“captured from
+        <code>POST …/section</code> · 2 min ago · <code>c81f…</code>”</em>. Values are truncated in
+        the middle so the tail — the part that differs between UUIDs — stays visible.</p>
+    </div>
+    <div>
+      <div class="lbl" style="margin-bottom:6px">c · raw edit — click the path text, type freely</div>
+      <div class="bd-url">
+        <span class="mth" style="color:var(--info)">PUT ▾</span>
+        <span class="base">…swivlconnect.com</span>
+        <span class="pth" style="color:var(--text)">/templates/abc/sections/../../etc/passwd<span class="caret" style="background:var(--accent)"></span></span>
+        <span class="send">Send <span class="kbd">⌘↵</span></span>
+      </div>
+      <p class="hint" style="margin:6px 0 0">Tokens are a rendering of the text, not a cage. Focus
+        the field and it becomes a plain input containing the literal string — which is how
+        <code>TC_027 Path traversal attempt</code> and <code>TC_022 Typo in path</code> get authored
+        in the first place. Blur re-tokenises.</p>
+    </div>
+  </div>
+  <figcaption>Implementation: a <code>contenteditable</code>-free approach — a real
+    <code>&lt;input&gt;</code> layered over an aria-hidden rendered overlay, swapped on
+    <code>:focus</code>. Around 60 lines. The existing <code>extractPathVars()</code> regex already
+    produces the token list.</figcaption>
+  </figure>
+</div>
+
+<div class="wrap">
+<section class="band" style="border-top:0;padding-top:32px">
+  <h5>1.4 · Resolving the two builders</h5>
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Today</th><th>Lines</th><th>Becomes</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">openCaseDetails() modal</td><td class="mono">1935–2017</td>
+        <td><span class="chip moved">the inline builder</span></td>
+        <td>Its layout is the better of the two — editable method/path, path vars, query, headers,
+          body, send, inline response. It becomes the centre pane verbatim, minus
+          <code>openModal()</code>.</td></tr>
+      <tr><td class="mono">exec* render fns ×11</td><td class="mono">2033–2196</td>
+        <td><span class="chip stays">kept, rehosted</span></td>
+        <td>Same functions, different host elements. <code>#exec_query_host</code> →
+          <code>#bd_query</code>. They already read from one object and write with
+          <code>save()</code>.</td></tr>
+      <tr><td class="mono">.try-panel / renderTry()</td><td class="mono">508–538, 1774–1845</td>
+        <td><span class="chip gone">deleted</span></td>
+        <td>The weaker duplicate. Its four tabs, path-var block and URL preview all exist in the
+          modal version. Deleting it removes <code>rowHtml</code>, <code>addRow</code>,
+          <code>updateRow</code>, <code>removeRow</code> and the <code>#tp*</code> CSS block.</td></tr>
+      <tr><td class="mono">.resp-panel / renderResp()</td><td class="mono">534–537, 2865–2944</td>
+        <td><span class="chip moved">the response pane</span></td>
+        <td><code>renderScalarBody()</code> and <code>highlightJsonLine()</code> are the JSON
+          renderer in Fig 1 and are reused as-is. The pane gains tabs and the search/copy/download
+          strip.</td></tr>
+      <tr><td class="mono">▶ Test Request button</td><td class="mono">513</td>
+        <td><span class="chip gone">deleted</span></td>
+        <td>There is no popup left to open. In the Cases view, selecting a case loads it into the
+          same builder.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><b>Net:</b> roughly 210 lines deleted, 11 functions rehosted with a find-and-replace on their
+    host IDs, and one new pane. The two-builders problem is solved by deletion, not by a third
+    builder.</p>
+
+  <h5>1.5 · The response pane, in detail</h5>
+  <ul class="plain">
+    <li><b>Status strip.</b> Code + reason from the existing <code>httpStatusText()</code>, duration
+      from the existing <code>performance.now()</code> pair, size from
+      <code>new Blob([text]).size</code>, and the spec verdict pill from
+      <code>checkResponseAgainstSpec()</code>. All four already exist; only the size is wrong today.</li>
+    <li><b>Body / Raw.</b> <em>Body</em> is pretty-printed and highlighted; <em>Raw</em> is the
+      untouched bytes as returned, which is the only way to see whitespace, a BOM, or an HTML error
+      page a proxy substituted. Non-JSON content types skip straight to Raw with a note naming the
+      received <code>Content-Type</code>.</li>
+    <li><b>Truncation is stated.</b> When <code>text.length &gt; 20000</code> the pane ends with a
+      bar: <em>“Showing the first 20 000 characters of 84 219. Download to see all.”</em> — and
+      Download streams the full response, which means <code>lastRun</code> must keep the full body
+      in memory for the current request even though the persisted copy stays clipped.</li>
+    <li><b>Headers tab</b> lists what the browser will actually give us, and says so: <em>“7 of the
+      response’s headers are readable. Cross-origin responses expose only CORS-safelisted headers
+      unless the API sets <code>Access-Control-Expose-Headers</code>.”</em> Without that line, a QA
+      engineer checking <code>TC_004 Response headers correct</code> will report a missing HSTS
+      header that is actually present on the wire.</li>
+    <li><b>Timeline tab</b> is honest about what a browser can measure: request sent → response
+      complete, wall clock, with a greyed “time to first byte — not available cross-origin”. If the
+      API sets <code>Timing-Allow-Origin</code>, the pane fills in from the Resource Timing entry.</li>
+    <li><b>Search</b> (<code>⌘F</code> inside the pane) filters and highlights matching lines,
+      keeping enclosing braces for context — the yellow line 6 in Fig 1 is the highlight style.</li>
+  </ul>
+</section>
+
+<!-- ============================== §2 ============================== -->
+<section class="band">
+  <p class="sec-no">§2 — connect API</p>
+  <h3 style="max-width:28ch">Import is one field, three fallbacks, and a summary you can act on</h3>
+  <p class="lede">The current modal offers a URL and a paste box, and reports success as one line of
+    text. The URL path is already good — <code>extractSpecUrlsFromHtml()</code> scrapes Scalar,
+    Swagger UI and Redoc pages for a spec URL, which is genuinely more than most tools do. What is
+    missing is what happens after.</p>
+</section>
+</div>
+
+<div class="bleed">
+  <div class="fig-h">
+    <span class="n">Fig 3 · connect</span>
+    <h4>Before and after: the import panel and the post-import summary</h4>
+  </div>
+  <figure>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px">
+    <div class="mk"><div class="pnl">
+      <div class="pnl-h">Connect an API <span class="sp"><span class="pill neutral">step 1</span></span></div>
+      <div class="pnl-b stack">
+        <div>
+          <div class="sec-lbl">Spec URL</div>
+          <div style="display:flex;gap:6px">
+            <span class="m-in" style="flex:1">https://template.dev.swivlconnect.com/api-docs</span>
+            <span class="m-btn primary">Connect</span>
+          </div>
+          <p class="hint">Point at the JSON, the YAML, or the docs page itself — Scalar, Swagger UI
+            and Redoc pages are scraped for the spec URL.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px">
+          <span style="flex:1;height:1px;background:var(--border)"></span>
+          <span class="lbl">or</span>
+          <span style="flex:1;height:1px;background:var(--border)"></span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="m-btn sm">Paste JSON</span>
+          <span class="m-btn sm">Paste YAML</span>
+          <span class="m-btn sm">Drop a file</span>
+          <span class="m-btn sm">Use the built-in Swivl spec</span>
+        </div>
+        <div style="border:1px dashed var(--border-strong);border-radius:8px;padding:14px;text-align:center;
+          font-size:11px;color:var(--text-dim)">Drop <span class="mono">openapi.json</span> ·
+          <span class="mono">.yaml</span> · <span class="mono">.yml</span> here</div>
+      </div>
+    </div></div>
+
+    <div class="mk"><div class="pnl">
+      <div class="pnl-h"><span class="dot pass"></span>Swivl Template API
+        <span class="pill info">v5.0.0</span>
+        <span class="sp"><span class="pill neutral">OpenAPI 3.0.3</span></span></div>
+      <div class="pnl-b stack">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(74px,1fr));gap:9px">
+          <div><div class="lbl">Paths</div><div class="mono" style="font-size:17px;font-weight:600">19</div></div>
+          <div><div class="lbl">Operations</div><div class="mono" style="font-size:17px;font-weight:600">22</div></div>
+          <div><div class="lbl">Tags</div><div class="mono" style="font-size:17px;font-weight:600">6</div></div>
+          <div><div class="lbl">Servers</div><div class="mono" style="font-size:17px;font-weight:600">1</div></div>
+        </div>
+        <div>
+          <div class="sec-lbl">Server</div>
+          <div class="kvrow" style="grid-template-columns:16px 1fr auto"><span class="cb on">✓</span>
+            <span class="f">https://template.dev.swivlconnect.com</span>
+            <span class="pill pass">= Stage</span></div>
+          <p class="hint">The spec’s single server matches this module’s Stage base URL, so nothing
+            changes. A mismatch offers <em>“Use as a new environment”</em>.</p>
+        </div>
+        <div>
+          <div class="sec-lbl">Security schemes <span class="r"><span class="pill info">1 detected</span></span></div>
+          <div class="kvrow" style="grid-template-columns:16px 1fr 1.2fr"><span class="cb on">✓</span>
+            <span class="f">bearerAuth <span class="dim">http · bearer</span></span>
+            <span class="f ph">paste token…</span></div>
+          <p class="hint">Declared at the root as <code>security: [{ bearerAuth: [] }]</code>, so it
+            applies to all 22 operations. Filling this field sets the module’s auth — the header
+            name and prefix come from the scheme, not from a hardcoded
+            <code>"Bearer "</code>.</p>
+        </div>
+        <div>
+          <div class="sec-lbl">Tags</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            <span class="pill neutral">TemplateOperations 5</span>
+            <span class="pill neutral">Template &gt; Section Items 6</span>
+            <span class="pill neutral">Template &gt; Sections 5</span>
+            <span class="pill neutral">Submission 4</span>
+            <span class="pill neutral">Category 1</span>
+            <span class="pill neutral">Health 1</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <span class="m-btn primary">Start exploring</span>
+          <span class="m-btn">Generate 22 test cases</span>
+          <span class="m-btn ghost sm">Sync my 102 existing cases</span>
+        </div>
+        <p class="hint" style="margin:0">Exploring is the default action. Case generation is the
+          secondary one — that is the inversion this round is about.</p>
+      </div>
+    </div></div>
+  </div>
+  <figcaption>Numbers are counted from <code>SWIVL_SPEC</code> at import time by walking
+    <code>spec.paths</code>; nothing here is hardcoded. “Sync my 102 existing cases” only appears
+    when the module already has cases, and runs the existing
+    <code>syncAllCasesWithSpec()</code>.</figcaption>
+  </figure>
+</div>
+
+<div class="wrap">
+<section class="band" style="border-top:0;padding-top:32px">
+  <h5>2.1 · What <code>securitySchemes</code> should drive</h5>
+  <p>Today auth is a single topbar token that is always sent as
+    <code>Authorization: Bearer &lt;token&gt;</code>. That is right for
+    <code>{ type:"http", scheme:"bearer" }</code> and wrong for everything else. The import step
+    should read the scheme and configure the auth control accordingly:</p>
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Scheme in the spec</th><th class="mono">Auth control renders</th><th>Sent as</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">http · bearer</td><td>one token field</td>
+        <td class="mono">Authorization: Bearer …</td></tr>
+      <tr><td class="mono">http · basic</td><td>user + password fields</td>
+        <td class="mono">Authorization: Basic btoa(u:p)</td></tr>
+      <tr><td class="mono">apiKey · in: header</td><td>one field, labelled with the scheme’s
+        <code>name</code></td><td class="mono">&lt;name&gt;: …</td></tr>
+      <tr><td class="mono">apiKey · in: query</td><td>one field</td>
+        <td class="mono">?&lt;name&gt;=…</td></tr>
+      <tr><td class="mono">apiKey · in: cookie</td><td>a field plus a warning</td>
+        <td><span class="chip srv">not possible</span> <code>Cookie</code> is a forbidden header;
+          fetch cannot set it. Offer the cURL copy instead.</td></tr>
+      <tr><td class="mono">oauth2 / openIdConnect</td><td>a token field plus the discovered
+        <code>tokenUrl</code></td><td>A full auth-code flow needs a redirect URI and a client
+        secret. <span class="chip cli">Client-credentials</span> can be done from the browser if
+        the token endpoint sends CORS headers; otherwise paste a token.</td></tr>
+      <tr><td class="mono">two or more schemes</td><td>a scheme picker in the auth popover,
+        remembering one choice per module</td><td>Per-operation <code>security</code> overrides the
+        root default, and the builder’s Auth tab shows which scheme this operation
+        requires.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>For the Swivl spec there is exactly one scheme and it is bearer, so the visible result is that
+    the existing auth chip gets a label — <code>bearerAuth</code> instead of a bare dot — and an
+    <em>“applies to all 22 operations”</em> line. The generality matters for the next spec someone
+    connects.</p>
+
+  <h5>2.2 · When import fails</h5>
+</section>
+</div>
+
+<div class="bleed">
+  <div class="fig-h">
+    <span class="n">Fig 4 · error</span>
+    <h4>The failure that actually happens, and the message it deserves</h4>
+  </div>
+  <figure>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
+    <div class="mk"><div class="pnl" style="border-color:var(--danger)">
+      <div class="pnl-h" style="background:var(--danger-soft);color:var(--danger)">✕ Today</div>
+      <div class="pnl-b">
+        <p style="margin:0;font-size:11.5px;color:var(--text-muted);line-height:1.6">
+          <span style="color:var(--danger)">Couldn't find a spec.</span> Tried 6 URLs. If CORS is
+          blocking, set a proxy in Settings ⚙, or paste the JSON in the box below.</p>
+        <p class="hint" style="margin-top:10px">Better than a raw <code>TypeError</code>, but it
+          does not say which six URLs, what each one returned, or which of the three suggestions
+          applies to this failure. All three are offered with equal weight.</p>
+      </div>
+    </div></div>
+
+    <div class="mk"><div class="pnl" style="border-color:var(--danger)">
+      <div class="pnl-h" style="background:var(--danger-soft);color:var(--danger)">✕ Proposed</div>
+      <div class="pnl-b stack">
+        <div>
+          <h4 style="margin:0 0 5px;font-size:13px;color:var(--text)">The browser blocked the request
+            to <span class="mono" style="font-size:11.5px">template.dev.swivlconnect.com</span></h4>
+          <p style="margin:0;font-size:11.5px;color:var(--text-muted);line-height:1.6">
+            The server answered, but without an
+            <span class="mono" style="font-size:10.5px">Access-Control-Allow-Origin</span> header,
+            so this page is not allowed to read the response. The spec itself is probably fine.</p>
+        </div>
+        <div>
+          <div class="sec-lbl">Fix it one of three ways</div>
+          <div style="display:grid;gap:6px">
+            <div style="display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--text-muted)">
+              <span class="pill neutral">1</span><span style="flex:1">Paste the spec JSON — works
+              offline, no server changes</span><span class="m-btn sm primary">Paste</span></div>
+            <div style="display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--text-muted)">
+              <span class="pill neutral">2</span><span style="flex:1">Route through a CORS proxy —
+              already configured?
+              <span style="color:var(--danger)">no</span></span><span class="m-btn sm">Set proxy</span></div>
+            <div style="display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--text-muted)">
+              <span class="pill neutral">3</span><span style="flex:1">Ask the API to send CORS
+              headers for this origin</span><span class="m-btn sm">Copy the ask</span></div>
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:9px">
+          <div style="display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text-dim)">
+            <span>▾</span><span>Technical detail</span>
+            <span class="m-btn sm" style="margin-left:auto">Copy</span></div>
+          <pre style="margin:7px 0 0;font-family:var(--mono);font-size:10px;line-height:1.6;
+            color:var(--text-dim);background:var(--bg-deep);border:1px solid var(--border);
+            border-radius:6px;padding:8px 10px;overflow-x:auto">GET /api-docs            → TypeError: Failed to fetch
+GET /api-docs.json       → TypeError: Failed to fetch
+GET /openapi.json        → TypeError: Failed to fetch
+GET /swagger.json        → TypeError: Failed to fetch
+GET /v3/api-docs         → TypeError: Failed to fetch
+GET /docs/openapi.json   → TypeError: Failed to fetch
+origin  https://apitest.swivl.tech
+proxy   (none)      elapsed 3 284 ms</pre>
+        </div>
+      </div>
+    </div></div>
+  </div>
+  <ol class="annos">
+    <li><span class="anno">a</span><span><b>Name the cause, not the symptom.</b> “Couldn’t find a
+      spec” is wrong — six requests all failed identically at the network layer, which is a CORS
+      signature, not a 404 signature. Distinguish: all-identical <code>TypeError</code> → CORS;
+      mixed 404s → wrong path; one 200 with HTML → scraping failed.</span></li>
+    <li><span class="anno">b</span><span><b>Order the fixes by effort,</b> and say which are already
+      in place. “Set proxy” showing <em>no</em> is more useful than a suggestion that assumes you
+      have not tried.</span></li>
+    <li><span class="anno">c</span><span><b>Detail behind a disclosure, copyable in one click.</b>
+      The tried-URL list with per-URL outcomes is what you paste to a backend engineer. Never the
+      only thing on screen; never absent.</span></li>
+  </ol>
+  <figcaption>The three failure classes cost about 25 lines in <code>connectSwagger()</code>, which
+    already accumulates the <code>tried</code> array — it just discards the per-URL outcome.</figcaption>
+  </figure>
+</div>
+
+<div class="wrap">
+<section class="band">
+  <p class="sec-no">§3 — body playground</p>
+  <h3 style="max-width:26ch">A textarea plus five verbs and one honest error</h3>
+  <p class="lede">Today the body is <code>&lt;textarea id="exec_body_edit"&gt;</code> with a caption.
+    It cannot tell you your JSON is broken until the API does, and it cannot get you back to the
+    spec example once you have overwritten it. No editor library — no build step — so this is a
+    toolbar, a gutter, and <code>JSON.parse</code> in a try/catch.</p>
+</section>
+</div>
+
+<div class="bleed">
+  <div class="fig-h">
+    <span class="n">Fig 5 · body</span>
+    <h4><code>POST …/sections/{sectionId}/items</code> — valid, then one comma short</h4>
+  </div>
+  <figure>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px">
+    <div class="mk">
+      <div class="sec-lbl" style="margin-bottom:7px">Body <span class="pill neutral">application/json</span>
+        <span class="r"><span class="pill pass">✓ valid · 6 keys</span></span></div>
+      <div class="ed">
+        <div class="ed-bar">
+          <span class="m-btn sm">Prettify <span class="mono dim" style="font-size:9px">⌘⇧F</span></span>
+          <span class="m-btn sm">Minify</span>
+          <span class="m-btn sm">Copy</span>
+          <span class="m-btn sm">Clear</span>
+          <span class="sp"><span class="m-btn sm">↻ Reset to schema example</span></span>
+        </div>
+        <div class="ed-body">
+          <div class="jl"><span class="g">1</span><span><span class="jp">{</span></span></div>
+          <div class="jl"><span class="g">2</span><span>  <span class="jk">"name"</span><span class="jp">: </span><span class="js">"Panel Cover Secure"</span><span class="jp">,</span></span></div>
+          <div class="jl"><span class="g">3</span><span>  <span class="jk">"description"</span><span class="jp">: </span><span class="js">"Is the panel cover properly secured?"</span><span class="jp">,</span></span></div>
+          <div class="jl"><span class="g">4</span><span>  <span class="jk">"type"</span><span class="jp">: </span><span class="js">"RADIO"</span><span class="jp">,</span></span></div>
+          <div class="jl"><span class="g">5</span><span>  <span class="jk">"isRequired"</span><span class="jp">: </span><span class="jb">true</span><span class="jp">,</span></span></div>
+          <div class="jl"><span class="g">6</span><span>  <span class="jk">"options"</span><span class="jp">: [</span><span class="js">"Yes"</span><span class="jp">, </span><span class="js">"No"</span><span class="jp">, </span><span class="js">"N/A"</span><span class="jp">]</span></span></div>
+          <div class="jl"><span class="g">7</span><span><span class="jp">}</span></span></div>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:7px">Verbatim from the spec’s
+        <code>requestBody.content["application/json"].example</code>. “Reset to schema example”
+        re-reads it; the button is disabled and greyed when the spec has no example for this
+        operation, with the reason on hover.</p>
+    </div>
+
+    <div class="mk">
+      <div class="sec-lbl" style="margin-bottom:7px">Body <span class="pill neutral">application/json</span>
+        <span class="r"><span class="pill fail">✕ invalid</span></span></div>
+      <div class="ed bad">
+        <div class="ed-bar">
+          <span class="m-btn sm" style="opacity:.45">Prettify</span>
+          <span class="m-btn sm" style="opacity:.45">Minify</span>
+          <span class="m-btn sm">Copy</span>
+          <span class="m-btn sm">Clear</span>
+          <span class="sp"><span class="m-btn sm">↻ Reset to schema example</span></span>
+        </div>
+        <div class="ed-body">
+          <div class="jl"><span class="g">1</span><span><span class="jp">{</span></span></div>
+          <div class="jl"><span class="g">2</span><span>  <span class="jk">"name"</span><span class="jp">: </span><span class="js">"Panel Cover Secure"</span><span class="jp">,</span></span></div>
+          <div class="jl"><span class="g">3</span><span>  <span class="jk">"description"</span><span class="jp">: </span><span class="js">"Is the panel cover properly secured?"</span></span></div>
+          <div class="jl hi" style="background:var(--danger-soft)"><span class="g" style="color:var(--danger)">4</span><span>  <span class="jk">"type"</span><span class="caret"></span><span class="jp">: </span><span class="js">"RADIO"</span><span class="jp">,</span></span></div>
+          <div class="jl"><span class="g">5</span><span>  <span class="jk">"isRequired"</span><span class="jp">: </span><span class="jb">true</span><span class="jp">,</span></span></div>
+          <div class="jl"><span class="g">6</span><span>  <span class="jk">"options"</span><span class="jp">: [</span><span class="js">"Yes"</span><span class="jp">, </span><span class="js">"No"</span><span class="jp">, </span><span class="js">"N/A"</span><span class="jp">]</span></span></div>
+          <div class="jl"><span class="g">7</span><span><span class="jp">}</span></span></div>
+        </div>
+        <div class="ed-err">
+          <span>✕</span>
+          <span><b>Line 4, column 3 — expected <span class="mono">,</span> before this key.</b><br>
+            <span style="opacity:.85">Line 3 ends without a comma. </span>
+            <span class="mono" style="color:var(--text-dim)">Jump to line 4 · Insert the comma</span></span>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:7px">Send is not blocked — a deliberately malformed body is
+        a real test (see <code>TC_055</code>, <code>TC_086</code>). The pill reads
+        <em>“invalid — will be sent as raw text”</em> and the Send button keeps a warning outline
+        instead of going disabled.</p>
+    </div>
+  </div>
+  <ol class="annos">
+    <li><span class="anno">a</span><span><b>Line and column come from the parser,</b> not from
+      guesswork. <code>JSON.parse</code>’s message carries a character position in every current
+      engine (<em>“…at position 118”</em>); map it to line/column by counting newlines in the
+      preceding slice. About 15 lines, no dependency, and it degrades to “invalid JSON” if the
+      message shape ever changes.</span></li>
+    <li><span class="anno">b</span><span><b>Validate on a 250 ms debounce,</b> never on keystroke —
+      a red gutter that flashes while you type mid-object is noise. Also validate on blur and
+      before Send.</span></li>
+    <li><span class="anno">c</span><span><b>Prettify and Minify grey out while invalid</b> because
+      they cannot run; Copy and Clear stay live because they can. Disabled-because-broken is a
+      better signal than a toast that appears after you click.</span></li>
+    <li><span class="anno">d</span><span><b>The gutter is <code>&lt;div&gt;</code>s over a
+      transparent textarea,</b> the same overlay trick as the URL bar and the same one
+      <code>renderScalarBody()</code> already uses for responses. Scroll sync is two lines.</span></li>
+  </ol>
+  </figure>
+</div>
+
+<div class="wrap">
+<section class="band">
+  <p class="sec-no">§4 — history</p>
+  <h3 style="max-width:28ch">History records sends. The Run Report records verdicts. Neither repeats the other.</h3>
+  <p class="lede">The distinction that keeps them from becoming the same list: <b>a History entry has
+    no verdict.</b> It is a receipt for something you did. A Run Report row is a judgement about
+    whether a case passed. Exploration produces the first and never the second.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <span class="tagn">History · new</span>
+      <h4>“What did I just send?”</h4>
+      <p>Per module, ring buffer of 50, persisted in <code>localStorage</code> alongside
+        <code>state.runs</code>. Every send from the builder writes one entry: method, resolved
+        path, status, duration, size, timestamp, and a full snapshot of the request configuration.</p>
+      <p>Reopening an entry loads that snapshot into the scratch request. It does not restore the
+        response body — bodies would blow the 5 MB quota — but it does re-run on demand.</p>
+    </div>
+    <div class="card">
+      <span class="tagn">Run Report · exists</span>
+      <h4>“What is broken?”</h4>
+      <p>Unchanged from round two: runs numbered, failures grouped by cause, inline expansion,
+        run-to-run delta. Its unit is the <em>run</em>, not the request.</p>
+      <p><b>The anti-duplication rule:</b> Run All writes exactly <em>one</em> History entry —
+        <em>“Run #7 · 102 requests · 4 failed”</em> — which links into the report. Not 102 entries.
+        History stays a human-scale list of things a human did.</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<div class="bleed">
+  <div class="fig-h">
+    <span class="n">Fig 6 · history</span>
+    <h4><code>⌘Y</code> — the full list, with a run collapsed into a single row</h4>
+  </div>
+  <figure>
+  <div class="mk"><div class="pnl">
+    <div class="pnl-h">History <span class="dim mono" style="font-size:10.5px">Template API · last 50</span>
+      <span class="sp">
+        <span class="m-in" style="font-size:11px">⌕ filter by path or status</span>
+        <span class="m-btn sm">Only failures</span>
+        <span class="m-btn sm">Clear</span>
+      </span></div>
+    <div class="pnl-b tight">
+      <div class="hist">
+        <div class="hrow"><span class="method GET">GET</span>
+          <span class="p"><b>/templates</b>?page=1&amp;limit=10&amp;type=CHECKLIST</span>
+          <span class="pill pass">200</span><span class="t">412 ms · 482 B</span><span class="t">just now</span></div>
+        <div class="hrow"><span class="method PATCH">PATCH</span>
+          <span class="p">/templates/<b>a23dba7f…09111</b>/publish</span>
+          <span class="pill fail">409</span><span class="t">288 ms · 141 B</span><span class="t">2 min</span></div>
+        <div class="hrow"><span class="method POST">POST</span>
+          <span class="p">/templates/a23dba7f…09111/<b>section</b></span>
+          <span class="pill pass">201</span><span class="t">1 104 ms · 2.1 KB</span><span class="t">3 min</span></div>
+        <div class="hrow grp"><span class="pill run">RUN</span>
+          <span class="p"><b>Run #7</b> · 102 cases · 6 lanes · Stage</span>
+          <span class="pill fail">4 failed</span><span class="t">18.4 s</span><span class="t">14 min</span></div>
+        <div class="hrow"><span class="method POST">POST</span>
+          <span class="p">/submissions/<b>init</b></span>
+          <span class="pill pass">201</span><span class="t">602 ms · 318 B</span><span class="t">22 min</span></div>
+        <div class="hrow"><span class="method GET">GET</span>
+          <span class="p">/templates/<b>types</b></span>
+          <span class="pill pass">200</span><span class="t">196 ms · 128 B</span><span class="t">24 min</span></div>
+        <div class="hrow rerun"><span class="method GET">GET</span>
+          <span class="p">/templates/<b>abc</b> <span class="dim">— invalid UUID</span></span>
+          <span class="pill fail">400</span><span class="t">204 ms · 96 B</span><span class="t">26 min</span></div>
+      </div>
+    </div>
+    <div class="ex-foot">
+      <span>Selected: <span class="mono">PATCH /templates/{id}/publish → 409</span></span>
+      <span style="margin-left:auto;display:flex;gap:6px">
+        <span class="m-btn sm">Load into builder</span>
+        <span class="m-btn sm">Re-send</span>
+        <span class="m-btn sm">Copy as cURL</span>
+        <span class="m-btn sm primary">Save as test case</span>
+      </span>
+    </div>
+  </div></div>
+  <ol class="annos">
+    <li><span class="anno">a</span><span><b>The bolded path segment</b> is the part that differs
+      from the previous entry for the same operation, so a column of near-identical URLs is
+      scannable.</span></li>
+    <li><span class="anno">b</span><span><b>Status pills carry a glyph in the Run Report and a bare
+      code here,</b> because in History the code <em>is</em> the fact, not a verdict about it. A
+      409 in History is neutral information; a 409 in a run is a failure or an expectation
+      met.</span></li>
+    <li><span class="anno">c</span><span><b>“Save as test case” from a History row</b> is the
+      shortest path from “I found the bug” to “it is now covered”, and it is the same action as
+      §5 with the configuration pre-filled from the snapshot.</span></li>
+    <li><span class="anno">d</span><span><b>Storage budget:</b> 50 entries × a request snapshot with
+      no response body is roughly 40 KB. <code>state.runs</code> is already capped by
+      <code>MAX_RUNS</code>; History gets the same treatment and the same
+      <code>serializableState()</code> path.</span></li>
+  </ol>
+  </figure>
+</div>
+
+<div class="wrap">
+<section class="band">
+  <p class="sec-no">§5 — saving, and assertions</p>
+  <h3 style="max-width:26ch">Name it, tag it, and optionally say what “correct” means</h3>
+  <p class="lede">Save is a small popover anchored to the button, not a modal — it interrupts nothing
+    and the request stays visible behind it. Assertions are on the second screen, and the second
+    screen is skippable.</p>
+</section>
+</div>
+
+<div class="bleed">
+  <div class="fig-h">
+    <span class="n">Fig 7 · save + assert</span>
+    <h4>The save popover, and the Assertions tab it does not force you to visit</h4>
+  </div>
+  <figure>
+  <div style="display:grid;grid-template-columns:minmax(300px,.85fr) minmax(340px,1.15fr);gap:16px;align-items:start">
+    <div class="mk"><div class="pnl">
+      <div class="pnl-h">Save as test case <span class="sp"><span class="pill neutral">⌘S</span></span></div>
+      <div class="pnl-b stack">
+        <div>
+          <div class="sec-lbl">Scenario</div>
+          <div class="m-in" style="color:var(--text);font-size:12px">List templates — filter by type=CHECKLIST</div>
+          <p class="hint">Pre-filled from the spec summary plus any non-default parameter, so the
+            default name already describes the request.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+          <div><div class="sec-lbl">ID</div><div class="m-in mono">TC_103</div></div>
+          <div><div class="sec-lbl">Tag</div><div class="m-in">templates ▾</div></div>
+        </div>
+        <div>
+          <div class="sec-lbl">Expected status</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            <span class="pill pass">200 ✓ observed</span>
+            <span class="pill neutral">+ 201</span><span class="pill neutral">+ 400</span>
+            <span class="pill neutral">+ 404</span><span class="pill neutral">custom…</span>
+          </div>
+          <p class="hint">Seeded with the status you just got. This writes
+            <code>expected.status</code>, the field the Run Report already reads — so a case saved
+            here behaves identically to one imported from the sheet.</p>
+        </div>
+        <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:11px">
+          <span class="m-btn primary">Save</span>
+          <span class="m-btn">Save &amp; add assertions</span>
+          <span class="m-btn ghost sm" style="margin-left:auto">Cancel</span>
+        </div>
+        <p class="hint" style="margin:0">Save alone is the primary action. A case with one expected
+          status is a perfectly good case; the app should not imply otherwise.</p>
+      </div>
+    </div></div>
+
+    <div class="mk"><div class="pnl">
+      <div class="pnl-h">Assertions
+        <span class="pill neutral">optional</span>
+        <span class="sp"><span class="pill pass">3 of 4 passed</span></span></div>
+      <div class="pnl-b">
+        <div class="asrt" style="grid-template-columns:16px 118px 96px 1fr 74px 18px">
+          <span class="lbl" style="grid-column:2">Target</span><span class="lbl">Operator</span>
+          <span class="lbl">Value</span><span class="lbl" style="text-align:right">Actual</span><span></span>
+        </div>
+        <div class="asrt"><span class="cb on" style="width:13px;height:13px;border-radius:3px;background:var(--accent-fill);display:grid;place-items:center;font-size:9px;color:#fff">✓</span>
+          <span class="f sel">Status <span class="dim">▾</span></span><span class="f sel">is one of <span class="dim">▾</span></span>
+          <span class="f">200, 201</span><span class="v pass">✓ 200</span><span class="x">×</span></div>
+        <div class="asrt"><span class="cb on" style="width:13px;height:13px;border-radius:3px;background:var(--accent-fill);display:grid;place-items:center;font-size:9px;color:#fff">✓</span>
+          <span class="f sel">JSON path <span class="dim">▾</span></span><span class="f sel">exists <span class="dim">▾</span></span>
+          <span class="f">$.data.items[0].id</span><span class="v pass">✓ found</span><span class="x">×</span></div>
+        <div class="asrt"><span class="cb on" style="width:13px;height:13px;border-radius:3px;background:var(--accent-fill);display:grid;place-items:center;font-size:9px;color:#fff">✓</span>
+          <span class="f sel">JSON path <span class="dim">▾</span></span><span class="f sel">equals <span class="dim">▾</span></span>
+          <span class="f">$.data.pagination.limit → 10</span><span class="v pass">✓ 10</span><span class="x">×</span></div>
+        <div class="asrt"><span class="cb on" style="width:13px;height:13px;border-radius:3px;background:var(--accent-fill);display:grid;place-items:center;font-size:9px;color:#fff">✓</span>
+          <span class="f sel">Header <span class="dim">▾</span></span><span class="f sel">contains <span class="dim">▾</span></span>
+          <span class="f">content-type → application/json</span><span class="v pass">✓</span><span class="x">×</span></div>
+        <div class="asrt"><span class="cb on" style="width:13px;height:13px;border-radius:3px;background:var(--accent-fill);display:grid;place-items:center;font-size:9px;color:#fff">✓</span>
+          <span class="f sel">Response time <span class="dim">▾</span></span><span class="f sel">under <span class="dim">▾</span></span>
+          <span class="f">300 ms</span><span class="v fail">✕ 412 ms</span><span class="x">×</span></div>
+        <div style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap">
+          <span class="m-btn sm">+ Assertion</span>
+          <span class="m-btn sm">Suggest from this response</span>
+          <span class="m-btn sm">Suggest from the spec</span>
+        </div>
+        <p class="hint" style="margin-top:11px">Row 5 fails and the case fails with it, but the
+          strip says <em>3 of 4 passed</em> — a run report that only says “fail” makes you re-open
+          the case to learn which check broke. The Run Report’s failure grouping keys on the
+          assertion label, so “response time” failures cluster together across cases.</p>
+        <div style="border-top:1px solid var(--border);margin-top:11px;padding-top:10px;
+          display:flex;align-items:center;gap:9px;font-size:11.5px;color:var(--text-dim)">
+          <span class="gly pend">○</span>
+          <span>With <b style="color:var(--text-muted)">no</b> assertions, this case passes whenever
+            the request completes. That is a valid smoke test.</span>
+        </div>
+      </div>
+    </div></div>
+  </div>
+  <figcaption><b>Data model:</b> <code>c.asserts = [{ kind, target, op, value, enabled }]</code>.
+    The status row is a projection of the existing <code>c.expected.status</code> so 102 imported
+    cases gain a visible status assertion with no migration. JSON path uses the existing
+    <code>dig(obj, path)</code> helper at line 2641 — it already walks dotted paths for the capture
+    chain; bracket indexing is a ten-line addition. Empty state: the tab shows a single
+    <em>“+ Assertion”</em> button and the sentence above, never a warning icon.</figcaption>
+  </figure>
+</div>
+
+<div class="wrap">
+<section class="band">
+  <p class="sec-no">§6 — empty, loading, error</p>
+  <h3 style="max-width:26ch">Six states, each naming its one next action</h3>
+  <p class="lede">Each of these replaces a string that currently says what is absent rather than what
+    to do. The rule: one sentence of fact, one sentence of consequence, one button.</p>
+</section>
+</div>
+
+<div class="bleed">
+  <div class="states mk">
+    <div class="stbox"><div class="cap">1 · no API connected — whole workspace</div>
+      <div class="stpane">
+        <div>
+          <div class="ic">⎔</div>
+          <h6>No API connected to this module</h6>
+          <p>Connect an OpenAPI spec to browse endpoints, or type a URL into the builder and send it
+            — a spec is not required.</p>
+          <div class="row"><span class="m-btn primary sm">Connect API</span>
+            <span class="m-btn sm">Use the built-in Swivl spec</span>
+            <span class="m-btn ghost sm">Start from a blank request</span></div>
+        </div>
+      </div></div>
+
+    <div class="stbox"><div class="cap">2 · connected, nothing selected — builder pane</div>
+      <div class="stpane">
+        <div>
+          <div class="ic">←</div>
+          <h6>Pick an endpoint, or just start typing</h6>
+          <p>22 operations in the rail. <span class="mono" style="font-size:10.5px">⌘K</span> searches
+            them by path, summary or tag.</p>
+          <div class="row"><span class="m-btn sm">Recent: <span class="mono">GET /templates/types</span></span></div>
+        </div>
+      </div></div>
+
+    <div class="stbox"><div class="cap">3 · no response yet — response pane</div>
+      <div class="stpane">
+        <div>
+          <div class="ic">↻</div>
+          <h6>Nothing sent yet</h6>
+          <p>The spec declares a <span class="mono" style="font-size:10.5px">200</span> for this
+            operation with an example — read it while you decide.</p>
+          <div class="row"><span class="m-btn sm">Show the spec example</span>
+            <span class="m-btn primary sm">Send ⌘↵</span></div>
+        </div>
+      </div></div>
+
+    <div class="stbox"><div class="cap">4 · request in flight — response pane</div>
+      <div class="stpane" style="align-content:center">
+        <div style="width:100%;max-width:230px">
+          <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:12px">
+            <span class="dot run"></span>
+            <span class="mono" style="font-size:11.5px;color:var(--text-muted)">GET /templates</span>
+            <span class="mono" style="font-size:11.5px;color:var(--accent-text)">1.8 s</span>
+          </div>
+          <div class="skel" style="width:100%"></div>
+          <div class="skel" style="width:82%"></div>
+          <div class="skel" style="width:64%"></div>
+          <p style="margin:12px 0 10px;font-size:10.5px">Times out at 30 s
+            <span class="dim">(module default)</span></p>
+          <div class="row"><span class="m-btn danger sm">Cancel <span class="mono" style="font-size:9px">Esc</span></span></div>
+        </div>
+      </div></div>
+
+    <div class="stbox"><div class="cap">5 · request failed — response pane</div>
+      <div class="stpane">
+        <div>
+          <div class="ic" style="color:var(--danger)">✕</div>
+          <h6>The browser blocked this request</h6>
+          <p>No response reached the page — this is a CORS or network failure, not an API error.
+            There is no status code to report.</p>
+          <div class="row"><span class="m-btn sm">Set a CORS proxy</span>
+            <span class="m-btn sm">Copy as cURL</span></div>
+          <p style="margin-top:10px;font-size:10px">▸ Technical detail</p>
+        </div>
+      </div></div>
+
+    <div class="stbox"><div class="cap">6 · cancelled — response pane</div>
+      <div class="stpane">
+        <div>
+          <div class="ic" style="color:var(--warning)">◐</div>
+          <h6>Cancelled after 4.2 s</h6>
+          <p>You stopped the request. Nothing was recorded to History and no case status changed.</p>
+          <div class="row"><span class="m-btn primary sm">Send again</span>
+            <span class="m-btn sm">Raise the timeout</span></div>
+        </div>
+      </div></div>
+  </div>
+  <figcaption style="max-width:88ch;margin-top:12px">
+    <b>Cancel already exists and is not wired up.</b> <code>sendRequest()</code> builds an
+    <code>AbortController</code> at line 2820 purely for the timeout. Storing it —
+    <code>state.inflight = ctrl</code> — and clearing it in the <code>finally</code> makes the
+    Cancel button three lines. Distinguishing a user abort from a timeout abort needs one flag,
+    otherwise state 6 reads “timed out after 30000ms” when you cancelled at 4.2 s.
+  </figcaption>
+</div>
+
+<div class="wrap">
+<section class="band">
+  <p class="sec-no">§7 — design system</p>
+  <h3 style="max-width:28ch">The token set the code already asks for, minus three AA failures</h3>
+  <p class="lede">index.html defines 23 custom properties per theme and uses 27. This is the
+    reconciliation, plus the scale and spacing tokens that are currently inline numbers scattered
+    across 4 686 lines.</p>
+
+  <h5>7.1 · Colour roles</h5>
+  <p>Contrast ratios below are computed against the surface each token is actually used on —
+    <code>--bg</code> for body text, <code>--bg-elev-2</code> for text inside inputs and rows. AA
+    body text needs 4.5:1.</p>
+</section>
+</div>
+
+<div class="bleed">
+  <div class="mk">
+    <div class="swatches">
+      <div class="sw"><div class="b" style="background:#0a0e14"></div><span class="n">--bg</span><span class="h">#0a0e14</span><span class="r">page</span></div>
+      <div class="sw"><div class="b" style="background:#10161f"></div><span class="n">--bg-elev</span><span class="h">#10161f</span><span class="r">bars, rails</span></div>
+      <div class="sw"><div class="b" style="background:#1a2330"></div><span class="n">--bg-elev-2</span><span class="h">#1a2330</span><span class="r">inputs, rows</span></div>
+      <div class="sw"><div class="b" style="background:#0d1117"></div><span class="n">--bg-deep</span><span class="h">#0d1117</span><span class="r ok">now defined</span></div>
+      <div class="sw"><div class="b" style="background:#1a2330"></div><span class="n">--panel</span><span class="h">= --bg-elev-2</span><span class="r ok">now defined</span></div>
+      <div class="sw"><div class="b" style="background:#1f2937"></div><span class="n">--line</span><span class="h">= --border</span><span class="r ok">now defined</span></div>
+      <div class="sw"><div class="b" style="background:#e5e7eb"></div><span class="n">--text</span><span class="h">#e5e7eb</span><span class="r ok">15.9 : 1 ✓</span></div>
+      <div class="sw"><div class="b" style="background:#94a3b8"></div><span class="n">--text-muted</span><span class="h">#94a3b8</span><span class="r ok">7.6 : 1 ✓</span></div>
+      <div class="sw"><div class="b" style="background:#64748b"></div><span class="n">--text-dim</span><span class="h">#64748b <span style="text-decoration:line-through">was</span></span><span class="r no">4.1 : 1 ✕</span></div>
+      <div class="sw"><div class="b" style="background:#78859a"></div><span class="n">--text-dim</span><span class="h">#78859a new</span><span class="r ok">5.2 : 1 ✓</span></div>
+      <div class="sw"><div class="b" style="background:#8b5cf6"></div><span class="n">--accent</span><span class="h">#8b5cf6</span><span class="r no">3.7 : 1 on elev-2 ✕</span></div>
+      <div class="sw"><div class="b" style="background:#a78bfa"></div><span class="n">--accent-text</span><span class="h">#a78bfa new</span><span class="r ok">5.8 : 1 ✓</span></div>
+      <div class="sw"><div class="b" style="background:#7c3aed"></div><span class="n">--accent-fill</span><span class="h">#7c3aed new</span><span class="r ok">5.7 : 1 on #fff ✓</span></div>
+      <div class="sw"><div class="b" style="background:#10b981"></div><span class="n">--success</span><span class="h">#10b981</span><span class="r ok">8.2 : 1 ✓</span></div>
+      <div class="sw"><div class="b" style="background:#f59e0b"></div><span class="n">--warning</span><span class="h">#f59e0b</span><span class="r ok">9.0 : 1 ✓</span></div>
+      <div class="sw"><div class="b" style="background:#ef4444"></div><span class="n">--danger</span><span class="h">#ef4444</span><span class="r ok">4.8 : 1 ✓</span></div>
+      <div class="sw"><div class="b" style="background:#3b82f6"></div><span class="n">--info</span><span class="h">#3b82f6</span><span class="r ok">4.6 : 1 ✓</span></div>
+      <div class="sw"><div class="b" style="background:#f59e0b"></div><span class="n">--warn</span><span class="h">= --warning</span><span class="r ok">now defined</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+<section class="band" style="border-top:0;padding-top:22px">
+  <div class="note bad">
+    <b>Three AA failures to fix, all in shipped code.</b>
+    <b>(1)</b> <code>--text-dim</code> dark <code>#64748b</code> on <code>--bg</code> is 4.1:1 across
+    62 usages, many at 10–11 px. Change to <code>#78859a</code> → 5.2:1.
+    <b>(2)</b> <code>--text-dim</code> <em>light</em> <code>#94a3b8</code> on <code>#f8fafc</code> is
+    <b>2.4:1</b> — the worst offender in either theme. Change to <code>#64748b</code> → 4.6:1.
+    <b>(3)</b> <code>.btn.primary</code> is white on <code>--accent</code> <code>#8b5cf6</code> =
+    4.2:1 at 12–13 px. Swap the fill to <code>#7c3aed</code> (today’s hover colour) → 5.7:1, and use
+    <code>#8b5cf6</code> for hover. Accent-coloured <em>text</em> on elevated surfaces — the path-var
+    names at line 2045 — needs the new <code>--accent-text</code>.
+  </div>
+
+  <h5>7.2 · Type scale and spacing</h5>
+</section>
+</div>
+
+<div class="bleed">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
+    <div class="mk"><div class="pnl"><div class="pnl-h">Type scale</div><div class="pnl-b">
+      <div class="scale">
+        <div class="rw"><span class="tk">--fs-xl · 22px/1.2</span><span style="font-size:22px;font-weight:600;letter-spacing:-.015em">Run #7 failed</span></div>
+        <div class="rw"><span class="tk">--fs-l · 18px/1.35</span><span style="font-size:18px;font-weight:600">Swivl Template API</span></div>
+        <div class="rw"><span class="tk">--fs-m · 15px/1.45</span><span style="font-size:15px">Section titles, empty-state headings</span></div>
+        <div class="rw"><span class="tk">--fs-base · 13px/1.45</span><span style="font-size:13px">Body copy. The app’s default, set on &lt;body&gt;.</span></div>
+        <div class="rw"><span class="tk">--fs-s · 12px/1.5</span><span style="font-size:12px">Dense rows, buttons, tab labels</span></div>
+        <div class="rw"><span class="tk">--fs-xs · 11px/1.5</span><span style="font-size:11px">Metadata, hints, inherited-header rows</span></div>
+        <div class="rw"><span class="tk">--fs-micro · 9.5px</span><span class="lbl" style="font-size:9.5px">SECTION LABEL · .1em TRACKED · UPPERCASE ONLY</span></div>
+        <div class="rw"><span class="tk">--fsm-base · 12px</span><span class="mono" style="font-size:12px">/templates/{id}/publish</span></div>
+        <div class="rw"><span class="tk">--fsm-s · 11px</span><span class="mono" style="font-size:11px">a23dba7f-52e7-45c8-8a36-88d45ac09111</span></div>
+        <div class="rw" style="border-bottom:0"><span class="tk">--fsm-xs · 10px</span><span class="mono" style="font-size:10px">412 ms · 482 B · x-api-version: 5.0.0</span></div>
+      </div>
+      <p class="hint" style="margin:4px 0 0">Nine sizes is more than I would like, but it is what
+        the app already uses — I counted 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 14, 16 and 17 px in
+        inline styles. This normalises eleven ad-hoc values to nine tokens; <code>--fs-micro</code>
+        is capped at uppercase tracked labels, never sentences.</p>
+    </div></div></div>
+
+    <div class="mk"><div class="pnl"><div class="pnl-h">Spacing · radii · elevation</div><div class="pnl-b">
+      <div style="display:grid;gap:7px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:11px"><span class="mono dim" style="font-size:10px;width:74px">--s1 4px</span><span style="height:11px;width:4px;background:var(--accent-text);border-radius:2px"></span><span class="dim" style="font-size:11px">icon↔label</span></div>
+        <div style="display:flex;align-items:center;gap:11px"><span class="mono dim" style="font-size:10px;width:74px">--s2 6px</span><span style="height:11px;width:6px;background:var(--accent-text);border-radius:2px"></span><span class="dim" style="font-size:11px">key/value row gap</span></div>
+        <div style="display:flex;align-items:center;gap:11px"><span class="mono dim" style="font-size:10px;width:74px">--s3 9px</span><span style="height:11px;width:9px;background:var(--accent-text);border-radius:2px"></span><span class="dim" style="font-size:11px">between controls</span></div>
+        <div style="display:flex;align-items:center;gap:11px"><span class="mono dim" style="font-size:10px;width:74px">--s4 13px</span><span style="height:11px;width:13px;background:var(--accent-text);border-radius:2px"></span><span class="dim" style="font-size:11px"><b style="color:var(--text-muted)">pane padding — one value, every pane</b></span></div>
+        <div style="display:flex;align-items:center;gap:11px"><span class="mono dim" style="font-size:10px;width:74px">--s5 18px</span><span style="height:11px;width:18px;background:var(--accent-text);border-radius:2px"></span><span class="dim" style="font-size:11px">between sections</span></div>
+        <div style="display:flex;align-items:center;gap:11px"><span class="mono dim" style="font-size:10px;width:74px">--s6 26px</span><span style="height:11px;width:26px;background:var(--accent-text);border-radius:2px"></span><span class="dim" style="font-size:11px">empty-state inset</span></div>
+      </div>
+      <div style="display:flex;gap:11px;flex-wrap:wrap;margin-bottom:13px">
+        <div style="text-align:center"><div style="width:46px;height:34px;border:1px solid var(--border-strong);border-radius:4px;background:var(--bg-elev-2)"></div><span class="mono dim" style="font-size:9.5px">--r1 4</span></div>
+        <div style="text-align:center"><div style="width:46px;height:34px;border:1px solid var(--border-strong);border-radius:6px;background:var(--bg-elev-2)"></div><span class="mono dim" style="font-size:9.5px">--r2 6</span></div>
+        <div style="text-align:center"><div style="width:46px;height:34px;border:1px solid var(--border-strong);border-radius:8px;background:var(--bg-elev-2)"></div><span class="mono dim" style="font-size:9.5px">--r3 8</span></div>
+        <div style="text-align:center"><div style="width:46px;height:34px;border:1px solid var(--border-strong);border-radius:11px;background:var(--bg-elev-2)"></div><span class="mono dim" style="font-size:9.5px">--r4 11</span></div>
+        <div style="text-align:center"><div style="width:46px;height:34px;border:1px solid var(--border-strong);border-radius:999px;background:var(--bg-elev-2)"></div><span class="mono dim" style="font-size:9.5px">--r-pill</span></div>
+      </div>
+      <div class="sec-lbl">Focus ring — one token, every control</div>
+      <div style="display:flex;gap:11px;align-items:center;flex-wrap:wrap">
+        <span class="m-btn" style="box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent-text)">Focused button</span>
+        <span class="m-in" style="box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent-text)">Focused input</span>
+      </div>
+      <p class="hint" style="margin:9px 0 0"><code>--focus: 0 0 0 2px var(--bg), 0 0 0 4px
+        var(--accent-text)</code>. Two rings so it survives on both <code>--bg</code> and
+        <code>--bg-elev-2</code>. Today focus is <code>border-color:var(--accent)</code> on inputs
+        only — buttons have no visible focus state at all, which is a keyboard blocker.</p>
+    </div></div></div>
+  </div>
+</div>
+
+<div class="wrap">
+<section class="band" style="border-top:0;padding-top:26px">
+  <h5>7.3 · Status semantics that survive without colour</h5>
+  <p>Every status carries three signals: a <b>glyph</b>, a <b>shape</b>, and a <b>word</b>. Remove
+    hue entirely — greyscale print, deuteranopia, a projector with the saturation crushed — and each
+    one is still distinguishable from the others by outline alone.</p>
+</section>
+</div>
+
+<div class="bleed">
+  <div class="mk"><div class="pnl"><div class="pnl-b">
+    <div class="statlist" style="margin-bottom:16px">
+      <div class="s"><span class="gly pass">✓</span><span>Pass <span class="dim mono" style="font-size:10px">2xx expected</span></span></div>
+      <div class="s"><span class="gly fail">✕</span><span>Fail <span class="dim mono" style="font-size:10px">unexpected</span></span></div>
+      <div class="s"><span class="gly skip">◐</span><span>Skip <span class="dim mono" style="font-size:10px">not run</span></span></div>
+      <div class="s"><span class="gly blocked">▪</span><span>Blocked <span class="dim mono" style="font-size:10px">dependency</span></span></div>
+      <div class="s"><span class="gly pend">○</span><span>Pending <span class="dim mono" style="font-size:10px">never run</span></span></div>
+      <div class="s"><span class="gly run">◈</span><span>Running <span class="dim mono" style="font-size:10px">in flight</span></span></div>
+    </div>
+    <div class="sec-lbl">Response codes carry the same glyph vocabulary</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
+      <span class="rs-code ok" style="font-size:11px">✓ 200 OK</span>
+      <span class="rs-code ok" style="font-size:11px">✓ 201 Created</span>
+      <span class="rs-code warn" style="font-size:11px">↪ 304 Not Modified</span>
+      <span class="rs-code err" style="font-size:11px">✕ 401 Unauthorized</span>
+      <span class="rs-code err" style="font-size:11px">✕ 409 Conflict</span>
+      <span class="rs-code err" style="font-size:11px">‼ 503 Service Unavailable</span>
+      <span class="rs-code" style="font-size:11px;background:var(--bg-hover);color:var(--text-muted)">⊘ no response</span>
+    </div>
+    <div class="sec-lbl">The same row, hue removed</div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;filter:grayscale(1)">
+      <span class="rs-code ok" style="font-size:11px">✓ 200 OK</span>
+      <span class="rs-code ok" style="font-size:11px">✓ 201 Created</span>
+      <span class="rs-code warn" style="font-size:11px">↪ 304 Not Modified</span>
+      <span class="rs-code err" style="font-size:11px">✕ 401 Unauthorized</span>
+      <span class="rs-code err" style="font-size:11px">✕ 409 Conflict</span>
+      <span class="rs-code err" style="font-size:11px">‼ 503 Service Unavailable</span>
+      <span class="rs-code" style="font-size:11px;background:var(--bg-hover);color:var(--text-muted)">⊘ no response</span>
+    </div>
+    <p class="hint" style="margin-top:11px">Method badges need the same treatment and mostly already
+      have it: <code>GET</code> / <code>PUT</code> / <code>DEL</code> are distinguishable by their
+      letterforms. <code>POST</code> and <code>PATCH</code> both begin “P” at 9.5 px, so
+      <code>PATCH</code> keeps its full five letters rather than being abbreviated.</p>
+  </div></div></div>
+</div>
+
+<div class="wrap">
+<section class="band" style="border-top:0;padding-top:26px">
+  <h5>7.4 · Component set</h5>
+</section>
+</div>
+
+<div class="bleed">
+  <div class="mk"><div class="compset">
+    <div class="cs"><div class="t">Buttons</div>
+      <div class="row"><span class="m-btn primary">Primary</span><span class="m-btn">Default</span><span class="m-btn ghost">Ghost</span></div>
+      <div class="row"><span class="m-btn danger sm">Danger</span><span class="m-btn sm">Small</span><span class="m-btn sm" style="opacity:.45">Disabled</span></div>
+      <div class="row"><span class="m-btn primary sm"><span class="dot" style="background:#fff"></span>Loading…</span></div>
+    </div>
+    <div class="cs"><div class="t">Inputs</div>
+      <div class="row"><span class="m-in" style="flex:1">Default</span></div>
+      <div class="row"><span class="m-in" style="flex:1;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--accent-text)">Focused</span></div>
+      <div class="row"><span class="m-in" style="flex:1;border-color:var(--danger);color:var(--danger)">Invalid</span></div>
+      <div class="row"><span class="m-in mono" style="flex:1;border-style:dashed;color:var(--text-dim)">Inherited / read-only</span></div>
+    </div>
+    <div class="cs"><div class="t">Tabs</div>
+      <div class="bd-tabs" style="padding:0;border:0;background:transparent">
+        <span class="on">Params <span class="b">3</span></span><span>Headers <span class="b">3</span></span><span>Body</span>
+      </div>
+      <p class="hint" style="margin:9px 0 0"><code>role="tablist"</code>, arrow-key navigation,
+        <code>aria-selected</code>, and <code>.panel[hidden]{display:none}</code> as an explicit
+        rule — an inline <code>display</code> beats the UA rule behind <code>[hidden]</code> and
+        renders every panel at once.</p>
+    </div>
+    <div class="cs"><div class="t">Badges &amp; pills</div>
+      <div class="row"><span class="method GET">GET</span><span class="method POST">POST</span><span class="method PATCH">PATCH</span><span class="method DELETE">DEL</span></div>
+      <div class="row"><span class="pill pass">✓ 200</span><span class="pill fail">✕ 409</span><span class="pill neutral">not saved</span><span class="pill run">◈ running</span></div>
+    </div>
+    <div class="cs"><div class="t">Table rows</div>
+      <div class="kvrow" style="margin:0 0 4px"><span class="cb on">✓</span><span class="f">page</span><span class="f">1</span><span class="x">×</span></div>
+      <div class="kvrow" style="margin:0 0 4px"><span class="cb"></span><span class="f ph">key</span><span class="f ph">value</span><span class="x">×</span></div>
+      <div class="kvrow" style="margin:0"><span class="cb on">✓</span><span class="f auto">x-api-version</span><span class="f auto">5.0.0</span><span class="x"></span></div>
+    </div>
+    <div class="cs"><div class="t">Code block</div>
+      <div style="background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;padding:7px 0">
+        <div class="jl" style="font-family:var(--mono);font-size:11px"><span class="g">1</span><span><span class="jk">"statusCode"</span><span class="jp">: </span><span class="jn">200</span></span></div>
+        <div class="jl hi" style="font-family:var(--mono);font-size:11px"><span class="g">2</span><span><span class="jk">"message"</span><span class="jp">: </span><span class="js">"Operation successful"</span></span></div>
+      </div>
+    </div>
+    <div class="cs"><div class="t">Toasts</div>
+      <div class="row"><div class="toast"><span class="bar"></span><span>Saved as <b>TC_103</b></span><span class="dim mono" style="margin-left:auto;font-size:10px">Undo</span></div></div>
+      <div class="row"><div class="toast err"><span class="bar"></span><span>Request blocked by CORS</span><span class="dim mono" style="margin-left:auto;font-size:10px">Details</span></div></div>
+      <p class="hint" style="margin:4px 0 0">Bottom-right, 4 s, stacked, <code>role="status"</code>.
+        Every error toast carries an action; a toast with nothing to do should have been an inline
+        message.</p>
+    </div>
+    <div class="cs"><div class="t">Empty state</div>
+      <div style="text-align:center;padding:9px 0">
+        <div style="font-size:18px;color:var(--text-dim);margin-bottom:6px">↻</div>
+        <div style="font-size:12px;font-weight:600;margin-bottom:4px">Nothing sent yet</div>
+        <div class="hint" style="margin:0 0 8px">One fact, one consequence, one button.</div>
+        <span class="m-btn primary sm">Send ⌘↵</span>
+      </div>
+    </div>
+  </div></div>
+</div>
+
+<div class="wrap">
+<section class="band" style="border-top:0;padding-top:26px">
+  <h5>7.5 · Light theme is not an afterthought</h5>
+</section>
+</div>
+
+<div class="bleed">
+  <figure>
+  <div class="mk light" style="border:1px solid var(--edge-2);border-radius:11px;overflow:hidden">
+    <div class="w-top">
+      <div class="m-brand"><div class="m-logo">A</div><span>API Test Studio</span></div>
+      <div class="mod-chip"><span class="nm">Template API</span><span class="mt">v5.0.0 · 22 ops</span></div>
+      <div class="env-chip"><span class="dot skip"></span>Stage</div>
+      <div class="viewsw"><span class="on">Explore</span><span>Cases</span><span>Runs</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1px;background:var(--border)">
+      <div style="background:var(--bg);padding:13px">
+        <div class="bd-url" style="margin-bottom:9px">
+          <span class="mth">GET ▾</span><span class="base">…swivlconnect.com</span>
+          <span class="pth">/templates/<span class="tok">{id}</span></span>
+          <span class="send">Send <span class="kbd">⌘↵</span></span>
+        </div>
+        <div class="bd-tabs" style="background:transparent;padding:0;margin-bottom:11px">
+          <span class="on">Params <span class="b">1</span></span><span>Headers <span class="b">2</span></span><span>Assertions <span class="b">0</span></span>
+        </div>
+        <div class="kvrow"><span class="cb on">✓</span><span class="f">id <span class="req">*</span></span><span class="f">a23dba7f-…-88d45ac09111</span><span class="x">×</span></div>
+        <div class="kvrow"><span class="cb on">✓</span><span class="f auto">x-api-version</span><span class="f auto">5.0.0</span><span class="x"></span></div>
+        <p class="hint">Same tokens, same components, different values. Nothing below the token
+          layer is theme-aware.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="m-btn primary sm">Save as test case</span><span class="m-btn sm">Copy as cURL</span><span class="pill pass">✓ in spec</span></div>
+      </div>
+      <div style="background:var(--bg-deep)">
+        <div class="rs-h"><div class="rs-stat">
+          <span class="rs-code ok">✓ 200 OK</span><span class="rs-m"><b>229</b> ms</span><span class="rs-m"><b>1.4</b> KB</span>
+        </div>
+        <div class="rs-tabs"><span class="on">Body</span><span>Headers <span class="mono dim">7</span></span><span>Timeline</span><span>Raw</span></div></div>
+        <div class="rs-body" style="padding-top:8px">
+          <div class="jl"><span class="g">1</span><span><span class="jp">{</span></span></div>
+          <div class="jl"><span class="g">2</span><span>  <span class="jk">"success"</span><span class="jp">: </span><span class="jb">true</span><span class="jp">,</span></span></div>
+          <div class="jl"><span class="g">3</span><span>  <span class="jk">"data"</span><span class="jp">: {</span></span></div>
+          <div class="jl"><span class="g">4</span><span>    <span class="jk">"name"</span><span class="jp">: </span><span class="js">"HVAC Maintenance Inspection Checklist"</span><span class="jp">,</span></span></div>
+          <div class="jl"><span class="g">5</span><span>    <span class="jk">"status"</span><span class="jp">: </span><span class="js">"DRAFT"</span></span></div>
+          <div class="jl"><span class="g">6</span><span>  <span class="jp">},</span></span></div>
+          <div class="jl"><span class="g">7</span><span>  <span class="jk">"statusCode"</span><span class="jp">: </span><span class="jn">200</span></span></div>
+          <div class="jl"><span class="g">8</span><span><span class="jp">}</span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <figcaption>The one light-theme value I would change beyond the contrast fix:
+    <code>--bg-deep</code> is undefined today and falls back to <code>#0d1117</code> — a near-black
+    code surface inside a white page. It should resolve to <code>#f1f5f9</code> in light, which is
+    what this figure uses.</figcaption>
+  </figure>
+</div>
+
+<div class="wrap">
+<section class="band">
+  <p class="sec-no">§8 — keyboard</p>
+  <h3 style="max-width:26ch">Fourteen bindings, one of which already exists</h3>
+  <div class="keys">
+    <div class="k"><span class="kk"><kbd>⌘K</kbd></span><span>Search endpoints — focuses the explorer search and opens a results list. Escape closes.</span></div>
+    <div class="k"><span class="kk"><kbd>⌘↵</kbd></span><span>Send the current request. <span class="chip stays">exists · line 4680</span></span></div>
+    <div class="k"><span class="kk"><kbd>Esc</kbd></span><span>Cancel an in-flight request; otherwise close the topmost popover; otherwise blur.</span></div>
+    <div class="k"><span class="kk"><kbd>⌘S</kbd></span><span>Save as test case. Must <code>preventDefault</code> or the browser offers to save the page.</span></div>
+    <div class="k"><span class="kk"><kbd>⌘⇧F</kbd></span><span>Prettify the body. Active only when the body editor has focus.</span></div>
+    <div class="k"><span class="kk"><kbd>⌘Y</kbd></span><span>History.</span></div>
+    <div class="k"><span class="kk"><kbd>⌘F</kbd></span><span>Search inside the response body, when the response pane has focus.</span></div>
+    <div class="k"><span class="kk"><kbd>⌘\</kbd></span><span>Collapse / restore the explorer rail.</span></div>
+    <div class="k"><span class="kk"><kbd>⌥1</kbd> <kbd>⌥2</kbd> <kbd>⌥3</kbd></span><span>Move focus to explorer / builder / response.</span></div>
+    <div class="k"><span class="kk"><kbd>j</kbd> <kbd>k</kbd></span><span>Move down / up the explorer list when it has focus. <kbd>↵</kbd> loads the endpoint.</span></div>
+    <div class="k"><span class="kk"><kbd>←</kbd> <kbd>→</kbd></span><span>Move between builder tabs when the tablist has focus — the <code>role="tablist"</code> contract, and the fix for §0 finding 4.</span></div>
+    <div class="k"><span class="kk"><kbd>⌘⇧K</kbd></span><span>Clear the scratch request back to an empty GET.</span></div>
+    <div class="k"><span class="kk"><kbd>⌘R</kbd></span><span><b>Not bound.</b> Re-run is <kbd>⌘↵</kbd>; taking reload from the browser is hostile.</span></div>
+    <div class="k"><span class="kk"><kbd>?</kbd></span><span>Shortcut sheet, when no text field has focus.</span></div>
+  </div>
+  <div class="note">
+    <b>The guard clause every one of these needs.</b> A single delegated
+    <code>keydown</code> listener, and the first thing it does is check whether the event target is
+    an <code>input</code>, <code>textarea</code> or <code>[contenteditable]</code>. Single-letter
+    bindings (<code>j</code>, <code>k</code>, <code>?</code>) bail out; modified bindings do not.
+    Without it, typing <code>{"kind":"j"}</code> into the body editor navigates the explorer.
+  </div>
+</section>
+
+<!-- ============================== §9 ============================== -->
+<section class="band">
+  <p class="sec-no">§9 — cost, and the walls</p>
+  <h3 style="max-width:26ch">All of it fits in the one file. Six things do not fit in the browser.</h3>
+
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Screen</th><th>New</th><th>Reused as-is</th><th>Deleted</th><th>Cost</th><th>Risk</th></tr></thead>
+    <tbody>
+      <tr><td><b>§1 Workspace</b></td>
+        <td>3-pane grid; explorer rail; <code>activeRequest()</code>; scratch badge; URL-bar overlay</td>
+        <td>All 11 <code>exec*</code> fns; <code>syncCaseWithSpec</code>; <code>buildUrl/Headers/Body/Curl</code>; <code>sendRequest</code>; <code>renderScalarBody</code></td>
+        <td><code>.try-panel</code>, <code>renderTry</code>, <code>rowHtml</code> + row helpers, the case-details modal shell</td>
+        <td class="mono">~520 new<br>~210 gone</td>
+        <td><span class="chip moved">medium</span> the <code>ephemeral</code> guard must land or scratch sends pollute case statuses</td></tr>
+      <tr><td><b>§2 Connect</b></td>
+        <td>Summary panel; <code>securitySchemes</code> → auth config; 3-class error message; drop-zone</td>
+        <td><code>connectSwagger</code>, <code>extractSpecUrlsFromHtml</code>, <code>loadSwagger</code>, <code>computeCoverage</code></td>
+        <td>the one-line status text</td>
+        <td class="mono">~230</td>
+        <td><span class="chip stays">low</span></td></tr>
+      <tr><td><b>§3 Body</b></td>
+        <td>Toolbar; gutter overlay; debounced <code>JSON.parse</code> with line/column mapping</td>
+        <td><code>execResetFromSpec</code>, <code>exampleFromSchema</code>, <code>renderExecBody</code></td>
+        <td>the bare textarea caption</td>
+        <td class="mono">~180</td>
+        <td><span class="chip stays">low</span> gutter/textarea scroll sync is the only fiddly part</td></tr>
+      <tr><td><b>§4 History</b></td>
+        <td><code>state.history</code> ring buffer; the <code>⌘Y</code> panel; explorer Recent group</td>
+        <td><code>save()</code>, <code>serializableState()</code>, <code>MAX_RUNS</code> capping pattern</td>
+        <td>—</td>
+        <td class="mono">~190</td>
+        <td><span class="chip moved">medium</span> localStorage quota — snapshots must exclude response bodies</td></tr>
+      <tr><td><b>§5 Save + assert</b></td>
+        <td>Save popover; <code>c.asserts[]</code>; assertion evaluator; per-assertion results in the report</td>
+        <td><code>dig()</code>, <code>statusList()</code>, <code>expected.status</code>, the Run Report’s grouping</td>
+        <td>—</td>
+        <td class="mono">~300</td>
+        <td><span class="chip moved">medium</span> the Run Report’s failure grouping needs a new key</td></tr>
+      <tr><td><b>§6 States</b></td>
+        <td>Six panes; <code>state.inflight</code>; abort-reason flag</td>
+        <td>The <code>AbortController</code> at line 2820</td>
+        <td>4 “nothing here” strings</td>
+        <td class="mono">~120</td>
+        <td><span class="chip stays">low</span></td></tr>
+      <tr><td><b>§7 Design system</b></td>
+        <td>4 missing tokens; 3 contrast fixes; scale/space/radius/focus tokens; glyph vocabulary</td>
+        <td>The existing <code>:root</code> / <code>[data-theme]</code> pair</td>
+        <td>~40 inline font-size and colour literals</td>
+        <td class="mono">~90 CSS</td>
+        <td><span class="chip stays">low</span> but touches every rule — do it first, alone, in its own commit</td></tr>
+      <tr><td><b>§8 Keyboard</b></td>
+        <td>One delegated listener; tab roles; focus ring</td>
+        <td>The <code>⌘↵</code> handler</td>
+        <td>—</td>
+        <td class="mono">~110</td>
+        <td><span class="chip stays">low</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><b>Total:</b> roughly 1 740 lines added, 250 deleted, against 4 686 today. No dependency, no
+    bundler, no server. The file grows about 32 %.</p>
+
+  <h5>9.1 · What cannot be done client-side, with no build step</h5>
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Wanted</th><th>Verdict</th><th>What I would do instead</th></tr></thead>
+    <tbody>
+      <tr><td><b>YAML spec import</b></td>
+        <td><span class="chip srv">needs a parser</span></td>
+        <td>There is no <code>JSON.parse</code> for YAML. Two honest options: vendor
+          <code>js-yaml.min.js</code> (~40 KB) inline as a marked block — legitimate, still no build
+          step, +15 % file size — or ship a ~120-line subset parser for block mappings, sequences and
+          scalars that covers most OpenAPI files and fails loudly with <em>“this YAML uses anchors,
+          which this parser does not support — paste JSON instead”</em>. I would vendor js-yaml; a
+          subset parser that silently mis-reads a spec is worse than no YAML at all.</td></tr>
+      <tr><td><b>Reading all response headers</b></td>
+        <td><span class="chip srv">impossible</span></td>
+        <td>Cross-origin, <code>fetch</code> exposes only the CORS-safelisted six unless the API
+          sends <code>Access-Control-Expose-Headers</code>. <code>TC_004</code> (“Content-Type +
+          CORS + HSTS present”) cannot be fully verified in a browser. The Headers tab must say so
+          rather than imply the headers are absent.</td></tr>
+      <tr><td><b>Setting <code>Origin</code>, <code>Cookie</code>, <code>Host</code>,
+        <code>Referer</code></b></td>
+        <td><span class="chip srv">impossible</span></td>
+        <td>Forbidden request headers; the browser drops them silently. That kills
+          <code>TC_018</code> and <code>TC_019</code> (CORS preflight from an allowed / disallowed
+          origin) and any cookie-auth scheme. These cases should be marked
+          <b>Blocked — not runnable in a browser</b> with a one-click cURL copy, not left to fail
+          confusingly.</td></tr>
+      <tr><td><b>Time to first byte</b></td>
+        <td><span class="chip srv">mostly impossible</span></td>
+        <td>Resource Timing zeroes its detail cross-origin unless the server sends
+          <code>Timing-Allow-Origin</code>. The Timeline tab shows total wall clock and greys the
+          rest, labelled.</td></tr>
+      <tr><td><b>True concurrency beyond ~6</b></td>
+        <td><span class="chip srv">browser cap</span></td>
+        <td>Chrome allows 6 connections per origin over HTTP/1.1, which is exactly why round two
+          chose 6 lanes. Raising the lane count past 6 queues in the network stack and the timings
+          become meaningless. Keep the cap and say why in the tooltip.</td></tr>
+      <tr><td><b>Streaming <code>POST /templates/generate</code></b></td>
+        <td><span class="chip cli">possible today</span></td>
+        <td>It is an SSE stream, and <code>await resp.text()</code> at line 2831 buffers until the
+          stream closes — for a long generation the UI simply hangs. Reading
+          <code>resp.body.getReader()</code> and appending chunks is ~30 lines and gives the
+          response pane a live streaming mode. Worth doing; it is one of the 22 operations.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note">
+    <b>Sequencing I would actually follow.</b> (1) The design-system commit — four missing tokens,
+    three contrast fixes, focus ring. Nothing visual changes except that things stop being invisible.
+    (2) <code>currentCase()</code> → <code>activeRequest()</code> plus the <code>ephemeral</code>
+    guard, with the UI untouched — a pure refactor you can verify by running the existing 102 cases
+    and getting the same report. (3) The three-pane layout and the deletion of the Try pane.
+    (4) Everything else, in any order. Steps 1 and 2 are independently shippable and carry no design
+    risk, which matters for a file with no test suite.
+  </div>
+</section>
+</div>
+
+<footer class="doc">
+  <div class="wrap">
+    <p>Round three of three. Round one chose the run-report direction; round two added modules,
+      concurrency and chaining; this round makes the request the primitive and the test case the
+      by-product. Everything drawn here is against
+      <code>index.html</code> at 4 686 lines and the embedded <code>SWIVL_SPEC</code> — 19 paths,
+      22 operations, 6 tags, one <code>bearerAuth</code> scheme.</p>
+  </div>
+</footer>

@@ -14,6 +14,9 @@
     --success-soft:rgba(16,185,129,.12); --danger-soft:rgba(239,68,68,.12);
     --warning-soft:rgba(245,158,11,.12); --info-soft:rgba(59,130,246,.12);
     --shadow:0 4px 24px rgba(0,0,0,.4);
+    /* Aliases that were referenced ~24 times but never defined, so every
+       declaration using them was dropped as invalid. */
+    --panel:#111827; --line:#1f2937; --warn:#f59e0b; --warn-soft:rgba(245,158,11,.12);
     --mono:"SF Mono","JetBrains Mono","Menlo","Monaco","Consolas",monospace;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
   }
@@ -26,6 +29,9 @@
     --success-soft:rgba(5,150,105,.12); --danger-soft:rgba(220,38,38,.12);
     --warning-soft:rgba(217,119,6,.12); --info-soft:rgba(37,99,235,.12);
     --shadow:0 4px 24px rgba(15,23,42,.08);
+    --panel:#f8fafc; --line:#e2e8f0; --warn:#b45309; --warn-soft:rgba(180,83,9,.12);
+    /* AA fixes: dim text was 2.4:1 in light and 4.1:1 in dark. */
+    --text-dim:#64748b;
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;padding:0}
@@ -1209,8 +1215,14 @@ const state = (() => {
   };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-    if (saved && Array.isArray(saved.cases)) {
+    // A pre-modules save carries `cases` at the top level; a modules-era save
+    // carries `modules` and no top-level cases. Accept both — gating on
+    // `cases` alone silently discarded every modules-era save on reload.
+    if (saved && (Array.isArray(saved.cases) || Array.isArray(saved.modules))) {
       const st = { ...defaults, ...saved, selection: [] };
+      // Don't let the preset cases leak in as the active list when the real
+      // ones live under modules; loadModuleIntoState() sets them at boot.
+      if (Array.isArray(saved.modules) && !Array.isArray(saved.cases)) st.cases = [];
       // Migration: users who saved the old localhost default but are now on the
       // hosted build would see every request fail. Move them onto Stage.
       if (!IS_LOCAL_PAGE && st.baseUrl === LEGACY_LOCAL_BASE) st.baseUrl = ENVS.stage.base;
@@ -1484,7 +1496,9 @@ async function cloudPush(silent) {
     v: 1,
     savedAt: Date.now(),
     state: {
-      baseUrl: state.baseUrl, authType: state.authType, authToken: state.authToken,
+      // authToken is deliberately NOT synced — it would sit in Cloudflare KV
+      // readable by anyone holding the sync token. Paste it per device.
+      baseUrl: state.baseUrl, authType: state.authType,
       apiVersion: state.apiVersion, proxyUrl: state.proxyUrl, timeoutMs: state.timeoutMs,
       bulkDelayMs: state.bulkDelayMs, swaggerSpec: state.swaggerSpec, swaggerSource: state.swaggerSource,
       cases: state.cases, collapsedTags: state.collapsedTags
@@ -1522,7 +1536,10 @@ async function cloudPull() {
     const payload = await r.json();
     const incoming = payload && payload.state ? payload.state : payload;
     if (!incoming || !Array.isArray(incoming.cases)) throw new Error("Unexpected payload shape");
+    // A pulled payload must never clobber this device's local token.
+    const localToken = state.authToken;
     Object.assign(state, incoming);
+    state.authToken = localToken;
     state.env = envForBase(state.baseUrl);
     state.lastSyncAt = Date.now();
     save();
@@ -2174,11 +2191,11 @@ function renderExecResponse(run) {
     return;
   }
   const cls = run.status >= 200 && run.status < 300 ? "pass" : (run.status >= 400 ? "fail" : "warn");
-  const bytes = (run.body || "").length;
+  const bytes = run.bytes != null ? run.bytes : byteLen(run.body);
   const sizeLabel = bytes < 1024 ? bytes + " B" : (bytes/1024).toFixed(1) + " KB";
   badgesHost.innerHTML = `
     <span class="resp-verdict ${cls}" style="padding:2px 8px;border-radius:3px;font-size:11px">${run.status} ${esc(httpStatusText(run.status))}</span>
-    <span class="muted" style="font-size:11px">${run.durationMs}ms · ${sizeLabel}</span>
+    <span class="muted" style="font-size:11px">${run.durationMs}ms · ${sizeLabel}${run.bodyTruncated ? " · showing first 20 KB" : ""}</span>
     ${run.specCheck ? `<span class="resp-verdict ${run.specCheck.ok?'pass':'fail'}" style="padding:2px 8px;border-radius:3px;font-size:11px">${run.specCheck.ok?'✓ matches spec':'✗ spec mismatch'}</span>` : ""}
   `;
   // Pretty print body
@@ -2221,6 +2238,12 @@ function formRowHtml(r, i) {
     </select>
     <button onclick="removeFormRow(${i})" title="Remove"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button>
   </div>`;
+}
+/* UTF-16 code units are not bytes — a JSON body full of non-ASCII was
+   under-reported. Measure what actually came over the wire. */
+function byteLen(s) {
+  if (!s) return 0;
+  try { return new TextEncoder().encode(s).length; } catch (e) { return String(s).length; }
 }
 function fmtBytes(n) {
   if (n < 1024) return n + "B";
@@ -2734,9 +2757,29 @@ function buildUrl(c, opts) {
   }
   return full;
 }
-function buildHeaders(c) {
+/* True when this request will be relayed through a third-party CORS proxy.
+   Anything sent then is readable by that proxy operator, so credentials
+   must not go along for the ride. */
+function willUseProxy(c) {
+  if (!state.proxyUrl) return false;
+  const method = (c && c.method || "GET").toUpperCase();
+  const writeVerb = method !== "GET" && method !== "HEAD";
+  if (writeVerb && isGetOnlyProxy(state.proxyUrl)) return false;  // proxy skipped
+  return true;
+}
+
+function buildHeaders(c, opts) {
   const hdrs = {};
   (c.headers||[]).filter(h=>h.enabled!==false && h.key).forEach(h => { hdrs[h.key] = subVars(h.value||""); });
+  // Never hand a bearer token / API key / basic credential to a public proxy.
+  const proxied = (opts && opts.proxied !== undefined) ? opts.proxied : willUseProxy(c);
+  if (proxied && !c.skipAuth) {
+    if (!window.__proxyAuthWarned) {
+      window.__proxyAuthWarned = true;
+      toast("Auth header withheld — the request goes through a CORS proxy, which would be able to read your token. Clear the proxy in Settings ⚙ to send it.", "error");
+    }
+    return finishHeaders(hdrs, c);
+  }
   if (!c.skipAuth) {
     const tok = c.overrideAuth || state.authToken;
     if (tok) {
@@ -2745,6 +2788,10 @@ function buildHeaders(c) {
       else if (state.authType === "apikey") hdrs["X-API-Key"] = hdrs["X-API-Key"] || tok;
     }
   }
+  return finishHeaders(hdrs, c);
+}
+/* Non-credential headers, applied whether or not auth was withheld. */
+function finishHeaders(hdrs, c) {
   // Global API version header — auto-injected if the case doesn't already set one
   if (state.apiVersion && !hdrs["x-api-version"] && !hdrs["X-API-Version"] && !hdrs["X-Api-Version"]) {
     hdrs["x-api-version"] = state.apiVersion;
@@ -2753,10 +2800,25 @@ function buildHeaders(c) {
   if (mode === "json" && c.body && !hdrs["Content-Type"]) hdrs["Content-Type"] = "application/json";
   return hdrs;
 }
-function buildCurl(c) {
+
+/* Tokens must not end up in a ticket, a CSV or a shared cURL line. */
+function redactSecrets(s) {
+  let out = String(s == null ? "" : s);
+  const tok = (state.authToken || "").trim();
+  if (tok && tok.length > 6) out = out.split(tok).join("<YOUR_TOKEN>");
+  out = out.replace(/(Bearer\s+)[A-Za-z0-9._~+/=-]{8,}/gi, "$1<YOUR_TOKEN>");
+  out = out.replace(/(Basic\s+)[A-Za-z0-9+/=]{8,}/gi, "$1<YOUR_CREDENTIALS>");
+  out = out.replace(/((?:X-API-Key|api[-_]?key)\s*[:=]\s*)[^\s"',]{8,}/gi, "$1<YOUR_API_KEY>");
+  return out;
+}
+/* Display/copy form of a request. Real sends build their own headers; this is
+   for humans, so the token is masked unless explicitly asked for. */
+function buildCurl(c, opts) {
   const url = buildUrl(c);
-  const hdrs = buildHeaders(c);
+  const hdrs = buildHeaders(c, { proxied: false });
+  const mask = !(opts && opts.withSecrets);
   let parts = [`curl -X ${c.method} ${JSON.stringify(url)}`];
+  if (mask) { Object.keys(hdrs).forEach(k => { hdrs[k] = redactSecrets(hdrs[k]); }); }
   Object.entries(hdrs).forEach(([k,v]) => parts.push(` -H ${JSON.stringify(k+": "+v)}`));
   const mode = c.bodyMode || "json";
   if (mode === "form") {
@@ -2854,7 +2916,11 @@ async function sendRequest(caseOverride) {
   // Feed anything reusable out of this response into the chain before the
   // next case is built.
   if (!error) { try { applyCaptures(c, status, text, respHdrs); } catch (e) {} }
-  c.lastRun = { status, durationMs:dur, at:Date.now(), error, verdict, body:text.slice(0,20000), headers:respHdrs, specCheck };
+  // Keep the true size and say so when the stored copy is clipped, rather
+  // than silently reporting the truncated length as the response size.
+  c.lastRun = { status, durationMs:dur, at:Date.now(), error, verdict,
+    body:text.slice(0,20000), bodyTruncated: text.length > 20000, bytes: byteLen(text),
+    headers:respHdrs, specCheck };
   // only auto-update status if still pending
   if (c.status === "pending" || !c.status) c.status = verdict;
   save();
@@ -2882,7 +2948,7 @@ function renderResp() {
   const cls = last.error ? "err" : statusClass(last.status);
   const sc = last.specCheck;
   const specBadge = sc ? `<span class="resp-verdict ${sc.ok?'pass':'fail'}" title="${esc((sc.notes||[]).join(' · '))}">${sc.ok?'✓ matches spec':'✗ spec mismatch'}</span>` : "";
-  const bytes = (last.body || "").length;
+  const bytes = last.bytes != null ? last.bytes : byteLen(last.body);
   const sizeLabel = bytes < 1024 ? bytes + " B" : (bytes/1024).toFixed(1) + " KB";
   const statusText = last.status ? (last.status + " " + httpStatusText(last.status)) : "ERR";
   $("#respHeader").innerHTML = `
@@ -3113,8 +3179,9 @@ function exportReport() {
   const MAX = 8000; // cap per cell so Excel doesn't choke
   const rows = state.cases.map(c => {
     const last = c.lastRun || {};
-    const hdrs = buildHeaders(c);
-    const hdrStr = Object.entries(hdrs).map(([k,v]) => `${k}: ${v}`).join("\n");
+    const hdrs = buildHeaders(c, { proxied: false });
+    // Reports get shared — never ship the live token inside one.
+    const hdrStr = redactSecrets(Object.entries(hdrs).map(([k,v]) => `${k}: ${v}`).join("\n"));
     const reqBodyStr = describeReqBody(c);
     const respHdrStr = Object.entries(last.headers||{}).map(([k,v]) => `${k}: ${v}`).join("\n");
     let respBody = last.body || "";
