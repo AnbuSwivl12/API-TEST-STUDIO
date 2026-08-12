@@ -183,6 +183,33 @@
     .rp-rail{width:150px}
   }
 
+  /* ---------- draft request + history ---------- */
+  .draft-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .draft-title{font-size:13px;color:var(--text-muted)}
+  .draft-head .btn{margin-left:0}
+  .draft-title{flex:1;min-width:120px}
+  .draft-url{font-size:12px;color:var(--accent);word-break:break-all;line-height:1.5}
+  .draft-last{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:9px 12px;
+    border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)}
+  .hist{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg-elev)}
+  .hist-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;gap:10px;align-items:center;
+    padding:7px 11px;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer}
+  .hist-row:last-child{border-bottom:0}
+  .hist-row:hover{background:var(--bg-elev-2)}
+  .hist-row.run{cursor:default;background:var(--bg-elev-2)}
+  .hist-badge{font-family:var(--mono);font-size:9.5px;font-weight:700;padding:2px 5px;border-radius:3px;
+    background:var(--accent-soft);color:var(--accent)}
+  .hist-path{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px}
+  .hist-status{font-size:11px;font-weight:700}
+  .hist-status.ok{color:var(--success)} .hist-status.bad{color:var(--danger)}
+  .hist-meta{font-size:10.5px;color:var(--text-dim)}
+  .hist-when{font-size:10.5px;color:var(--text-dim);white-space:nowrap}
+  /* body playground */
+  .body-tools{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+  .body-valid{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--text-dim)}
+  .body-valid.ok{color:var(--success)}
+  .body-valid.bad{color:var(--warn)}
+
   /* ---------- mid-run tray ---------- */
   .runtray{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:60;display:none;
     align-items:center;gap:14px;padding:10px 16px;border-radius:12px;background:var(--bg-elev);
@@ -459,6 +486,7 @@
       <button data-v="report" onclick="setView('report')">Run Report<span class="badge" id="viewFailBadge" style="display:none">0</span></button>
     </div>
     <div class="tb-actions">
+      <button class="btn small" onclick="newRequest()" title="Start an unsaved request — no test case needed"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>New Request</button>
       <button class="btn small" onclick="openModal('swagger')" title="Connect this module to an OpenAPI/Swagger spec"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Swagger<span id="swaggerChip" style="margin-left:4px;font-size:9px;color:var(--success);display:none">●</span></button>
       <button class="btn small" onclick="openModal('addEndpoint')" title="Create a new test case from scratch"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Case</button>
       <button class="btn small" onclick="openModal('import')" title="Upload CSV/JSON of test cases"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import</button>
@@ -1217,6 +1245,9 @@ const state = (() => {
     // chaining
     vars: {},           // captured values, spent as {id} / {{name}}
     varSource: {},      // which case produced each one
+    // exploration
+    draft: null,        // the unsaved request; a case is a saved one
+    history: [],        // recently executed requests (no verdicts)
   };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
@@ -1576,8 +1607,80 @@ const toast = (msg, type="") => {
   setTimeout(() => el.remove(), 3000);
 };
 
+/* =========================================================================
+   The draft request — exploration is the primitive
+   -------------------------------------------------------------------------
+   A test case is a saved request plus assertions, not the only way to send
+   one. When nothing is selected the app works on state.draft, which is
+   case-shaped (so buildUrl/buildHeaders/buildBody/sendRequest need no
+   changes) but marked `ephemeral` so it never records a verdict, never
+   changes a case status and never lands in a run.
+   ========================================================================= */
+function newDraft(seed) {
+  return {
+    id: "__draft__",
+    ephemeral: true,
+    scenario: "Untitled request",
+    method: "GET",
+    path: "/",
+    tag: "",
+    query: [], headers: [], pathVars: {},
+    bodyMode: "none", body: "",
+    expected: {},
+    status: "pending",
+    ...(seed || {}),
+  };
+}
+function ensureDraft() {
+  if (!state.draft || typeof state.draft !== "object") state.draft = newDraft();
+  return state.draft;
+}
+/* Whatever the request panes are editing right now: the selected case, or
+   the draft when there is no selection. */
 function currentCase() {
+  const c = state.cases.find(c => c.id === state.selectedId);
+  if (c) return c;
+  return ensureDraft();
+}
+/* The selected saved case, or null. Use this for anything case-specific —
+   status controls, delete, sidebar highlighting. */
+function selectedCase() {
   return state.cases.find(c => c.id === state.selectedId) || null;
+}
+function isDraft(c) { return !!(c && c.ephemeral); }
+
+/* Start a fresh request, unattached to any case. */
+function newRequest(seed) {
+  state.draft = newDraft(seed);
+  state.selectedId = null;
+  state.activeTab = "params";
+  save();
+  setView("cases");
+  renderSidebar(); renderDoc(); renderTry(); renderResp();
+  const p = $("#tryPath"); if (p) p.focus();
+}
+
+/* Promote the draft into a real test case in the active module. */
+function saveDraftAsCase() {
+  const d = ensureDraft();
+  const name = (prompt("Name this test case:", d.scenario === "Untitled request"
+    ? `${d.method} ${d.path}` : d.scenario) || "").trim();
+  if (!name) return;
+  const n = state.cases.length + 1;
+  let id = "TC_" + String(n).padStart(3, "0");
+  while (state.cases.some(c => c.id === id)) id = "TC_" + Math.random().toString(36).slice(2, 6).toUpperCase();
+  const c = { ...d, id, ephemeral: false, scenario: name,
+    tag: d.tag || normalizeTag("", d.path),
+    expected: (d.expected && Object.keys(d.expected).length) ? d.expected
+      : { status: (d.lastRun && d.lastRun.status) || 200 },
+    status: "pending" };
+  delete c.ephemeral;
+  state.cases.push(c);
+  state.selectedId = id;
+  state.draft = newDraft();
+  save();
+  renderSidebar(); renderDoc(); renderTry(); renderResp();
+  toast(`Saved as ${id} — add assertions or run it with the suite`, "success");
 }
 function statusList(expected) {
   if (!expected) return [];
@@ -1679,6 +1782,9 @@ function visibleCaseIds() {
 
 function renderDoc() {
   const c = currentCase();
+  // A draft has no ID, tag, expected status or verdict to show — it's a
+  // request, not a case. Offer the promotion instead of case chrome.
+  if (isDraft(c)) { renderDraftDoc(c); return; }
   if (!c) {
     const m = activeModule();
     // An empty module isn't an error state — it's a module you haven't filled
@@ -1785,7 +1891,7 @@ function renderDoc() {
           <span class="status-pill s${String(last.status)[0]}">${last.status || "ERR"}</span>
           <span class="muted mono">${last.durationMs}ms</span>
           <span class="muted">${new Date(last.at).toLocaleString()}</span>
-          <span class="resp-verdict ${last.verdict}" style="margin-left:auto">${last.verdict==='pass'?'✓ passed':'✗ failed'}</span>
+          ${last.verdict ? `<span class="resp-verdict ${last.verdict}" style="margin-left:auto">${last.verdict==='pass'?'✓ passed':'✗ failed'}</span>` : `<span class="muted" style="margin-left:auto;font-size:11px">unsaved request — no verdict</span>`}
         </div>
         ${last.error ? `<div class="doc-desc" style="color:var(--danger)">${esc(last.error)}</div>` : ""}
       </div>
@@ -1803,11 +1909,13 @@ function renderTry() {
   if (!c) {
     $("#tryMethod").value = "GET";
     $("#tryPath").value = "";
-    $("#tpContent").innerHTML = `<div class="muted" style="padding:20px;text-align:center">No test case selected. Click <b>+ Add Case</b> or <b>Import</b> to get started.</div>`;
+    $("#tpContent").innerHTML = `<div class="muted" style="padding:20px;text-align:center">Click <b>New Request</b> to start exploring, or pick a case on the left.</div>`;
     $("#pathVars").innerHTML = "";
     $("#urlPreview").innerHTML = "";
     return;
   }
+  const label = $(".tp-title-label");
+  if (label) label.textContent = isDraft(c) ? "Request" : "Try it";
   $("#tryMethod").value = c.method;
   $("#tryPath").value = c.path;
   const tab = state.activeTab;
@@ -1845,7 +1953,16 @@ function renderTry() {
         <button class="${mode==='none'?'active pass':''}" onclick="setBodyMode('none')">None</button>
       </div>`;
     if (mode === "json") {
-      html += `<textarea id="bodyEditor" placeholder='{"key":"value"}' style="height:220px" oninput="setBody(this.value)">${esc(c.body||"")}</textarea>`;
+      html += `
+      <div class="body-tools">
+        <button class="btn ghost small" onclick="bodyFormat()" title="Pretty-print">Format</button>
+        <button class="btn ghost small" onclick="bodyMinify()">Minify</button>
+        <button class="btn ghost small" onclick="copyText(currentCase().body||'')">Copy</button>
+        <button class="btn ghost small" onclick="bodyFromSpec()" title="Regenerate from the OpenAPI schema">From schema</button>
+        <button class="btn ghost small" onclick="bodyClear()">Clear</button>
+        <span id="bodyValid" class="body-valid"></span>
+      </div>
+      <textarea id="bodyEditor" spellcheck="false" placeholder='{"key":"value"}' style="height:220px" oninput="setBody(this.value)">${esc(c.body||"")}</textarea>`;
     } else if (mode === "form") {
       const rows = c.formData || [];
       html += `<div class="tp-rows">
@@ -1866,6 +1983,7 @@ function renderTry() {
     html = renderRequestPreview(c);
   }
   $("#tpContent").innerHTML = html;
+  if (tab === "body") showBodyValidity();
   // show/hide "From spec" button
   const specBtn = $("#syncFromSpecBtn");
   if (specBtn) specBtn.style.display = state.swaggerSpec ? "inline-block" : "none";
@@ -2286,6 +2404,69 @@ function renderPathVars(c) {
   </div>`;
 }
 
+/* The centre pane while exploring: the request, its last response summary,
+   the cURL, and a single call to action to keep it. */
+function renderDraftDoc(c) {
+  const last = c.lastRun;
+  const url = (() => { try { return buildUrl(c); } catch (e) { return (state.baseUrl || "") + (c.path || ""); } })();
+  $("#docPanel").innerHTML = `
+    <div class="doc-body">
+      <div class="draft-head">
+        <span class="method ${esc(c.method)}">${esc(c.method)}</span>
+        <span class="draft-title">Exploring — not saved as a test case</span>
+        <button class="btn small primary" onclick="saveDraftAsCase()">Save as test case</button>
+        <button class="btn ghost small" onclick="newRequest()" title="Start a blank request">New</button>
+      </div>
+      <div class="draft-url mono">${esc(url)}</div>
+      ${last ? `
+        <div class="draft-last">
+          <span class="mono" style="font-weight:700;color:${last.error ? "var(--danger)" : last.status < 400 ? "var(--success)" : "var(--danger)"}">
+            ${last.error ? "no response" : last.status + " " + esc(httpStatusText(last.status))}</span>
+          <span class="muted mono" style="font-size:11px">${last.durationMs} ms · ${fmtBytes(last.bytes != null ? last.bytes : byteLen(last.body))}</span>
+          <span class="muted" style="font-size:11px">${last.error ? esc(last.error.slice(0,120)) : "no pass/fail — a draft has nothing to assert yet"}</span>
+        </div>` : `
+        <div class="muted" style="font-size:12px;line-height:1.7;margin-top:10px">
+          Edit the method, path, params, headers or body on the right, then <b>Send request</b>.
+          Nothing is recorded against your suite until you save this as a test case.
+        </div>`}
+      <h3 style="margin-top:22px">cURL</h3>
+      <div class="code-block mono" style="white-space:pre-wrap;word-break:break-all">${esc(buildCurl(c))}</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn small" onclick="copyText(buildCurl(currentCase()))">Copy cURL</button>
+        <span class="muted" style="font-size:11px;align-self:center">token is masked in the copy</span>
+      </div>
+      ${renderHistoryInline()}
+    </div>`;
+}
+
+/* Recent requests, newest first. Reopening one never touches the original. */
+function renderHistoryInline() {
+  const h = state.history || [];
+  if (!h.length) return "";
+  return `<h3 style="margin-top:24px">Recent requests</h3>
+    <div class="hist">${h.slice(0, 12).map((e, i) => histRowHtml(e, i)).join("")}</div>
+    <div style="margin-top:6px"><button class="btn ghost small" onclick="clearHistory()">Clear history</button></div>`;
+}
+function histRowHtml(e, i) {
+  if (e.isRun) {
+    return `<div class="hist-row run">
+      <span class="hist-badge">RUN</span>
+      <span class="hist-path">Run #${e.runN} · ${esc(e.path)}</span>
+      <span class="hist-meta mono">${fmtDur(e.ms)}</span>
+      <span class="hist-when">${fmtClock(e.at)}</span>
+    </div>`;
+  }
+  const ok = !e.error && e.status < 400;
+  return `<div class="hist-row" onclick="replayHistory(${i})" title="Reopen as a new request">
+    <span class="method ${esc(e.method)}">${esc(e.method)}</span>
+    <span class="hist-path mono">${esc(e.path)}</span>
+    <span class="hist-status mono ${ok ? "ok" : "bad"}">${e.error ? "ERR" : e.status}</span>
+    <span class="hist-meta mono">${e.ms} ms</span>
+    <span class="hist-when">${fmtClock(e.at)}</span>
+  </div>`;
+}
+function renderHistory() { if (isDraft(currentCase())) renderDoc(); }
+
 /* Captured values, and where each came from. */
 function renderVarsPanel() {
   const host = $("#varsPanel"); if (!host) return;
@@ -2366,7 +2547,60 @@ function deleteSelected() {
 function toggleTag(tag) { state.collapsedTags[tag] = !state.collapsedTags[tag]; save(); renderSidebar(); }
 function setStatus(s) { const c = currentCase(); if (!c) return; c.status = s; save(); renderSidebar(); renderDoc(); toast(`Marked ${c.id} as ${s}`, s==="pass"?"success":s==="fail"?"error":""); }
 function setNotes(v) { const c = currentCase(); if (!c) return; c.notes = v; save(); }
-function setBody(v) { const c = currentCase(); if (!c) return; c.body = v; save(); }
+function setBody(v) { const c = currentCase(); if (!c) return; c.body = v; save(); showBodyValidity(v); }
+
+/* --- JSON body playground -------------------------------------------------
+   Validation is advisory, never blocking: TC_055 and TC_086 send deliberately
+   malformed bodies to see how the API reacts. */
+function showBodyValidity(v) {
+  const el = $("#bodyValid"); if (!el) return;
+  const s = (v == null ? (currentCase() || {}).body : v) || "";
+  if (!s.trim()) { el.textContent = ""; el.className = "body-valid"; return; }
+  try {
+    JSON.parse(s);
+    el.textContent = "valid JSON";
+    el.className = "body-valid ok";
+  } catch (e) {
+    el.textContent = String(e.message).replace(/^JSON.parse:\s*/, "").slice(0, 80);
+    el.className = "body-valid bad";
+    el.title = "Sent as-is — invalid JSON is a legitimate thing to test";
+  }
+}
+function bodyFormat() {
+  const c = currentCase(); if (!c) return;
+  try {
+    const pretty = JSON.stringify(JSON.parse(c.body || ""), null, 2);
+    c.body = pretty; save(); renderTry();
+    toast("Formatted", "success");
+  } catch (e) { toast("Can't format — the body isn't valid JSON", "error"); }
+}
+function bodyMinify() {
+  const c = currentCase(); if (!c) return;
+  try {
+    c.body = JSON.stringify(JSON.parse(c.body || "")); save(); renderTry();
+  } catch (e) { toast("Can't minify — the body isn't valid JSON", "error"); }
+}
+function bodyClear() {
+  const c = currentCase(); if (!c) return;
+  c.body = ""; save(); renderTry();
+}
+/* Rebuild the example payload from the spec's schema for this operation. */
+function bodyFromSpec() {
+  const c = currentCase(); if (!c) return;
+  if (!state.swaggerSpec) { toast("No spec connected for this module", "error"); return; }
+  const hit = findOperation(state.swaggerSpec, c.method, c.path);
+  if (!hit) { toast("This request isn't in the connected spec", "error"); return; }
+  const rb = hit.op && hit.op.requestBody;
+  const schema = rb && rb.content && (rb.content["application/json"] || {}).schema;
+  if (!schema) { toast("The spec declares no JSON body for this operation", "error"); return; }
+  try {
+    const ex = exampleFromSchema(resolveRef(state.swaggerSpec, schema.$ref) || schema, state.swaggerSpec, 0);
+    c.body = JSON.stringify(ex, null, 2);
+    c.bodyMode = "json";
+    save(); renderTry();
+    toast("Body regenerated from the schema", "success");
+  } catch (e) { toast("Couldn't build an example from the schema", "error"); }
+}
 function setBodyMode(m) { const c = currentCase(); if (!c) return; c.bodyMode = m; save(); renderTry(); }
 function addFormRow(type) {
   const c = currentCase(); if (!c) return;
@@ -2843,6 +3077,56 @@ function buildCurl(c, opts) {
   return parts.join(" \\\n ");
 }
 
+/* =========================================================================
+   History — every request that actually went out
+   -------------------------------------------------------------------------
+   Distinct from the Run Report by one rule: a history entry has no verdict.
+   A Run All contributes a single summary row, not one row per case.
+   ========================================================================= */
+const MAX_HISTORY = 50;
+function pushHistory(c, run) {
+  if (window.__suppressHistory) return;   // Run All writes its own summary row
+  state.history = state.history || [];
+  state.history.unshift({
+    at: run.at, method: c.method, path: c.path,
+    url: (() => { try { return buildUrl(c); } catch (e) { return ""; } })(),
+    status: run.status, ms: run.durationMs, error: run.error || null,
+    bytes: run.bytes || 0,
+    caseId: isDraft(c) ? null : c.id,
+    moduleId: state.moduleId,
+    snapshot: {
+      method: c.method, path: c.path,
+      query: JSON.parse(JSON.stringify(c.query || [])),
+      headers: JSON.parse(JSON.stringify(c.headers || [])),
+      pathVars: { ...(c.pathVars || {}) },
+      bodyMode: c.bodyMode || "none", body: (c.body || "").slice(0, 8000),
+      scenario: c.scenario || "",
+    },
+  });
+  while (state.history.length > MAX_HISTORY) state.history.pop();
+}
+function pushRunHistory(run) {
+  state.history = state.history || [];
+  state.history.unshift({
+    at: run.at, isRun: true, runN: run.n, method: "RUN",
+    path: `${run.results.length} requests · ${run.counts.fail} failed`,
+    ms: run.durationMs, moduleId: state.moduleId,
+  });
+  while (state.history.length > MAX_HISTORY) state.history.pop();
+}
+/* Reopen a history entry as a draft — never mutates the original case. */
+function replayHistory(i) {
+  const h = (state.history || [])[i];
+  if (!h || h.isRun || !h.snapshot) return;
+  newRequest({ ...h.snapshot, scenario: h.snapshot.scenario || `${h.method} ${h.path}` });
+  toast("Loaded into a new request — edit and send", "");
+}
+function clearHistory() {
+  if (!confirm("Clear request history?")) return;
+  state.history = []; save(); renderHistory();
+  toast("History cleared", "");
+}
+
 /* Per-case timeout, falling back to the global default. Cases that are
    *about* slowness (baseline timing, load, downstream failure) keep the long
    default; everything else can fail fast. */
@@ -2864,9 +3148,27 @@ function isSerialCase(c) {
   return /response time|rate limit|concurrent|throughput|load test|baseline timing/.test(s);
 }
 
+function cancelRequest() {
+  if (window.__inflight) { window.__inflight.abort(); toast("Request cancelled", ""); }
+}
+function setSendButton(busy) {
+  const b = $("#sendBtn"); if (!b) return;
+  if (busy) {
+    b.dataset.busy = "1";
+    b.innerHTML = 'Sending… <span style="opacity:.7;font-weight:400;font-size:11px">click to cancel</span>';
+    b.onclick = cancelRequest;
+  } else {
+    delete b.dataset.busy;
+    b.innerHTML = 'Send request  &nbsp;&nbsp;<span style="opacity:.6;font-weight:400;font-size:11px">⌘↵</span>';
+    b.onclick = () => sendRequest();
+  }
+}
+
 async function sendRequest(caseOverride) {
   const c = caseOverride || currentCase(); if (!c) return;
-  if (!caseOverride) { $("#sendBtn").disabled = true; $("#sendBtn").innerHTML = "Sending..."; }
+  // Don't let a double-click fire the same request twice.
+  if (!caseOverride && $("#sendBtn") && $("#sendBtn").dataset.busy) return;
+  if (!caseOverride) setSendButton(true);
   const url = buildUrl(c, { withProxy: !!state.proxyUrl });
 
   // pre-flight URL validation
@@ -2878,7 +3180,7 @@ async function sendRequest(caseOverride) {
     c.lastRun = { status:0, durationMs:0, at:Date.now(), error:urlError, verdict:"fail", body:"", headers:{} };
     if (c.status === "pending" || !c.status) c.status = "fail";
     save();
-    if (!caseOverride) { $("#sendBtn").disabled = false; $("#sendBtn").innerHTML = 'Send request  &nbsp;&nbsp;<span style="opacity:.6;font-weight:400;font-size:11px">⌘↵</span>'; renderResp(); renderDoc(); renderSidebar(); }
+    if (!caseOverride) { window.__inflight = null; setSendButton(false); renderResp(); renderDoc(); renderSidebar(); renderHistory(); }
     return c.lastRun;
   }
 
@@ -2892,7 +3194,9 @@ async function sendRequest(caseOverride) {
   const ctrl = new AbortController();
   opts.signal = ctrl.signal;
   const caseTimeout = caseTimeoutMs(c);
-  const timer = setTimeout(() => ctrl.abort(), caseTimeout);
+  const timer = setTimeout(() => { ctrl.__timedOut = true; ctrl.abort(); }, caseTimeout);
+  // Expose it so the user can cancel a single interactive send.
+  if (!caseOverride) window.__inflight = ctrl;
 
   const t0 = performance.now();
   let status = 0, text = "", error = null, respHdrs = {};
@@ -2902,7 +3206,7 @@ async function sendRequest(caseOverride) {
     resp.headers.forEach((v,k) => { respHdrs[k] = v; });
     text = await resp.text();
   } catch (e) {
-    if (e.name === "AbortError") error = `Request timed out after ${caseTimeout}ms`;
+    if (e.name === "AbortError") error = ctrl.__timedOut ? `Request timed out after ${caseTimeout}ms` : "Cancelled";
     else if (/Failed to fetch|NetworkError|CORS|blocked/i.test(String(e.message))) {
       error = "Network/CORS error — the browser blocked the request. Open Settings (⚙) and add a CORS proxy URL, or enable CORS on your API, or serve this page from the same origin as your API.";
     } else error = String(e.message || e);
@@ -2928,13 +3232,15 @@ async function sendRequest(caseOverride) {
   if (!error) { try { applyCaptures(c, status, text, respHdrs); } catch (e) {} }
   // Keep the true size and say so when the stored copy is clipped, rather
   // than silently reporting the truncated length as the response size.
-  c.lastRun = { status, durationMs:dur, at:Date.now(), error, verdict,
+  c.lastRun = { status, durationMs:dur, at:Date.now(), error,
+    verdict: isDraft(c) ? null : verdict,   // a draft has nothing to pass or fail
     body:text.slice(0,20000), bodyTruncated: text.length > 20000, bytes: byteLen(text),
     headers:respHdrs, specCheck };
-  // only auto-update status if still pending
-  if (c.status === "pending" || !c.status) c.status = verdict;
+  // only auto-update status if still pending — and never for a draft
+  if (!isDraft(c) && (c.status === "pending" || !c.status)) c.status = verdict;
+  pushHistory(c, c.lastRun);
   save();
-  if (!caseOverride) { $("#sendBtn").disabled = false; $("#sendBtn").innerHTML = 'Send request  &nbsp;&nbsp;<span style="opacity:.6;font-weight:400;font-size:11px">⌘↵</span>'; renderResp(); renderDoc(); renderSidebar(); }
+  if (!caseOverride) { window.__inflight = null; setSendButton(false); renderResp(); renderDoc(); renderSidebar(); renderHistory(); }
   return c.lastRun;
 }
 
@@ -2966,7 +3272,7 @@ function renderResp() {
     <span class="resp-meta">${last.durationMs}ms</span>
     <span class="resp-meta">${sizeLabel}</span>
     ${specBadge}
-    <span class="resp-verdict ${last.verdict}" ${specBadge?'style="margin-left:6px"':''}>${last.verdict==='pass'?'✓ passed':'✗ failed'}</span>
+    ${last.verdict ? `<span class="resp-verdict ${last.verdict}" ${specBadge?'style="margin-left:6px"':''}>${last.verdict==='pass'?'✓ passed':'✗ failed'}</span>` : ""}
   `;
   $("#respBody").className = "resp-body";
 
@@ -3137,6 +3443,9 @@ async function runAll() {
     await Promise.all(Array.from({ length: Math.min(lanes, list.length) }, worker));
   };
 
+  // A run contributes one history row, not 102 — otherwise History and the
+  // Run Report converge into the same list.
+  window.__suppressHistory = true;
   await runPooled(independent);   // wave 1 — creators land their captures here
   await runPooled(dependent);     // wave 2 — {id} consumers, now resolvable
   for (const c of serial) {
@@ -3148,8 +3457,10 @@ async function runAll() {
   fill.style.width = "100%";
   setTimeout(() => { bar.classList.remove("active"); fill.style.width = "0"; }, 600);
 
+  window.__suppressHistory = false;
   run.durationMs = Date.now() - startedAt;
   recountRun(run);
+  pushRunHistory(run);
   state.runs.push(run);
   while (state.runs.length > MAX_RUNS) state.runs.shift();
   state.rpRun = run.n; state.rpOpen = null;
