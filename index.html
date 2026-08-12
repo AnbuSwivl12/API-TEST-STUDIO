@@ -50,6 +50,49 @@
   .env-dot.stage{background:#e6b73e}
   .env-dot.local{background:var(--accent)}
   .env-dot.custom{background:var(--text-muted)}
+  /* ---------- module chip + picker ---------- */
+  .mchip{display:inline-flex;align-items:center;gap:8px;padding:5px 11px;border-radius:999px;
+    border:1px solid var(--border);background:var(--bg-elev-2);font-size:12px;cursor:pointer;flex-shrink:0;max-width:320px}
+  .mchip:hover{border-color:var(--border-strong);background:var(--bg-hover)}
+  .mchip .mc-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mchip .mc-meta{color:var(--text-dim);font-family:var(--mono);font-size:10.5px;white-space:nowrap}
+  .mchip .mc-caret{color:var(--text-dim);font-size:10px}
+  .mpicker{position:absolute;top:52px;left:16px;z-index:70;width:380px;max-width:92vw;display:none;
+    background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+  .mpicker.open{display:block}
+  .mp-head{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600}
+  .mp-list{max-height:340px;overflow-y:auto}
+  .mp-item{padding:9px 14px;cursor:pointer;border-left:2px solid transparent}
+  .mp-item:hover{background:var(--bg-elev-2)}
+  .mp-item.on{background:var(--accent-soft);border-left-color:var(--accent)}
+  .mp-row1{display:flex;align-items:center;gap:8px}
+  .mp-name{font-size:12.5px;font-weight:500}
+  .mp-fail{font-family:var(--mono);font-size:9.5px;padding:1px 5px;border-radius:6px;background:var(--danger-soft);color:var(--danger)}
+  .mp-count{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+  .mp-row2{display:flex;align-items:center;gap:8px;margin-top:2px;font-size:10.5px;color:var(--text-dim)}
+  .mp-spec{color:var(--success)} .mp-nospec{color:var(--text-dim)}
+  .mp-foot{display:flex;gap:6px;padding:9px 12px;border-top:1px solid var(--border);background:var(--bg-elev-2)}
+  .danger-text{color:var(--danger)}
+
+  /* ---------- auth chip + popovers ---------- */
+  .authchip{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;
+    border:1px solid var(--border);background:var(--bg-elev-2);font-size:12px;cursor:pointer;flex-shrink:0}
+  .authchip:hover{border-color:var(--border-strong);background:var(--bg-hover)}
+  .authchip .ad{width:7px;height:7px;border-radius:50%;background:var(--danger)}
+  .authchip.set .ad{background:var(--success)}
+  .authchip .at{font-family:var(--mono);font-size:10.5px;color:var(--text-dim)}
+  .pop{position:absolute;top:52px;z-index:70;width:340px;max-width:92vw;display:none;padding:12px 14px;
+    background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow)}
+  .pop.open{display:block}
+  .pop h5{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim)}
+  .menu{position:absolute;top:52px;right:16px;z-index:70;width:230px;display:none;padding:6px;
+    background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow)}
+  .menu.open{display:block}
+  .menu button{display:flex;width:100%;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;font-size:12.5px;text-align:left}
+  .menu button:hover{background:var(--bg-elev-2)}
+  .menu .sep{height:1px;background:var(--border);margin:5px 2px}
+  .menu .k{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+
   /* ---------- view switch (Cases | Run Report) ---------- */
   .viewsw{display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:var(--bg-elev-2);flex-shrink:0}
   .viewsw button{padding:5px 11px;font-size:12px;font-weight:500;color:var(--text-muted);border-right:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
@@ -134,10 +177,21 @@
     .rp-rail{width:150px}
   }
 
-  /* first-run welcome strip */
-  .welcome{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;background:linear-gradient(90deg,rgba(99,102,241,.14),rgba(236,72,153,.08));border-bottom:1px solid var(--border);font-size:12px;color:var(--text-dim);flex-shrink:0}
-  .welcome b{color:var(--text)}
-  .welcome .sp{margin-left:auto;display:flex;gap:6px}
+  /* ---------- mid-run tray ---------- */
+  .runtray{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:60;display:none;
+    align-items:center;gap:14px;padding:10px 16px;border-radius:12px;background:var(--bg-elev);
+    border:1px solid var(--border-strong);box-shadow:var(--shadow);font-size:12px;max-width:92vw}
+  .runtray.on{display:flex}
+  .runtray .n{font-family:var(--mono);font-weight:700}
+  .runtray .lanes{display:flex;gap:3px}
+  .runtray .lanes i{width:6px;height:14px;border-radius:2px;background:var(--border-strong)}
+  .runtray .lanes i.busy{background:var(--accent)}
+  .runtray .track{width:200px;height:5px;border-radius:3px;background:var(--bg-elev-2);overflow:hidden;display:flex}
+  .runtray .track i{display:block;height:100%}
+  .runtray .chips{display:flex;gap:4px;flex-wrap:wrap;max-width:320px;overflow:hidden}
+  .runtray .chip{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:5px;
+    background:var(--danger-soft);color:var(--danger);cursor:pointer}
+
   .tb-actions{margin-left:auto;display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:6px;row-gap:6px}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 11px;border-radius:6px;background:var(--bg-elev-2);color:var(--text);border:1px solid var(--border);font-size:12px;font-weight:500;line-height:1;transition:all .15s;white-space:nowrap;flex-shrink:0}
   .btn:hover{background:var(--bg-hover);border-color:var(--border-strong)}
@@ -352,6 +406,8 @@
   .pv-title{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);font-weight:600;margin-bottom:6px}
   .pv-row{display:grid;grid-template-columns:110px 1fr;gap:6px;align-items:center;margin-bottom:5px}
   .pv-row:last-child{margin-bottom:0}
+  #varsPanel .pv-title{display:flex;align-items:center;gap:6px}
+  #varsPanel .pv-row{grid-template-columns:100px minmax(0,1fr) auto}
   .pv-row .key{font-family:var(--mono);font-size:11px;color:var(--accent);padding:4px 6px;background:var(--accent-soft);border-radius:4px;text-align:center}
   .pv-row input{height:28px;font-family:var(--mono);font-size:11px}
 
@@ -381,10 +437,9 @@
     <div class="brand">
       <div class="brand-logo">A</div>
       <span>API Test Studio</span>
-      <span id="appVersion" class="hint-chip" style="margin-left:6px;font-size:10px;background:var(--panel);color:var(--text-dim)">v1.9</span>
     </div>
-    <div class="tb-field" title="Pick which environment every request goes to">
-      <label>Env</label>
+    <div class="mchip" id="moduleChip" onclick="toggleModulePicker()" title="Which API area you're testing — cases, spec and host travel with it"></div>
+    <div class="tb-field" id="envField" title="Which environment every request goes to">
       <span class="env-dot" id="envDot"></span>
       <select id="envSelect" class="env-select">
         <option value="stage">Stage</option>
@@ -392,46 +447,19 @@
         <option value="custom">Custom…</option>
       </select>
     </div>
-    <div class="tb-field">
-      <label>Base URL</label>
-      <input id="baseUrl" placeholder="https://api.example.com" />
-    </div>
-    <div class="tb-field" title="Sent as the x-api-version header on every request">
-      <label>API Version</label>
-      <input id="apiVersion" placeholder="5.0.0" style="width:80px" />
-    </div>
-    <div class="tb-field">
-      <label>Auth</label>
-      <select id="authType" style="width:auto;height:30px;font-size:12px">
-        <option value="bearer">Bearer</option>
-        <option value="apikey">API Key</option>
-        <option value="basic">Basic</option>
-        <option value="none">None</option>
-      </select>
-      <input id="authToken" placeholder="paste token / key / user:pass" style="min-width:160px;max-width:240px;flex:1 1 160px" />
-    </div>
-    <button class="btn ghost small" onclick="openModal('settings')" title="CORS proxy, defaults"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    <div class="authchip" id="authChip" onclick="toggleAuthPop()" title="Auth for every request in every module"></div>
     <div class="viewsw" id="viewSwitch" title="Cases = browse and edit. Run Report = triage the last run.">
       <button data-v="cases" onclick="setView('cases')">Cases</button>
       <button data-v="report" onclick="setView('report')">Run Report<span class="badge" id="viewFailBadge" style="display:none">0</span></button>
     </div>
     <div class="tb-actions">
-      <button class="btn small" onclick="openModal('swagger')" title="Link an OpenAPI/Swagger spec for response examples"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Swagger<span id="swaggerChip" style="margin-left:4px;font-size:9px;color:var(--success);display:none">●</span></button>
+      <button class="btn small" onclick="openModal('swagger')" title="Connect this module to an OpenAPI/Swagger spec"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Swagger<span id="swaggerChip" style="margin-left:4px;font-size:9px;color:var(--success);display:none">●</span></button>
       <button class="btn small" onclick="openModal('addEndpoint')" title="Create a new test case from scratch"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Case</button>
       <button class="btn small" onclick="openModal('import')" title="Upload CSV/JSON of test cases"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import</button>
-      <button class="btn small primary" onclick="runAll()" title="Run every test case sequentially"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Run All</button>
-      <button class="btn small" onclick="exportReport()" title="Download CSV report of all cases + statuses"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
-      <button class="btn ghost small" onclick="toggleTheme()" title="Toggle dark / light" id="themeBtn"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+      <button class="btn small primary" id="runAllBtn" onclick="runAll()" title="Run this module's cases"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Run All</button>
+      <button class="btn small" onclick="exportReport()" title="Download a CSV report of every case + status"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
+      <button class="btn ghost small" id="moreBtn" onclick="toggleMoreMenu()" title="Settings, theme">⋯</button>
     </div>
-  </div>
-
-  <!-- first-run welcome (hidden once dismissed) -->
-  <div class="welcome" id="welcomeBar" style="display:none">
-    <span>👋 <b>Welcome!</b> You're pointed at the <b id="welcomeEnv">Stage</b> API (<span class="mono" id="welcomeBase"></span>). Paste your <b>bearer token</b> in the top bar, then hit <b>Run All</b> — nothing to install, everything is saved in this browser.</span>
-    <span class="sp">
-      <button class="btn small" onclick="checkEnvHealth(true)">Test connection</button>
-      <button class="btn small primary" onclick="dismissWelcome()">Got it</button>
-    </span>
   </div>
 
   <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
@@ -494,6 +522,7 @@
         <div class="url-preview" id="urlPreview"></div>
         <button class="tp-send" id="sendBtn" onclick="sendRequest()">Send request  &nbsp;&nbsp;<span style="opacity:.6;font-weight:400;font-size:11px">⌘↵</span></button>
       </div>
+      <div id="varsPanel"></div>
       <div id="pathVars"></div>
       <div class="tp-tabs" id="tpTabs">
         <div class="tp-tab active" data-tab="params">Params<span class="badge" id="bParams">0</span></div>
@@ -519,11 +548,95 @@
   </div>
 </div>
 
+<!-- module picker -->
+<div class="mpicker" id="modulePicker"></div>
+
+<!-- auth popover -->
+<div class="pop" id="authPop" style="left:auto">
+  <h5>Auth — shared by every module</h5>
+  <div class="form-row">
+    <select id="authType" style="height:30px;font-size:12px">
+      <option value="bearer">Bearer</option>
+      <option value="apikey">API Key</option>
+      <option value="basic">Basic</option>
+      <option value="none">None</option>
+    </select>
+  </div>
+  <div class="form-row" style="margin-top:8px">
+    <input id="authToken" placeholder="paste token / key / user:pass" />
+    <small class="muted" id="authExpiry" style="margin-top:5px;font-size:11px;line-height:1.5"></small>
+  </div>
+  <div style="display:flex;gap:6px;margin-top:10px">
+    <button class="btn small" onclick="checkEnvHealth(true)">Test connection</button>
+    <button class="btn ghost small" style="margin-left:auto" onclick="closeAllPops()">Done</button>
+  </div>
+</div>
+
+<!-- overflow menu -->
+<div class="menu" id="moreMenu">
+  <button onclick="closeAllPops();openModal('settings')">Settings…</button>
+  <button onclick="closeAllPops();checkEnvHealth(true)">Test connection</button>
+  <button onclick="closeAllPops();toggleModulePicker()">Switch module…</button>
+  <button onclick="closeAllPops();openModal('addModule')">Add module…</button>
+  <div class="sep"></div>
+  <button onclick="closeAllPops();toggleTheme()">Toggle theme</button>
+</div>
+
+<!-- add module modal -->
+<div class="modal-backdrop" id="modalAddModule">
+  <div class="modal">
+    <div class="modal-head">Add module<button onclick="closeModal('addModule')">&times;</button></div>
+    <div class="modal-body">
+      <small class="muted" style="display:block;font-size:11.5px;line-height:1.6;margin-bottom:10px">
+        A module is one API area: its own cases, its own OpenAPI spec, its own run history and its own host.
+        The environment, token and settings stay shared, so switching modules doesn't make you set up again.
+      </small>
+      <div class="form-row">
+        <label>Module name</label>
+        <input id="am_name" placeholder="e.g. Billing" />
+      </div>
+      <div class="form-row">
+        <label>Stage host</label>
+        <input id="am_stage" placeholder="https://api.dev.swivlconnect.com" />
+      </div>
+      <div class="form-row">
+        <label>Local host</label>
+        <input id="am_local" placeholder="http://localhost:3000" />
+      </div>
+      <small class="muted" style="font-size:11px;line-height:1.5">
+        Once it's created, load its spec with <b>Spec for this module</b>, or bring its cases in with <b>Import</b> (CSV / JSON / Google Sheet).
+      </small>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('addModule')">Cancel</button>
+      <button class="btn primary" onclick="saveNewModule()">Add module</button>
+    </div>
+  </div>
+</div>
+
+<!-- mid-run tray -->
+<div class="runtray" id="runTray"></div>
+
 <!-- settings modal -->
 <div class="modal-backdrop" id="modalSettings">
   <div class="modal">
     <div class="modal-head">Settings<button onclick="closeModal('settings')">&times;</button></div>
     <div class="modal-body">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px" id="set_module_title">This module</div>
+      <div class="form-row">
+        <label id="set_host_label">Host</label>
+        <input id="set_host" placeholder="https://api.dev.swivlconnect.com" />
+        <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.5">
+          The host this module uses in the current environment. Leave it empty to fall back to the shared default for its service. Switching environments swaps this automatically — that's why there's no Base URL box in the top bar any more.
+        </small>
+      </div>
+      <div class="form-row">
+        <label>API version header (x-api-version)</label>
+        <input id="set_apiversion" placeholder="5.0.0" />
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0" />
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">Running</div>
       <div class="form-row">
         <label>CORS proxy URL (optional)</label>
         <input id="set_proxy" placeholder="https://your-proxy.example.com/?url=" oninput="proxyHint(this.value)" />
@@ -535,11 +648,25 @@
         </small>
       </div>
       <div class="form-row">
-        <label>Default request timeout (ms)</label>
+        <label>Per-case timeout (ms)</label>
+        <input id="set_casetimeout" type="number" placeholder="10000" />
+        <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.5">
+          How long any one case may hang before it's called a failure. This is the single biggest lever on run time — two cases parked on a 30 s timeout cost more than the other hundred combined. Timing and load cases ignore it and use the ceiling below.
+        </small>
+      </div>
+      <div class="form-row">
+        <label>Timeout ceiling for timing / load cases (ms)</label>
         <input id="set_timeout" type="number" placeholder="30000" />
       </div>
       <div class="form-row">
-        <label>Throttle between bulk-run requests (ms)</label>
+        <label>Parallel lanes during a run</label>
+        <input id="set_lanes" type="number" min="1" max="12" placeholder="6" />
+        <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.5">
+          How many requests are in flight at once. Set to <b>1</b> for the old strictly-sequential behaviour. Cases about response time, rate limiting or concurrent load are always pulled out and run alone at the end, so a busy pool can't invalidate them.
+        </small>
+      </div>
+      <div class="form-row">
+        <label>Throttle between sequential requests (ms)</label>
         <input id="set_delay" type="number" placeholder="120" />
       </div>
 
@@ -581,8 +708,9 @@
 <!-- swagger modal -->
 <div class="modal-backdrop" id="modalSwagger">
   <div class="modal" style="max-width:620px">
-    <div class="modal-head">Link Swagger / OpenAPI<button onclick="closeModal('swagger')">&times;</button></div>
+    <div class="modal-head">Connect Swagger / OpenAPI<button onclick="closeModal('swagger')">&times;</button></div>
     <div class="modal-body">
+      <div id="sw_module_note" class="muted" style="font-size:12px;margin-bottom:10px;padding:8px 10px;border-radius:6px;background:var(--bg-elev-2);border:1px solid var(--border)"></div>
       <div style="padding:12px;border:1px solid var(--accent);background:rgba(88,166,255,.08);border-radius:6px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
         <div style="flex:1">
           <div style="font-size:13px;font-weight:600;color:var(--accent)">Use the built-in Swivl Template API spec</div>
@@ -1032,7 +1160,13 @@ const DEFAULT_BASE = ENVS[DEFAULT_ENV].base;
 /* Which env does a base URL correspond to? "custom" when it matches none. */
 function envForBase(url) {
   const u = (url || "").trim().replace(/\/+$/, "");
-  for (const k of Object.keys(ENVS)) if (ENVS[k].base === u) return k;
+  const m = (typeof activeModule === "function") ? activeModule() : null;
+  for (const k of Object.keys(ENVS)) {
+    if (ENVS[k].base === u) return k;
+    // A module can sit on a different host for the same env (Templates is on
+    // template.dev, everything else on api.dev) — that's still "Stage".
+    if (m && (baseUrlFor(m, k) || "").replace(/\/+$/, "") === u) return k;
+  }
   return "custom";
 }
 
@@ -1045,7 +1179,9 @@ const state = (() => {
     authToken: "",
     apiVersion: "",
     proxyUrl: "",
-    timeoutMs: 30000,
+    timeoutMs: 30000,     // ceiling, used by timing/load cases
+    caseTimeoutMs: 10000, // fail-fast default for everything else
+    lanes: 6,             // parallel requests during a run
     bulkDelayMs: 120,
     syncUrl: "",
     syncToken: "",
@@ -1060,7 +1196,6 @@ const state = (() => {
     activeTab: "params",
     collapsedTags: {},
     selection: [],
-    welcomeSeen: false,
     // Run Report
     view: "cases",
     runs: [],
@@ -1068,6 +1203,9 @@ const state = (() => {
     rpTag: null,        // tag rail filter
     rpOpen: null,       // expanded failure row
     rpBuckets: {},      // which "everything else" buckets are open
+    // chaining
+    vars: {},           // captured values, spent as {id} / {{name}}
+    varSource: {},      // which case produced each one
   };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
@@ -1084,16 +1222,233 @@ const state = (() => {
   } catch (e) {}
   return defaults;
 })();
+/* Modules are wired up at boot — SEED_MODULES and friends are consts declared
+   further down, so they can't be touched from here. */
 
+/* =========================================================================
+   Modules — one API area at a time
+   -------------------------------------------------------------------------
+   A module owns its cases, its OpenAPI spec, its run history and its host.
+   The session owns the environment, the token and the settings — those are
+   shared, which is why the base URL can be a `service x env` lookup instead
+   of an input you retype.
+   ========================================================================= */
+const SERVICES = {
+  template: { label: "Template API", stage: "https://template.dev.swivlconnect.com", local: "http://localhost:3000" },
+  core:     { label: "Core API",     stage: "https://api.dev.swivlconnect.com",      local: "http://localhost:3000" },
+};
+/* The areas this team actually tests — one per workbook in the repo. Only
+   Templates ships with cases; the rest are empty until you load a spec or
+   import the workbook. Hosts are editable per module. */
+const SEED_MODULES = [
+  { id: "templates",            name: "Templates",                 service: "template", builtin: true },
+  { id: "job-detail",           name: "Job Detail",                service: "core" },
+  { id: "billing",              name: "Billing",                   service: "core" },
+  { id: "customer-availability",name: "Customer Availability",     service: "core" },
+  { id: "building-unit",        name: "Building Unit (BE323)",     service: "core" },
+  { id: "recurring-sla",        name: "Recurring Service SLA",     service: "core" },
+  { id: "job-detail-exclusion", name: "Job Detail Page Exclusion", service: "core" },
+];
+
+function moduleById(id) { return (state.modules || []).find(m => m.id === id) || null; }
+function activeModule() { return moduleById(state.moduleId) || (state.modules || [])[0] || null; }
+
+function baseUrlFor(m, env) {
+  if (!m) return "";
+  const over = (m.baseUrls || {})[env];
+  if (over) return over;
+  const svc = SERVICES[m.service];
+  if (svc && svc[env]) return svc[env];
+  return (m.baseUrls || {}).custom || "";
+}
+
+/* Build the module list on first load, and fold a pre-modules save into it. */
+function ensureModules(st) {
+  if (!Array.isArray(st.modules) || !st.modules.length) {
+    st.modules = SEED_MODULES.map(s => ({
+      ...s, cases: [], runs: [], baseUrls: {}, spec: null, specSource: "",
+      selectedId: null, collapsedTags: {}, vars: {}, varSource: {}, apiVersion: "",
+    }));
+    const t = st.modules.find(m => m.id === "templates");
+    t.cases = Array.isArray(st.cases) ? st.cases : [];
+    t.runs = Array.isArray(st.runs) ? st.runs : [];
+    t.spec = st.swaggerSpec || null;
+    t.specSource = st.swaggerSource || "";
+    t.selectedId = st.selectedId || (t.cases[0] && t.cases[0].id) || null;
+    t.collapsedTags = st.collapsedTags || {};
+    t.apiVersion = st.apiVersion || "";
+    st.moduleId = "templates";
+  }
+  st.modules.forEach(m => {
+    if (!Array.isArray(m.cases)) m.cases = [];
+    if (!Array.isArray(m.runs)) m.runs = [];
+    if (!m.baseUrls) m.baseUrls = {};
+    if (!m.collapsedTags) m.collapsedTags = {};
+    if (!m.vars) m.vars = {};
+    if (!m.varSource) m.varSource = {};
+  });
+  if (!moduleById(st.moduleId)) st.moduleId = st.modules[0].id;
+  return st;
+}
+
+/* Flat top-level fields are the active module's working copies. */
+function syncActiveModule() {
+  const m = activeModule(); if (!m) return;
+  m.cases = state.cases;
+  m.runs = state.runs;
+  m.spec = state.swaggerSpec;
+  m.specSource = state.swaggerSource;
+  m.selectedId = state.selectedId;
+  m.collapsedTags = state.collapsedTags;
+  m.vars = state.vars;
+  m.varSource = state.varSource;
+  m.apiVersion = state.apiVersion;
+}
+function loadModuleIntoState(m) {
+  if (!m) return;
+  state.moduleId = m.id;
+  state.cases = m.cases;
+  state.runs = m.runs;
+  state.swaggerSpec = m.spec || null;
+  state.swaggerSource = m.specSource || "";
+  state.selectedId = m.selectedId || (m.cases[0] && m.cases[0].id) || null;
+  state.collapsedTags = m.collapsedTags || {};
+  state.vars = m.vars || {};
+  state.varSource = m.varSource || {};
+  state.apiVersion = m.apiVersion || "";
+  const b = baseUrlFor(m, state.env);
+  if (b) state.baseUrl = b;
+  state.selection = [];
+  state.rpRun = null; state.rpOpen = null; state.rpTag = null;
+}
+
+function switchModule(id) {
+  const m = moduleById(id); if (!m || m.id === state.moduleId) { closeModulePicker(); return; }
+  syncActiveModule();
+  loadModuleIntoState(m);
+  save();
+  closeModulePicker();
+  renderAll();
+  toast(`${m.name} — ${m.cases.length} case${m.cases.length === 1 ? "" : "s"} · ${state.baseUrl || "no host set"}`, "success");
+}
+
+/* Everything the app draws, in one call — module switches change all of it. */
+function renderAll() {
+  renderModuleChip(); renderEnv(); renderAuthChip(); renderViewBadge();
+  renderSidebar(); renderDoc(); renderTry(); renderResp();
+  if (state.view === "report") renderReport();
+}
+
+function moduleFailCount(m) {
+  const r = (m.runs || [])[m.runs.length - 1];
+  return r ? r.counts.fail : 0;
+}
+function renderModuleChip() {
+  const el = $("#moduleChip"); if (!el) return;
+  const m = activeModule(); if (!m) return;
+  const fails = moduleFailCount(m);
+  el.innerHTML = `<span class="mc-name">${esc(m.name)}</span>
+    <span class="mc-meta">${m.cases.length} case${m.cases.length === 1 ? "" : "s"}${fails ? ` · <span style="color:var(--danger)">${fails} failing</span>` : ""}</span>
+    <span class="mc-caret">▾</span>`;
+}
+
+function openModulePicker() {
+  const p = $("#modulePicker"); if (!p) return;
+  syncActiveModule();
+  p.innerHTML = `
+    <div class="mp-head">Modules<span class="dim" style="font-weight:400;margin-left:auto;font-size:11px">env stays ${esc(ENVS[state.env] ? ENVS[state.env].label : "Custom")}</span></div>
+    <div class="mp-list">
+      ${state.modules.map(m => {
+        const host = baseUrlFor(m, state.env);
+        const fails = moduleFailCount(m);
+        return `<div class="mp-item${m.id === state.moduleId ? " on" : ""}" onclick="switchModule('${m.id}')">
+          <div class="mp-row1">
+            <span class="mp-name">${esc(m.name)}</span>
+            ${fails ? `<span class="mp-fail">${fails} failing</span>` : ""}
+            <span class="mp-count">${m.cases.length ? m.cases.length + " cases" : "empty"}</span>
+          </div>
+          <div class="mp-row2">
+            <span class="mono">${esc(host || "no host")}</span>
+            ${m.spec ? `<span class="mp-spec">spec</span>` : `<span class="mp-nospec">no spec</span>`}
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+    <div class="mp-foot">
+      <button class="btn small" onclick="openModal('addModule')">+ Add module</button>
+      <button class="btn ghost small" onclick="openModal('swagger')">Spec for this module</button>
+      ${activeModule() && !activeModule().builtin ? `<button class="btn ghost small danger-text" style="margin-left:auto" onclick="deleteModule('${state.moduleId}')">Delete</button>` : ""}
+    </div>`;
+  p.classList.add("open");
+  setTimeout(() => document.addEventListener("click", closeModulePickerOnce, { once: true }), 0);
+}
+function closeModulePickerOnce(e) {
+  if (e.target.closest("#modulePicker") || e.target.closest("#moduleChip")) {
+    setTimeout(() => document.addEventListener("click", closeModulePickerOnce, { once: true }), 0);
+    return;
+  }
+  closeModulePicker();
+}
+function closeModulePicker() { const p = $("#modulePicker"); if (p) p.classList.remove("open"); }
+function toggleModulePicker() {
+  const p = $("#modulePicker");
+  if (p && p.classList.contains("open")) closeModulePicker(); else openModulePicker();
+}
+
+function saveNewModule() {
+  const name = $("#am_name").value.trim();
+  if (!name) { toast("Give the module a name", "error"); return; }
+  const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || ("mod" + Date.now());
+  if (moduleById(id)) { toast("A module with that name already exists", "error"); return; }
+  const stage = $("#am_stage").value.trim();
+  const local = $("#am_local").value.trim();
+  const m = {
+    id, name, service: null,
+    baseUrls: { stage: stage || SERVICES.core.stage, local: local || SERVICES.core.local },
+    cases: [], runs: [], spec: null, specSource: "", selectedId: null,
+    collapsedTags: {}, vars: {}, varSource: {}, apiVersion: "",
+  };
+  syncActiveModule();
+  state.modules.push(m);
+  loadModuleIntoState(m);
+  save();
+  closeModal("addModule");
+  renderAll();
+  toast(`${name} added — load its spec or import its cases`, "success");
+}
+function deleteModule(id) {
+  const m = moduleById(id); if (!m) return;
+  if (m.builtin) { toast("The built-in module can't be deleted", "error"); return; }
+  if (!confirm(`Delete the "${m.name}" module and its ${m.cases.length} case(s)? This can't be undone.`)) return;
+  state.modules = state.modules.filter(x => x.id !== id);
+  loadModuleIntoState(state.modules[0]);
+  save(); closeModulePicker(); renderAll();
+  toast(`${m.name} deleted`, "");
+}
+
+/* What actually goes to localStorage: the module list owns cases, runs, spec
+   and captured vars. The top-level copies are just the active module's, held
+   flat so every existing renderer keeps working unchanged. */
+function serializableState() {
+  syncActiveModule();
+  const payload = { ...state };
+  ["cases", "runs", "swaggerSpec", "swaggerSource", "vars", "varSource", "collapsedTags"].forEach(k => delete payload[k]);
+  return payload;
+}
 function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(serializableState())); }
   catch (e) {
     // Almost always the 5 MB quota, and run history is the only thing here
-    // that grows without bound — drop the oldest runs and try again.
+    // that grows without bound — drop the oldest runs, across every module,
+    // and try again.
     let dropped = 0;
-    while (state.runs && state.runs.length > 1) {
-      state.runs.shift(); dropped++;
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); break; } catch (e2) {}
+    for (let pass = 0; pass < 40; pass++) {
+      const withRuns = (state.modules || []).filter(m => (m.runs || []).length);
+      if (!withRuns.length) break;
+      withRuns.sort((a, b) => (b.runs.length - a.runs.length) || ((a.runs[0].at || 0) - (b.runs[0].at || 0)));
+      withRuns[0].runs.shift(); dropped++;
+      if (activeModule() === withRuns[0]) state.runs = withRuns[0].runs;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(serializableState())); break; } catch (e2) {}
     }
     if (dropped) toast(`Storage full — dropped the ${dropped} oldest run(s) from history`, "");
   }
@@ -1298,10 +1653,22 @@ function visibleCaseIds() {
 function renderDoc() {
   const c = currentCase();
   if (!c) {
+    const m = activeModule();
+    // An empty module isn't an error state — it's a module you haven't filled
+    // in yet, so say what filling it in looks like.
+    const empty = m && !m.cases.length;
     $("#docPanel").innerHTML = `<div class="doc-empty">
-      <div style="text-align:center">
-        <div style="font-size:15px;color:var(--text);margin-bottom:6px">No test case selected</div>
-        <div>Click <b>+ Add Case</b> in the top bar to create one, or <b>Import</b> to upload a CSV/JSON.</div>
+      <div style="text-align:center;max-width:460px">
+        <div style="font-size:15px;color:var(--text);margin-bottom:6px">${empty ? esc(m.name) + " has no cases yet" : "No test case selected"}</div>
+        <div style="line-height:1.7">${empty
+          ? `Point it at <span class="mono">${esc(baseUrlFor(m, state.env) || "a host")}</span> and fill it from an OpenAPI spec, a CSV/JSON export, or a Google Sheet.`
+          : `Click <b>+ Add Case</b> in the top bar to create one, or <b>Import</b> to upload a CSV/JSON.`}</div>
+        ${empty ? `<div style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+          <button class="btn primary small" onclick="openModal('swagger')">Load a spec</button>
+          <button class="btn small" onclick="openModal('import')">Import cases</button>
+          <button class="btn small" onclick="openModal('addEndpoint')">Add one by hand</button>
+          <button class="btn ghost small" onclick="toggleModulePicker()">Switch module</button>
+        </div>` : ""}
       </div>
     </div>`;
     return;
@@ -1870,13 +2237,36 @@ function extractPathVars(path) {
 function renderPathVars(c) {
   const host = $("#pathVars");
   const vars = extractPathVars(c.path);
+  renderVarsPanel();
   if (!vars.length) { host.innerHTML = ""; return; }
   c.pathVars = c.pathVars || {};
   host.innerHTML = `<div class="pv-section">
     <div class="pv-title">Path variables  <span class="hint-chip">placeholders like {id} get replaced at send time</span></div>
-    ${vars.map(v => `<div class="pv-row">
-      <span class="key">{${esc(v)}}</span>
-      <input type="text" placeholder="value for ${esc(v)}" value="${esc(c.pathVars[v]||"")}" oninput="setPathVar('${esc(v)}', this.value)" />
+    ${vars.map(v => {
+      const captured = state.vars && state.vars[v];
+      const src = state.varSource && state.varSource[v];
+      return `<div class="pv-row">
+        <span class="key">{${esc(v)}}</span>
+        <input type="text" placeholder="${captured ? `auto: ${esc(String(captured).slice(0,28))}` : `value for ${esc(v)}`}" value="${esc(c.pathVars[v]||"")}" oninput="setPathVar('${esc(v)}', this.value)" />
+      </div>${captured && !c.pathVars[v] ? `<div style="font-size:10.5px;color:var(--text-dim);margin:-2px 0 6px 4px">using the value captured from ${esc(src || "an earlier run")}</div>` : ""}`;
+    }).join("")}
+  </div>`;
+}
+
+/* Captured values, and where each came from. */
+function renderVarsPanel() {
+  const host = $("#varsPanel"); if (!host) return;
+  const entries = Object.entries(state.vars || {});
+  if (!entries.length) { host.innerHTML = ""; return; }
+  host.innerHTML = `<div class="pv-section">
+    <div class="pv-title">Captured values
+      <span class="hint-chip">spend them as {${"{"}name}} or let {id} resolve itself</span>
+      <button class="btn ghost small" style="margin-left:auto;font-size:10px" onclick="clearVars()">Clear</button>
+    </div>
+    ${entries.map(([k, v]) => `<div class="pv-row">
+      <span class="key mono">${esc(k)}</span>
+      <span class="mono" style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(String(v).slice(0,40))}</span>
+      <span style="font-size:10px;color:var(--text-dim);white-space:nowrap">from ${esc((state.varSource||{})[k] || "—")}</span>
     </div>`).join("")}
   </div>`;
 }
@@ -2039,8 +2429,8 @@ async function buildBody(c, hdrs) {
     if (hdrs["content-type"] && /multipart\/form-data/i.test(hdrs["content-type"])) delete hdrs["content-type"];
     return fd;
   }
-  // default: raw JSON/text
-  return c.body || null;
+  // default: raw JSON/text — {{captured}} values interpolate here too
+  return c.body ? subVars(c.body) : null;
 }
 function addRow(kind) {
   const c = currentCase(); if (!c) return;
@@ -2089,19 +2479,12 @@ document.addEventListener("click", e => {
 });
 
 $("#search").addEventListener("input", e => { state.search = e.target.value; renderSidebar(); });
-$("#baseUrl").addEventListener("input", e => {
-  state.baseUrl = e.target.value;
-  state.env = envForBase(state.baseUrl);
-  save(); renderDoc(); renderEnv();
-});
 $("#envSelect").addEventListener("change", e => switchEnv(e.target.value));
-$("#authToken").addEventListener("input", e => { state.authToken = e.target.value; save(); });
-$("#authType").addEventListener("change", e => { state.authType = e.target.value; save(); });
-$("#apiVersion").addEventListener("input", e => { state.apiVersion = e.target.value; save(); renderDoc(); });
+$("#authToken").addEventListener("input", e => { state.authToken = e.target.value; save(); renderAuthChip(); });
+$("#authType").addEventListener("change", e => { state.authType = e.target.value; save(); renderAuthChip(); });
 
 $("#tryMethod").addEventListener("change", e => { const c = currentCase(); if (c) { c.method = e.target.value; save(); renderSidebar(); renderDoc(); renderUrlPreview(c); } });
 $("#tryPath").addEventListener("input", e => { const c = currentCase(); if (c) { c.path = e.target.value; save(); renderPathVars(c); renderUrlPreview(c); renderDoc(); } });
-$("#baseUrl").addEventListener("input", () => { const c = currentCase(); if (c) renderUrlPreview(c); });
 
 /* Auto-extract query string from pasted path -> Params tab */
 function splitPathQuery(raw) {
@@ -2225,16 +2608,121 @@ function detectProxyError(status, bodyText) {
   }
   return null;
 }
+/* =========================================================================
+   Chaining — capture a value out of one response, spend it in the next
+   -------------------------------------------------------------------------
+   A third of the suite hangs off {id}/{sectionId}/{submissionId} that only
+   exists once something earlier created it. Captured values live in
+   state.vars and are spent three ways: {id} path placeholders resolve from a
+   same-named var, {{name}} interpolates anywhere, and creators are ordered
+   ahead of consumers in a run.
+   ========================================================================= */
+const CAPTURE_KEYS = ["id", "templateId", "sectionId", "itemId", "submissionId", "fieldId", "subId"];
+
+/* Interpolate {{name}} from captured vars. */
+function subVars(s) {
+  if (typeof s !== "string" || s.indexOf("{{") === -1) return s;
+  return s.replace(/\{\{\s*([A-Za-z0-9_.-]+)\s*\}\}/g, (m, k) => {
+    const v = state.vars && state.vars[k];
+    return v == null ? m : String(v);
+  });
+}
+/* A path placeholder resolves from the case first, then from captured vars. */
+function resolvePathVar(c, key) {
+  const own = (c.pathVars || {})[key];
+  if (own) return subVars(own);
+  const v = state.vars && state.vars[key];
+  return v == null ? "" : String(v);
+}
+/* Does this case need a value it cannot supply itself? */
+function caseNeedsVars(c) {
+  return extractPathVars(c.path).some(v => !((c.pathVars || {})[v]));
+}
+function dig(obj, path) {
+  return String(path).split(".").reduce((o, k) => {
+    if (o == null) return undefined;
+    const m = k.match(/^(.*?)\[(\d+)\]$/);
+    if (m) { const inner = m[1] ? o[m[1]] : o; return Array.isArray(inner) ? inner[+m[2]] : undefined; }
+    return o[k];
+  }, obj);
+}
+/* After a 2xx: run the case's explicit captures, then pick up the usual id
+   fields so the common create -> read -> update -> delete chain just works. */
+function applyCaptures(c, status, text, hdrs) {
+  if (!(status >= 200 && status < 300)) return;
+  state.vars = state.vars || {};
+  let body = null;
+  try { body = JSON.parse(text); } catch (e) { /* not JSON — explicit captures may still target headers */ }
+
+  (c.captures || []).forEach(cap => {
+    if (!cap || !cap.name || !cap.from) return;
+    let val;
+    if (/^header:/i.test(cap.from)) val = (hdrs || {})[cap.from.slice(7).trim().toLowerCase()];
+    else if (body) val = dig(body, cap.from.replace(/^\$\.?/, ""));
+    if (val != null && typeof val !== "object") {
+      state.vars[cap.name] = String(val);
+      state.varSource = state.varSource || {};
+      state.varSource[cap.name] = c.id;
+    }
+  });
+
+  if (!body) return;
+  const data = body.data != null ? body.data : body;
+  const seed = Array.isArray(data) ? data[0] : data;
+  if (!seed || typeof seed !== "object") return;
+  state.varSource = state.varSource || {};
+  CAPTURE_KEYS.forEach(k => {
+    const v = seed[k];
+    if (v == null || typeof v === "object") return;
+    // Creators own the value; a plain read shouldn't clobber a fresher one.
+    const isCreate = (c.method === "POST" || c.method === "PUT");
+    if (isCreate || state.vars[k] == null) {
+      state.vars[k] = String(v);
+      state.varSource[k] = c.id;
+    }
+  });
+  // A create that returns `id` also feeds the {templateId}-style placeholders
+  // used by the nested routes, unless something more specific already did.
+  if (seed.id != null && (c.method === "POST" || c.method === "PUT")) {
+    const p = c.path || "";
+    if (/^\/templates\/?$/.test(p)) { state.vars.templateId = String(seed.id); state.varSource.templateId = c.id; }
+    if (/\/sections\/?$/.test(p))   { state.vars.sectionId  = String(seed.id); state.varSource.sectionId  = c.id; }
+    if (/\/submissions/.test(p))    { state.vars.submissionId = String(seed.id); state.varSource.submissionId = c.id; }
+  }
+}
+/* Two DELETEs spending the same captured id means the second one is asking
+   about a resource the first already removed. The app can see it; it can't
+   fix it — so say so rather than let a bogus 404 look like a bug. */
+function warnCaptureConflicts(dependent) {
+  const byVar = {};
+  dependent.filter(c => (c.method || "").toUpperCase() === "DELETE").forEach(c => {
+    extractPathVars(c.path).filter(v => !((c.pathVars || {})[v])).forEach(v => {
+      (byVar[v] = byVar[v] || []).push(c.id);
+    });
+  });
+  const clashes = Object.entries(byVar).filter(([, ids]) => ids.length > 1);
+  if (clashes.length) {
+    const [v, ids] = clashes[0];
+    toast(`${ids.length} DELETE cases share {${v}} (${ids.slice(0,3).join(", ")}) — after the first one the resource is gone, so the rest will 404. Give them their own values.`, "");
+  }
+}
+
+function clearVars() {
+  state.vars = {}; state.varSource = {}; save();
+  const c = currentCase(); if (c) { renderPathVars(c); renderUrlPreview(c); }
+  renderVarsPanel();
+  toast("Captured values cleared", "");
+}
+
 function buildUrl(c, opts) {
   const base = (state.baseUrl || "").replace(/\/$/, "");
-  let path = c.path || "";
-  // substitute path variables
-  const pv = c.pathVars || {};
+  let path = subVars(c.path || "");
+  // substitute path variables — case value first, then a captured one
   path = path.replace(/\{([^{}]+)\}/g, (m, key) => {
-    const v = pv[key];
+    const v = resolvePathVar(c, key);
     return v ? encodeURIComponent(v) : m;
   });
-  const qs = (c.query||[]).filter(q=>q.enabled!==false && q.key).map(q => encodeURIComponent(q.key) + "=" + encodeURIComponent(q.value||"")).join("&");
+  const qs = (c.query||[]).filter(q=>q.enabled!==false && q.key).map(q => encodeURIComponent(q.key) + "=" + encodeURIComponent(subVars(q.value||""))).join("&");
   const full = base + path + (qs ? (path.includes("?") ? "&" : "?") + qs : "");
   if (opts && opts.withProxy && state.proxyUrl) {
     // skip GET-only public proxies for write methods — they return 404 like
@@ -2248,7 +2736,7 @@ function buildUrl(c, opts) {
 }
 function buildHeaders(c) {
   const hdrs = {};
-  (c.headers||[]).filter(h=>h.enabled!==false && h.key).forEach(h => { hdrs[h.key] = h.value||""; });
+  (c.headers||[]).filter(h=>h.enabled!==false && h.key).forEach(h => { hdrs[h.key] = subVars(h.value||""); });
   if (!c.skipAuth) {
     const tok = c.overrideAuth || state.authToken;
     if (tok) {
@@ -2283,6 +2771,27 @@ function buildCurl(c) {
   return parts.join(" \\\n ");
 }
 
+/* Per-case timeout, falling back to the global default. Cases that are
+   *about* slowness (baseline timing, load, downstream failure) keep the long
+   default; everything else can fail fast. */
+function caseTimeoutMs(c) {
+  const n = parseInt(c && c.timeoutMs, 10);
+  if (n > 0) return n;
+  if (isSerialCase(c)) return state.timeoutMs || 30000;
+  return state.caseTimeoutMs || state.timeoutMs || 30000;
+}
+
+/* Cases whose meaning depends on being alone against the API — running these
+   inside a concurrency pool silently changes what they prove (a 429 from our
+   own pool is not the rate limit under test). */
+function isSerialCase(c) {
+  if (!c) return false;
+  if (c.serial === true) return true;
+  if (c.serial === false) return false;
+  const s = ((c.scenario || "") + " " + (c.notes || "")).toLowerCase();
+  return /response time|rate limit|concurrent|throughput|load test|baseline timing/.test(s);
+}
+
 async function sendRequest(caseOverride) {
   const c = caseOverride || currentCase(); if (!c) return;
   if (!caseOverride) { $("#sendBtn").disabled = true; $("#sendBtn").innerHTML = "Sending..."; }
@@ -2306,10 +2815,12 @@ async function sendRequest(caseOverride) {
   const reqBody = await buildBody(c, hdrs);
   if (reqBody != null && c.method !== "GET" && c.method !== "HEAD") opts.body = reqBody;
 
-  // timeout via AbortController
+  // timeout via AbortController — a per-case override beats the global default,
+  // because two slow cases sitting on a 30s timeout dominate a whole run.
   const ctrl = new AbortController();
   opts.signal = ctrl.signal;
-  const timer = setTimeout(() => ctrl.abort(), state.timeoutMs || 30000);
+  const caseTimeout = caseTimeoutMs(c);
+  const timer = setTimeout(() => ctrl.abort(), caseTimeout);
 
   const t0 = performance.now();
   let status = 0, text = "", error = null, respHdrs = {};
@@ -2319,7 +2830,7 @@ async function sendRequest(caseOverride) {
     resp.headers.forEach((v,k) => { respHdrs[k] = v; });
     text = await resp.text();
   } catch (e) {
-    if (e.name === "AbortError") error = `Request timed out after ${state.timeoutMs}ms`;
+    if (e.name === "AbortError") error = `Request timed out after ${caseTimeout}ms`;
     else if (/Failed to fetch|NetworkError|CORS|blocked/i.test(String(e.message))) {
       error = "Network/CORS error — the browser blocked the request. Open Settings (⚙) and add a CORS proxy URL, or enable CORS on your API, or serve this page from the same origin as your API.";
     } else error = String(e.message || e);
@@ -2340,6 +2851,9 @@ async function sendRequest(caseOverride) {
   if (state.swaggerSpec && !error) {
     try { specCheck = checkResponseAgainstSpec(c, status, text, respHdrs); } catch(e) { specCheck = null; }
   }
+  // Feed anything reusable out of this response into the chain before the
+  // next case is built.
+  if (!error) { try { applyCaptures(c, status, text, respHdrs); } catch (e) {} }
   c.lastRun = { status, durationMs:dur, at:Date.now(), error, verdict, body:text.slice(0,20000), headers:respHdrs, specCheck };
   // only auto-update status if still pending
   if (c.status === "pending" || !c.status) c.status = verdict;
@@ -2487,7 +3001,11 @@ function specExamplePreviewHtml(c) {
 async function runAll() {
   const targets = state.selection.length ? state.cases.filter(c => state.selection.includes(c.id)) : state.cases.slice();
   const scope = state.selection.length ? `${targets.length} selected` : `all ${targets.length}`;
-  if (!confirm(`Run ${scope} test case(s) sequentially? This will hit the live API.`)) return;
+  const nSerial = targets.filter(isSerialCase).length;
+  const laneNote = (state.lanes || 6) > 1
+    ? `${state.lanes || 6} at a time${nSerial ? `, plus ${nSerial} timing/load case(s) run alone at the end` : ""}`
+    : "one at a time";
+  if (!confirm(`Run ${scope} test case(s) against ${state.baseUrl} — ${laneNote}?\nThis hits the live API.`)) return;
   const bar = $("#progressBar"), fill = $("#progressFill");
   bar.classList.add("active");
   const delay = state.bulkDelayMs || 120;
@@ -2505,13 +3023,52 @@ async function runAll() {
     durationMs: 0,
   };
 
-  for (let i = 0; i < targets.length; i++) {
-    fill.style.width = Math.round((i / targets.length) * 100) + "%";
-    await sendRequest(targets[i]);
-    run.results.push(snapshotResult(targets[i]));
-    renderSidebar();
+  // Parallel cases go through a bounded pool; the ones whose meaning depends on
+  // having the API to themselves run afterwards, one at a time.
+  const lanes = Math.max(1, Math.min(12, state.lanes || 6));
+  // Consumers of a captured value must not race the creator that produces it,
+  // so they run in a second wave after the independent cases have finished.
+  const independent = targets.filter(c => !isSerialCase(c) && !caseNeedsVars(c));
+  const dependent   = targets.filter(c => !isSerialCase(c) && caseNeedsVars(c));
+  const serial      = targets.filter(isSerialCase);
+  warnCaptureConflicts(dependent);
+  let done = 0;
+  const tick = () => {
+    done++;
+    fill.style.width = Math.round((done / targets.length) * 100) + "%";
+    renderRunTray(run, done, targets.length, lanes);
+  };
+  showRunTray(true);
+
+  const runPooled = async (list) => {
+    if (!list.length) return;
+    if (lanes === 1) {
+      for (const c of list) {
+        await sendRequest(c); run.results.push(snapshotResult(c)); tick();
+        if (delay) await new Promise(r => setTimeout(r, delay));
+      }
+      return;
+    }
+    let next = 0;
+    const worker = async () => {
+      while (next < list.length) {
+        const c = list[next++];
+        await sendRequest(c);
+        run.results.push(snapshotResult(c));
+        tick();
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(lanes, list.length) }, worker));
+  };
+
+  await runPooled(independent);   // wave 1 — creators land their captures here
+  await runPooled(dependent);     // wave 2 — {id} consumers, now resolvable
+  for (const c of serial) {
+    await sendRequest(c); run.results.push(snapshotResult(c)); tick();
     if (delay) await new Promise(r => setTimeout(r, delay));
   }
+  renderSidebar();
+  showRunTray(false);
   fill.style.width = "100%";
   setTimeout(() => { bar.classList.remove("active"); fill.style.width = "0"; }, 600);
 
@@ -2617,6 +3174,12 @@ function clearAll() {
 }
 
 function openModal(id) {
+  if (id === "addModule") {
+    closeModulePicker();
+    $("#am_name").value = "";
+    $("#am_stage").value = SERVICES.core.stage;
+    $("#am_local").value = SERVICES.core.local;
+  }
   if (id === "addEndpoint") {
     $("#ae_id").value = "";
     $("#ae_scenario").value = "";
@@ -2628,8 +3191,18 @@ function openModal(id) {
     $("#ae_notes").value = "";
   }
   if (id === "settings") {
+    const m = activeModule();
+    const envLabel = ENVS[state.env] ? ENVS[state.env].label : "Custom";
+    if (m) {
+      $("#set_module_title").textContent = `${m.name} — ${envLabel}`;
+      $("#set_host_label").textContent = `Host for ${m.name} in ${envLabel}`;
+      $("#set_host").value = (m.baseUrls || {})[state.env] || baseUrlFor(m, state.env) || state.baseUrl || "";
+    }
+    $("#set_apiversion").value = state.apiVersion || "";
     $("#set_proxy").value = state.proxyUrl || "";
     $("#set_timeout").value = state.timeoutMs || 30000;
+    $("#set_casetimeout").value = state.caseTimeoutMs || 10000;
+    $("#set_lanes").value = state.lanes || 6;
     $("#set_delay").value = state.bulkDelayMs || 120;
     if ($("#set_sync_url")) $("#set_sync_url").value = state.syncUrl || "";
     if ($("#set_sync_token")) $("#set_sync_token").value = state.syncToken || "";
@@ -2638,6 +3211,10 @@ function openModal(id) {
     proxyHint(state.proxyUrl || "");
   }
   if (id === "swagger") {
+    const m = activeModule();
+    if (m && $("#sw_module_note")) {
+      $("#sw_module_note").innerHTML = `The spec attaches to <b>${esc(m.name)}</b> — its cases, its host (<span class="mono">${esc(baseUrlFor(m, state.env) || "not set")}</span>), its run history. Other modules keep their own.`;
+    }
     const src = state.swaggerSource || "";
     if ($("#sw_url")) $("#sw_url").value = src && src !== "pasted" ? src : "";
     if ($("#sw_paste") && !$("#sw_paste").value && state.swaggerSpec) {
@@ -2655,14 +3232,26 @@ function openModal(id) {
 function closeModal(id) { $("#modal" + id[0].toUpperCase() + id.slice(1)).classList.remove("open"); }
 
 function saveSettings() {
+  const m = activeModule();
+  if (m) {
+    const host = $("#set_host").value.trim().replace(/\/+$/, "");
+    m.baseUrls = m.baseUrls || {};
+    if (host) m.baseUrls[state.env] = host; else delete m.baseUrls[state.env];
+    state.baseUrl = baseUrlFor(m, state.env) || state.baseUrl;
+    state.env = envForBase(state.baseUrl);
+  }
+  state.apiVersion = $("#set_apiversion").value.trim();
   state.proxyUrl = $("#set_proxy").value.trim();
   state.timeoutMs = parseInt($("#set_timeout").value, 10) || 30000;
+  state.caseTimeoutMs = parseInt($("#set_casetimeout").value, 10) || 10000;
+  state.lanes = Math.max(1, Math.min(12, parseInt($("#set_lanes").value, 10) || 6));
   state.bulkDelayMs = parseInt($("#set_delay").value, 10) || 120;
   state.syncUrl = ($("#set_sync_url").value || "").trim().replace(/\/$/, "");
   state.syncToken = ($("#set_sync_token").value || "").trim();
   state.syncAuto = !!$("#set_sync_auto").checked;
   save();
   closeModal("settings");
+  renderAll();
   toast("Settings saved", "success");
 }
 
@@ -3585,6 +4174,31 @@ function renderViewBadge() {
   b.style.display = n ? "inline-block" : "none";
 }
 
+/* --- mid-run tray: what the pool is doing, while it does it --- */
+function showRunTray(on) {
+  const t = $("#runTray"); if (!t) return;
+  t.classList.toggle("on", !!on);
+  if (!on) t.innerHTML = "";
+}
+function renderRunTray(run, done, total, lanes) {
+  const t = $("#runTray"); if (!t || !t.classList.contains("on")) return;
+  const pass = run.results.filter(r => r.verdict === "pass").length;
+  const fail = run.results.filter(r => r.verdict === "fail").length;
+  const busy = Math.min(lanes, total - done);
+  const fails = run.results.filter(r => r.verdict === "fail").slice(-8);
+  t.innerHTML = `
+    <span class="n">${done}<span style="color:var(--text-dim)">/${total}</span></span>
+    <span class="lanes" title="${lanes} parallel lanes">${Array.from({length: lanes}, (_, i) => `<i class="${i < busy ? "busy" : ""}"></i>`).join("")}</span>
+    <span class="track">
+      <i style="width:${(pass / total) * 100}%;background:var(--success)"></i>
+      <i style="width:${(fail / total) * 100}%;background:var(--danger)"></i>
+    </span>
+    <span style="color:var(--success)">${pass} pass</span>
+    <span style="color:var(--danger)">${fail} fail</span>
+    ${fails.length ? `<span class="chips">${fails.map(r => `<span class="chip" onclick="rpJumpFromTray('${r.id}')">${r.id}</span>`).join("")}</span>` : ""}`;
+}
+function rpJumpFromTray(id) { state.rpOpen = id; save(); if (state.view === "report") renderReport(); }
+
 function fmtDur(ms) {
   if (ms < 1000) return ms + " ms";
   const s = ms / 1000;
@@ -3936,17 +4550,18 @@ function recountRun(run) {
 function switchEnv(env) {
   if (ENVS[env]) {
     state.env = env;
-    state.baseUrl = ENVS[env].base;
+    // The module decides the host for this env — Templates and the core API
+    // live on different services.
+    state.baseUrl = baseUrlFor(activeModule(), env) || ENVS[env].base;
     // Named envs allow CORS directly — a stale proxy would only break writes.
     if (state.proxyUrl) { state.proxyUrl = ""; toast("CORS proxy cleared — not needed for " + ENVS[env].label, "info"); }
   } else {
     state.env = "custom";
   }
   save();
-  $("#baseUrl").value = state.baseUrl || "";
   renderEnv(); renderDoc(); renderTry();
   const c = currentCase(); if (c) renderUrlPreview(c);
-  if (ENVS[env]) toast(`Switched to ${ENVS[env].label} — ${ENVS[env].base}`, "success");
+  if (ENVS[env]) toast(`Switched to ${ENVS[env].label} — ${state.baseUrl}`, "success");
 }
 
 /* Keeps the dropdown, the dot colour and the welcome strip in sync with state. */
@@ -3957,8 +4572,7 @@ function renderEnv() {
   if (dot) dot.className = "env-dot " + (state.env || "custom");
   const label = ENVS[state.env] ? ENVS[state.env].label : "Custom";
   sel.title = `${label} — ${state.baseUrl || "no base URL set"}`;
-  const wb = $("#welcomeBase"); if (wb) wb.textContent = state.baseUrl || "";
-  const we = $("#welcomeEnv"); if (we) we.textContent = label;
+  const f = $("#envField"); if (f) f.title = `${label} — ${state.baseUrl || "no host set"}`;
 }
 
 /* Fire one lightweight request at the current base URL just to prove it is
@@ -3985,16 +4599,66 @@ async function checkEnvHealth(loud) {
   }
 }
 
-function dismissWelcome() {
-  state.welcomeSeen = true; save();
-  const el = $("#welcomeBar"); if (el) el.style.display = "none";
+/* --- auth chip + popovers (what the topbar shed) --- */
+function renderAuthChip() {
+  const el = $("#authChip"); if (!el) return;
+  const type = state.authType || "bearer";
+  const has = type === "none" || !!(state.authToken || "").trim();
+  el.classList.toggle("set", has);
+  const label = type === "none" ? "no auth"
+    : has ? `${type} · set` : `${type} · none`;
+  el.innerHTML = `<span class="ad"></span><span class="at">${esc(label)}</span><span class="mc-caret">▾</span>`;
+  el.title = has ? "Auth is set — shared by every module" : "No token set — most cases will 401";
+  const exp = $("#authExpiry");
+  if (exp) exp.innerHTML = jwtExpiryNote(state.authToken);
 }
+/* A bearer token that quietly expired mid-session looks like a broken API,
+   so read the exp claim when there is one and say how long is left. */
+function jwtExpiryNote(tok) {
+  const t = (tok || "").trim();
+  const parts = t.split(".");
+  if (parts.length !== 3) return t ? "" : "Most cases need a token — paste one here.";
+  try {
+    const p = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+    if (!p.exp) return "";
+    const left = p.exp * 1000 - Date.now();
+    if (left <= 0) return `<span style="color:var(--danger)">This token expired ${fmtDur(-left)} ago — every case will 401.</span>`;
+    if (left < 10 * 60 * 1000) return `<span style="color:var(--warning)">Expires in ${fmtDur(left)} — may die mid-run.</span>`;
+    return `<span style="color:var(--success)">Valid for ${fmtDur(left)}.</span>`;
+  } catch (e) { return ""; }
+}
+function closeAllPops() {
+  ["authPop", "moreMenu"].forEach(id => { const el = $("#" + id); if (el) el.classList.remove("open"); });
+  closeModulePicker();
+}
+function popToggle(id, anchorId) {
+  const el = $("#" + id); if (!el) return;
+  const wasOpen = el.classList.contains("open");
+  closeAllPops();
+  if (wasOpen) return;
+  if (anchorId) {
+    const a = $("#" + anchorId);
+    if (a) { const r = a.getBoundingClientRect(); el.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 360)) + "px"; }
+  }
+  el.classList.add("open");
+  setTimeout(() => document.addEventListener("click", function once(e) {
+    if (e.target.closest("#" + id) || (anchorId && e.target.closest("#" + anchorId))) {
+      setTimeout(() => document.addEventListener("click", once, { once: true }), 0);
+      return;
+    }
+    el.classList.remove("open");
+  }, { once: true }), 0);
+}
+function toggleAuthPop() { popToggle("authPop", "authChip"); renderAuthChip(); }
+function toggleMoreMenu() { popToggle("moreMenu"); }
 
 /* =========================================================================
    Boot
    ========================================================================= */
 function boot() {
   document.documentElement.dataset.theme = state.theme;
+  ensureModules(state);
+  loadModuleIntoState(activeModule());
   // Shareable deep link: ...index.html?env=stage  (or ?base=https://...)
   try {
     const q = new URLSearchParams(location.search);
@@ -4003,17 +4667,12 @@ function boot() {
     else if (qEnv && ENVS[qEnv]) { state.env = qEnv; state.baseUrl = ENVS[qEnv].base; save(); }
   } catch (e) {}
   renderEnv();
-  if (!state.welcomeSeen && !IS_LOCAL_PAGE) {
-    const wb = $("#welcomeBar"); if (wb) wb.style.display = "flex";
-  }
-  $("#baseUrl").value = state.baseUrl || "";
   $("#authToken").value = state.authToken || "";
   $("#authType").value = state.authType || "bearer";
-  if ($("#apiVersion")) $("#apiVersion").value = state.apiVersion || "";
-  if ($("#swaggerChip")) $("#swaggerChip").style.display = state.swaggerSpec ? "inline" : "none";
+  renderAuthChip();
   if (!currentCase() && state.cases.length) state.selectedId = state.cases[0].id;
   renderSidebar(); renderDoc(); renderTry(); renderResp();
-  renderViewBadge();
+  renderModuleChip(); renderViewBadge();
   setView(state.view === "report" && state.runs.length ? "report" : "cases");
 
   // keyboard shortcut: ctrl/cmd + enter = send

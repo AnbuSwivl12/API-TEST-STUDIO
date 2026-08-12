@@ -1,0 +1,1510 @@
+<title>API Test Studio — round two: modules</title>
+<style>
+/* ============================== document tokens ============================
+   Same paper/ink shell as round one so the two docs read as a series.
+   App mockups below re-declare index.html's own custom properties verbatim. */
+:root{
+  --paper:#eceef0; --paper-2:#f6f7f8; --edge:#d3d8dc; --edge-2:#bfc6cc;
+  --ink:#14181b; --ink-2:#4b555d; --ink-3:#78848c;
+  --brass:#8a6413; --brass-bg:rgba(200,146,42,.14); --anno-ink:#fff8ec;
+  --good:#0f7a58; --bad:#c0392f;
+  --mono:"SF Mono","JetBrains Mono",Menlo,Monaco,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --gutter:clamp(18px,4vw,44px);
+  --col:1120px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0f1214; --paper-2:#161a1d; --edge:#262c31; --edge-2:#363e45;
+    --ink:#e6eaec; --ink-2:#9aa5ac; --ink-3:#6d787f;
+    --brass:#e6b73e; --brass-bg:rgba(230,183,62,.13); --anno-ink:#1a1206;
+    --good:#3ec99a; --bad:#f2776b;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f1214; --paper-2:#161a1d; --edge:#262c31; --edge-2:#363e45;
+  --ink:#e6eaec; --ink-2:#9aa5ac; --ink-3:#6d787f;
+  --brass:#e6b73e; --brass-bg:rgba(230,183,62,.13); --anno-ink:#1a1206;
+  --good:#3ec99a; --bad:#f2776b;
+}
+:root[data-theme="light"]{
+  --paper:#eceef0; --paper-2:#f6f7f8; --edge:#d3d8dc; --edge-2:#bfc6cc;
+  --ink:#14181b; --ink-2:#4b555d; --ink-3:#78848c;
+  --brass:#8a6413; --brass-bg:rgba(200,146,42,.14); --anno-ink:#fff8ec;
+  --good:#0f7a58; --bad:#c0392f;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--col);margin:0 auto;padding:0 var(--gutter)}
+.bleed{max-width:1500px;margin:0 auto;padding:0 var(--gutter)}
+p{margin:0 0 1em}
+a{color:var(--brass)}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:3px}
+code{font-family:var(--mono);font-size:.88em;background:var(--paper-2);border:1px solid var(--edge);
+  border-radius:4px;padding:1px 5px}
+
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--brass);margin:0 0 14px}
+h1{font-family:var(--mono);font-size:clamp(28px,4.2vw,48px);line-height:1.05;letter-spacing:-.03em;
+  font-weight:600;margin:0 0 18px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--brass)}
+.deck{font-size:18px;line-height:1.55;color:var(--ink-2);max-width:66ch;margin:0 0 22px}
+header.doc{padding:clamp(40px,6.5vw,78px) 0 30px;border-bottom:1px solid var(--edge)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 10px;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.meta span{border:1px solid var(--edge);border-radius:999px;padding:3px 10px;background:var(--paper-2)}
+
+h2{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;margin:0 0 16px}
+h3{font-size:22px;line-height:1.2;letter-spacing:-.015em;margin:0 0 10px;font-weight:600}
+h4{font-size:15px;margin:0 0 6px;font-weight:600}
+section.band{padding:44px 0 8px;border-top:1px solid var(--edge)}
+section.band:first-of-type{border-top:0}
+.sec-no{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--brass);
+  text-transform:uppercase;margin:0 0 10px}
+.lede{font-size:17px;color:var(--ink-2);max-width:68ch;margin:0 0 24px}
+
+/* problem / claim cards */
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;
+  background:var(--edge);border:1px solid var(--edge);border-radius:10px;overflow:hidden;margin:0 0 26px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px;margin:0 0 26px;
+  align-items:start}
+.card{background:var(--paper-2);padding:15px 17px 17px}
+.card p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.card h4{font-size:14.5px}
+.card .tagn{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--brass);display:block;margin-bottom:7px}
+
+/* figure frame */
+figure{margin:0 0 12px}
+figcaption{font-size:13px;color:var(--ink-3);margin-top:9px;max-width:88ch;line-height:1.5}
+figcaption b{color:var(--ink-2);font-weight:600}
+.fig-h{display:flex;align-items:baseline;gap:10px;margin:26px 0 11px;flex-wrap:wrap}
+.fig-h .n{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--brass);border:1px solid var(--brass);border-radius:4px;padding:2px 7px}
+.fig-h h4{margin:0;font-size:16px}
+
+/* annotation callouts */
+.anno{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;
+  background:var(--brass);color:var(--anno-ink);font-family:var(--mono);font-size:10px;
+  font-weight:700;flex:none;vertical-align:middle}
+ol.annos{list-style:none;margin:12px 0 0;padding:0;display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:9px 22px}
+ol.annos li{display:flex;gap:9px;font-size:13.5px;color:var(--ink-2);line-height:1.5}
+ol.annos li b{color:var(--ink);font-weight:600}
+
+/* tables */
+table{border-collapse:collapse;width:100%;font-size:13.5px;margin:0 0 20px}
+th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;padding:0 12px 8px;border-bottom:1px solid var(--edge-2);vertical-align:bottom}
+td{padding:10px 12px;border-bottom:1px solid var(--edge);vertical-align:top;color:var(--ink-2)}
+td:first-child,th:first-child{padding-left:0}
+td:last-child,th:last-child{padding-right:0}
+td b{color:var(--ink);font-weight:600}
+td.mono,th.mono{font-family:var(--mono);font-size:12px}
+.chip{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  border-radius:999px;padding:2px 8px;border:1px solid var(--edge-2);color:var(--ink-3);
+  background:var(--paper-2);white-space:nowrap}
+.chip.gone{border-color:var(--bad);color:var(--bad)}
+.chip.moved{border-color:var(--brass);color:var(--brass)}
+.chip.stays{border-color:var(--good);color:var(--good)}
+.chip.srv{border-color:var(--bad);color:var(--bad)}
+.chip.cli{border-color:var(--good);color:var(--good)}
+
+/* code block */
+pre.src{font-family:var(--mono);font-size:12px;line-height:1.62;background:var(--paper-2);
+  border:1px solid var(--edge);border-radius:9px;padding:13px 15px;overflow-x:auto;margin:0 0 18px}
+pre.src .c{color:var(--ink-3)}
+pre.src .k{color:var(--brass)}
+pre.src .s{color:var(--good)}
+
+/* callout */
+.note{border-left:3px solid var(--brass);background:var(--brass-bg);padding:12px 15px;border-radius:0 8px 8px 0;
+  font-size:13.5px;color:var(--ink-2);margin:0 0 20px;max-width:92ch}
+.note b{color:var(--ink)}
+.note.bad{border-left-color:var(--bad);background:rgba(192,57,47,.1)}
+
+/* ======================= browser chrome around mockups ==================== */
+.mk-frame{border:1px solid var(--edge-2);border-radius:11px;overflow:hidden;background:#0a0e14;
+  box-shadow:0 18px 44px rgba(0,0,0,.22)}
+.mk-chrome{display:flex;align-items:center;gap:9px;padding:8px 12px;background:#161b22;
+  border-bottom:1px solid #21262d}
+.mk-dots{display:flex;gap:6px}
+.mk-dots i{width:9px;height:9px;border-radius:50%;background:#2b3543;display:block}
+.mk-url{font-family:var(--mono);font-size:10.5px;color:#64748b;background:#0a0e14;border:1px solid #1f2937;
+  border-radius:5px;padding:3px 10px;margin:0 auto}
+
+/* app tokens, fixed dark — index.html's :root values, verbatim */
+.mk{
+  --bg:#0a0e14; --bg-elev:#10161f; --bg-elev-2:#1a2330; --bg-hover:#1f2937; --bg-deep:#0d1117;
+  --border:#1f2937; --border-strong:#334155;
+  --text:#e5e7eb; --text-muted:#94a3b8; --text-dim:#64748b;
+  --accent:#8b5cf6; --accent-hover:#7c3aed; --accent-soft:rgba(139,92,246,.12);
+  --success:#10b981; --warning:#f59e0b; --danger:#ef4444; --info:#3b82f6;
+  --success-soft:rgba(16,185,129,.12); --danger-soft:rgba(239,68,68,.12);
+  --warning-soft:rgba(245,158,11,.12); --info-soft:rgba(59,130,246,.12);
+  font-family:var(--sans);font-size:13px;color:var(--text);line-height:1.45;position:relative;
+}
+.mk *{box-sizing:border-box}
+.mk .mono{font-family:var(--mono)}
+.mk .dim{color:var(--text-dim)}
+.mk ::-webkit-scrollbar{width:9px;height:9px}
+.mk ::-webkit-scrollbar-thumb{background:#243043;border-radius:9px;border:2px solid var(--bg)}
+.mk ::-webkit-scrollbar-track{background:transparent}
+.mk .anno{background:var(--brass, #e6b73e);color:#1a1206;width:15px;height:15px;font-size:9.5px}
+
+/* shared app atoms (mirrors index.html classes) */
+.m-brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:13px;flex:none}
+.m-logo{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  display:grid;place-items:center;color:#fff;font-weight:700;font-size:11px}
+.m-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;
+  background:var(--bg-elev-2);border:1px solid var(--border);font-size:11.5px;font-weight:500;
+  color:var(--text);white-space:nowrap}
+.m-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.m-btn.ghost{background:transparent;border-color:transparent;color:var(--text-muted)}
+.m-btn.sm{padding:3px 8px;font-size:11px}
+.m-in{background:var(--bg-elev-2);border:1px solid var(--border);border-radius:6px;padding:5px 9px;
+  font-size:11.5px;color:var(--text-muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m-lab{font-size:11px;color:var(--text-dim);flex:none}
+.method{font-family:var(--mono);font-size:9.5px;font-weight:700;padding:2px 4px;border-radius:3px;
+  min-width:42px;text-align:center;flex:none;letter-spacing:.02em}
+.method.GET{background:var(--success-soft);color:var(--success)}
+.method.POST{background:var(--warning-soft);color:var(--warning)}
+.method.PUT{background:var(--info-soft);color:var(--info)}
+.method.PATCH{background:var(--accent-soft);color:var(--accent)}
+.method.DELETE{background:var(--danger-soft);color:var(--danger)}
+.dot{width:7px;height:7px;border-radius:50%;flex:none;background:#3b4655}
+.dot.pass{background:var(--success)}
+.dot.fail{background:var(--danger);box-shadow:0 0 6px rgba(239,68,68,.7)}
+.dot.skip{background:var(--warning)}
+.dot.blocked{background:var(--info)}
+.dot.run{background:var(--accent);box-shadow:0 0 7px rgba(139,92,246,.8)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.02em}
+.pill.pass{background:var(--success-soft);color:var(--success)}
+.pill.fail{background:var(--danger-soft);color:var(--danger)}
+.pill.skip{background:var(--warning-soft);color:var(--warning)}
+.pill.blocked{background:var(--info-soft);color:var(--info)}
+.pill.run{background:var(--accent-soft);color:var(--accent)}
+.lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-dim);font-weight:600}
+
+/* ---------------- topbar mockups (before / after) ---------------- */
+.tb-old{display:flex;align-items:center;flex-wrap:wrap;gap:8px;row-gap:6px;padding:8px 14px;
+  background:var(--bg-elev);border-bottom:1px solid var(--border);min-height:56px}
+.tb-old .m-lab{font-size:11px}
+.tb-fld{display:flex;align-items:center;gap:6px;min-width:0}
+.tb-new{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg-elev);
+  border-bottom:1px solid var(--border);min-height:52px}
+.mod-chip{display:inline-flex;align-items:center;gap:9px;padding:5px 10px 5px 9px;border-radius:8px;
+  background:var(--bg-elev-2);border:1px solid var(--border-strong);font-size:12px;white-space:nowrap}
+.mod-chip .sw{width:8px;height:8px;border-radius:2px;flex:none}
+.mod-chip b{font-weight:600}
+.mod-chip .sep{color:var(--text-dim)}
+.mod-chip .cv{color:var(--text-dim);font-size:11px}
+.mod-chip .car{color:var(--text-dim);font-size:9px;margin-left:1px}
+.tok-chip{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;border-radius:8px;
+  background:var(--bg-elev-2);border:1px solid var(--border);font-size:11.5px;color:var(--text-muted);white-space:nowrap}
+.tok-chip .mono{font-size:11px}
+.tok-chip.warn{border-color:var(--warning);color:var(--warning);background:var(--warning-soft)}
+.viewsw{display:inline-flex;background:var(--bg-elev-2);border:1px solid var(--border);border-radius:7px;
+  padding:2px;gap:2px;flex:none}
+.viewsw button{padding:4px 11px;border-radius:5px;font-size:11.5px;color:var(--text-muted);
+  border:0;background:transparent;display:inline-flex;align-items:center;gap:5px}
+.viewsw button.on{background:var(--bg-hover);color:var(--text)}
+.viewsw .badge{background:var(--danger);color:#fff;border-radius:999px;font-size:9px;padding:0 5px;
+  font-family:var(--mono);font-weight:700;line-height:15px}
+.split{display:inline-flex;border-radius:7px;overflow:hidden;flex:none}
+.split .go{background:var(--accent);color:#fff;padding:6px 14px;font-size:12px;font-weight:600;
+  display:inline-flex;align-items:center;gap:6px}
+.split .car{background:var(--accent-hover);color:#fff;padding:6px 8px;font-size:9px;
+  display:inline-flex;align-items:center;border-left:1px solid rgba(255,255,255,.18)}
+.tb-count{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim);
+  font-family:var(--mono)}
+
+/* ---------------- generic app shell for full mockups ---------------- */
+.mk-body{display:flex;position:relative;overflow:hidden}
+.a-rail{width:210px;flex:none;background:var(--bg-elev);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;min-height:0}
+.a-main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg)}
+.rail-h{padding:10px 12px 8px;border-bottom:1px solid var(--border)}
+.rail-search{display:flex;align-items:center;gap:7px;background:var(--bg-elev-2);border:1px solid var(--border);
+  border-radius:6px;padding:5px 9px;font-size:11.5px;color:var(--text-dim)}
+.rail-scope{display:flex;gap:4px;margin-top:8px}
+.rail-scope span{flex:1;text-align:center;font-size:10.5px;padding:3px 0;border-radius:5px;
+  color:var(--text-dim);background:var(--bg-elev-2);border:1px solid transparent}
+.rail-scope span.on{background:var(--accent-soft);color:var(--accent);border-color:rgba(139,92,246,.4)}
+.rail-list{flex:1;overflow:hidden;padding:6px 0}
+.rail-tag{display:flex;align-items:center;gap:8px;padding:5px 12px;font-size:11.5px;color:var(--text-muted)}
+.rail-tag.on{background:var(--bg-elev-2);color:var(--text);box-shadow:inset 2px 0 0 var(--accent)}
+.rail-tag .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rail-tag .ct{font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+.rail-bar{width:34px;height:3px;border-radius:2px;background:#22303f;overflow:hidden;flex:none}
+.rail-bar i{display:block;height:100%;background:var(--success)}
+.rail-foot{border-top:1px solid var(--border);padding:9px 12px;font-size:11px;color:var(--text-dim)}
+
+/* case list */
+.cl-head{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);
+  background:var(--bg-elev);flex:none}
+.cl-head .ttl{font-size:13px;font-weight:600}
+.cl{overflow:hidden}
+.cl-row{display:flex;align-items:center;gap:10px;padding:6px 14px;border-bottom:1px solid rgba(31,41,55,.55);
+  font-size:12px}
+.cl-row.sel{background:var(--accent-soft);box-shadow:inset 2px 0 0 var(--accent)}
+.cl-row .id{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);width:52px;flex:none}
+.cl-row .sc{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cl-row .pa{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);max-width:210px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:none}
+.cl-row .ex{font-family:var(--mono);font-size:10px;color:var(--text-dim);width:56px;text-align:right;flex:none}
+.cl-row .star{color:#3b4655;font-size:11px;flex:none}
+.cl-row .star.on{color:var(--warning)}
+.chainchip{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9.5px;
+  padding:1px 5px;border-radius:4px;background:var(--info-soft);color:var(--info);flex:none}
+.varchip{display:inline-flex;align-items:center;font-family:var(--mono);font-size:10px;padding:1px 5px;
+  border-radius:4px;background:var(--accent-soft);color:var(--accent)}
+
+/* popovers */
+.pop{position:absolute;background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:11px;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden;z-index:5}
+.pop-h{padding:10px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;
+  background:var(--bg-elev-2)}
+.pop-search{flex:1;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim)}
+.pop-sec{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--text-dim);padding:9px 13px 4px}
+.pop-row{display:flex;align-items:center;gap:10px;padding:7px 13px;font-size:12px}
+.pop-row.on{background:var(--accent-soft);box-shadow:inset 2px 0 0 var(--accent)}
+.pop-row .sw{width:8px;height:8px;border-radius:2px;flex:none}
+.pop-row .nm{flex:1;min-width:0}
+.pop-row .nm b{display:block;font-weight:600}
+.pop-row .nm small{display:block;font-family:var(--mono);font-size:10px;color:var(--text-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pop-row .rt{text-align:right;flex:none;font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+.pop-row .rt b{display:block;color:var(--text-muted);font-size:11px}
+.pop-foot{border-top:1px solid var(--border);padding:8px 13px;display:flex;gap:7px;align-items:center;
+  background:var(--bg-elev-2)}
+.kbd{font-family:var(--mono);font-size:9.5px;border:1px solid var(--border-strong);border-radius:4px;
+  padding:1px 5px;color:var(--text-dim);background:var(--bg)}
+.mini-bar{width:52px;height:4px;border-radius:2px;background:#22303f;overflow:hidden;display:inline-block;
+  vertical-align:middle}
+.mini-bar i{display:block;height:100%;background:var(--success)}
+.mini-bar i.f{background:var(--danger)}
+
+/* run tray */
+.tray{background:var(--bg-elev);border-bottom:1px solid var(--border);flex:none}
+.tray-top{display:flex;align-items:center;gap:12px;padding:9px 14px}
+.tray-top .scope{font-size:12px}
+.tray-top .scope b{font-weight:600}
+.tray-el{font-family:var(--mono);font-size:11px;color:var(--text-dim)}
+.tray-counts{display:flex;gap:9px;align-items:center;margin-left:auto}
+.tcount{font-family:var(--mono);font-size:11.5px;display:inline-flex;align-items:center;gap:5px}
+.tcount.p{color:var(--success)} .tcount.f{color:var(--danger)} .tcount.q{color:var(--text-dim)}
+.tray-prog{height:3px;background:#151d28}
+.tray-prog i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#ec4899)}
+.lanes{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);
+  border-top:1px solid var(--border)}
+.lane{background:var(--bg-elev);padding:6px 12px;display:flex;align-items:center;gap:9px;font-size:11.5px;min-width:0}
+.lane .ln{font-family:var(--mono);font-size:9.5px;color:var(--text-dim);width:14px;flex:none}
+.lane .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-muted)}
+.lane .ms{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);flex:none}
+.lane.idle .nm{color:var(--text-dim);font-style:italic}
+.lane.serial{box-shadow:inset 2px 0 0 var(--warning)}
+.spin{width:9px;height:9px;border-radius:50%;border:1.6px solid rgba(139,92,246,.3);
+  border-top-color:var(--accent);flex:none}
+
+/* report */
+.rp-h{padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg-elev);flex:none}
+.rp-stats{display:flex;gap:20px;align-items:flex-end;margin-top:9px}
+.rp-stat .v{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1}
+.rp-stat .k{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.09em;margin-top:3px}
+.rp-stat.pass .v{color:var(--success)} .rp-stat.fail .v{color:var(--danger)}
+.rp-stat.skip .v{color:var(--warning)} .rp-stat.blocked .v{color:var(--info)}
+.rp-grp{border:1px solid var(--border);border-radius:9px;overflow:hidden;margin:0 16px 10px;background:var(--bg-elev)}
+.rp-grp-h{display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--bg-elev-2);
+  border-bottom:1px solid var(--border)}
+.rp-grp-h .t{flex:1;font-size:12.5px;font-weight:600}
+.rp-grp-h .n{font-family:var(--mono);font-size:10.5px;color:var(--danger);background:var(--danger-soft);
+  border-radius:999px;padding:2px 8px;flex:none}
+.rp-row{display:flex;align-items:center;gap:10px;padding:6px 13px;font-size:12px;
+  border-bottom:1px solid rgba(31,41,55,.5)}
+.rp-row:last-child{border-bottom:0}
+.rp-row .id{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);width:52px;flex:none}
+.rp-row .sc{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rp-row .modtag{font-family:var(--mono);font-size:9.5px;padding:1px 6px;border-radius:4px;flex:none}
+.rp-row .code{font-family:var(--mono);font-size:11px;color:var(--danger);flex:none;width:74px;text-align:right}
+
+/* ---------------- timeline ---------------- */
+.tl{border:1px solid var(--edge);border-radius:11px;background:var(--paper-2);padding:16px 18px 8px;margin:0 0 14px}
+.tl-row{margin-bottom:16px}
+.tl-name{font-size:13px;color:var(--ink-2);margin-bottom:7px;display:flex;align-items:baseline;gap:10px}
+.tl-name b{font-family:var(--mono);font-size:14px;color:var(--ink);margin-left:auto}
+.tl-lanes{display:flex;flex-direction:column;gap:3px}
+.tl-lane{position:relative;height:16px;background:var(--paper);border-radius:3px;overflow:hidden}
+.tl-b{position:absolute;top:0;bottom:0;background:var(--good);border-radius:2px;opacity:.85;
+  display:flex;align-items:center;overflow:hidden}
+.tl-b.slow{background:var(--bad)}
+.tl-b i{font-family:var(--mono);font-size:9px;font-style:normal;color:#fff;padding-left:5px;
+  white-space:nowrap;letter-spacing:.02em}
+.tl-axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;
+  color:var(--ink-3);border-top:1px solid var(--edge);padding-top:5px;margin-top:2px}
+
+/* mechanism diagram */
+@media (max-width:900px){
+  .lanes{grid-template-columns:repeat(2,1fr)}
+  ol.annos{grid-template-columns:1fr}
+}
+</style>
+<header class="doc">
+  <div class="wrap">
+    <p class="eyebrow">API Test Studio · round two · builds on the shipped Run Report</p>
+    <h1>One <em>module</em> at a time</h1>
+    <p class="deck">Round one asked how to read a run; Direction&nbsp;A shipped and the Run Report is in
+      the product. This round answers the next three asks — make it minimal, make Swagger module-wise,
+      make it fast. They turn out to be one problem: the app currently believes there is exactly one
+      API in the world, so every knob for that one API has to live in the topbar at once, and every
+      run has to be the whole 102.</p>
+    <div class="meta">
+      <span>Mockups only — index.html and design-directions.html untouched</span>
+      <span>Dark theme, the product default</span>
+      <span>Constraint: one file, vanilla JS, no build</span>
+      <span>Data: PRESET_CASES + the six real test workbooks</span>
+    </div>
+  </div>
+</header>
+
+<section class="band wrap">
+  <p class="sec-no">§0 — what I found before drawing anything</p>
+  <h3 style="max-width:22ch">Two numbers in the brief are off, and both make the case stronger</h3>
+  <div class="grid3">
+    <div class="card">
+      <span class="tagn">Chaining</span>
+      <h4>Not 7 blocked cases — 33</h4>
+      <p>Counted straight out of <code>PRESET_CASES</code>: <b>33 of 102</b> paths contain
+        <code>{id}</code>, 8 also contain <code>{sectionId}</code>, 2 contain <code>{subId}</code>,
+        1 contains <code>{fieldId}</code>. A third of the suite is unrunnable without a value carried
+        from a previous response, not 7 %.</p>
+    </div>
+    <div class="card">
+      <span class="tagn">Concurrency</span>
+      <h4>The throttle isn't the bottleneck</h4>
+      <p>102 × 120 ms of throttle is 12 s. The run takes minutes because two cases —
+        <code>TC_028</code> oversized query and <code>TC_037</code> simulated downstream failure —
+        sit on the 30 s default timeout. A pool alone gets you to 31 s and no further; the timeout
+        is the critical path.</p>
+    </div>
+    <div class="card">
+      <span class="tagn">Scope</span>
+      <h4>Seven modules, 411 cases</h4>
+      <p>Templates 102 + Job Detail 94 + Recurring SLA 101 + Billing 30 + Building Unit 30 +
+        Job Detail Exclusions 30 + Customer Availability 24. Loading all of them into one flat list
+        is the thing the module concept exists to prevent.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <p class="sec-no">§1 — minimal</p>
+    <h3>Thirteen controls, two rows, one job</h3>
+    <p class="lede">The loop a QA engineer actually runs is <b>pick what to test → paste a token →
+      run → read failures</b>. Everything in the current topbar that isn't on that path is a setting
+      that gets touched once a week, and settings do not belong in permanent chrome. Below is the bar
+      as it renders today at 1440&nbsp;px, then the same bar after.</p>
+  </div>
+
+  <div class="bleed">
+    <div class="fig-h"><span class="n">Before</span><h4>v1.9 — wraps to two rows, 13 interactive controls</h4></div>
+    <figure>
+      <div class="mk-frame">
+        <div class="mk">
+          <div class="tb-old" style="max-width:1440px">
+            <div class="m-brand" style="padding-right:12px;border-right:1px solid var(--border)">
+              <div class="m-logo">A</div><span>API Test Studio</span>
+              <span class="chip" style="font-size:9px;border-color:#1f2937;color:#64748b;background:#1a2330">v1.9</span>
+            </div>
+            <div class="tb-fld"><span class="m-lab">Env</span><span class="dot pass"></span>
+              <span class="m-in" style="width:88px">Stage ▾</span></div>
+            <div class="tb-fld"><span class="m-lab">Base URL</span>
+              <span class="m-in mono" style="width:250px">https://template.dev.swivlconnect.com</span></div>
+            <div class="tb-fld"><span class="m-lab">API Version</span>
+              <span class="m-in mono" style="width:74px">5.0.0</span></div>
+            <div class="tb-fld"><span class="m-lab">Auth</span>
+              <span class="m-in" style="width:80px">Bearer ▾</span>
+              <span class="m-in mono" style="width:200px">eyJhbGciOiJIUzI1NiIsInR5…</span></div>
+            <span class="m-btn ghost" style="padding:5px 8px">⚙</span>
+            <div class="viewsw"><button class="on">Cases</button><button>Run Report <span class="badge">37</span></button></div>
+            <span class="m-btn">Swagger</span>
+            <span class="m-btn">＋ Add Case</span>
+            <span class="m-btn">Import</span>
+            <span class="m-btn primary">▶ Run All</span>
+            <span class="m-btn">Export CSV</span>
+            <span class="m-btn ghost" style="padding:5px 8px">☾</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;font-size:11.5px;color:#94a3b8;
+                      background:linear-gradient(90deg,rgba(99,102,241,.14),rgba(236,72,153,.08));
+                      border-bottom:1px solid #1f2937">
+            <span>👋 <b style="color:#e5e7eb">Welcome!</b> You're pointed at the <b style="color:#e5e7eb">Stage</b> API
+              (<span class="mono">https://template.dev.swivlconnect.com</span>). Paste your
+              <b style="color:#e5e7eb">bearer token</b> in the top bar, then hit
+              <b style="color:#e5e7eb">Run All</b> — nothing to install, everything is saved in this browser.</span>
+            <span style="margin-left:auto;display:flex;gap:6px;flex:none">
+              <span class="m-btn sm">Test connection</span><span class="m-btn primary sm">Got it</span></span>
+          </div>
+          <div style="height:26px;background:#0a0e14"></div>
+        </div>
+      </div>
+      <figcaption><b>112 px of chrome</b> before the first test case. Nine of the thirteen controls are
+        properties of <em>one</em> API, which is exactly the assumption §2 removes.</figcaption>
+    </figure>
+
+    <div class="fig-h"><span class="n">After</span><h4>One row, five controls, 52 px</h4></div>
+    <figure>
+      <div class="mk-frame">
+        <div class="mk">
+          <div class="tb-new" style="max-width:1440px">
+            <div class="m-brand"><div class="m-logo">A</div><span>API Test Studio</span></div>
+            <span class="mod-chip"><span class="anno">1</span><span class="sw" style="background:#8b5cf6"></span>
+              <b>Templates</b><span class="sep">·</span><span class="cv">Stage</span><span class="car">▾</span></span>
+            <span class="tb-count">102 cases <span style="color:#334155">·</span> 9 tags</span>
+            <span style="flex:1"></span>
+            <span class="tok-chip"><span class="anno">2</span><span class="dot pass"></span>Token
+              <span class="mono">41 m</span></span>
+            <div class="viewsw"><button class="on">Cases</button><button>Report <span class="badge">37</span></button></div>
+            <span class="split"><span class="go"><span class="anno">3</span>▶ Run 102</span><span class="car">▾</span></span>
+            <span class="m-btn ghost" style="padding:5px 9px"><span class="anno">4</span>⋯</span>
+          </div>
+          <div style="height:86px;background:#0a0e14"></div>
+        </div>
+      </div>
+      <ol class="annos">
+        <li><span class="anno">1</span><span><b>Module + environment, one chip.</b> Opens the switcher
+          (§2). Base URL, API version and the spec are all derived from it, so all three inputs leave the bar.</span></li>
+        <li><span class="anno">2</span><span><b>Token collapses to its own status.</b> Green with the
+          minutes left on the JWT <code>exp</code>; amber under 5 min; red and pulsing when expired.
+          Click to paste a new one. Auth <em>type</em> moves into that popover — Bearer is the default
+          on all 411 cases.</span></li>
+        <li><span class="anno">3</span><span><b>Run is a split button.</b> The face runs the current
+          scope and says how many; the caret picks the scope — Smoke, this module, failed from run #12,
+          selected, or a cross-module suite (§3).</span></li>
+        <li><span class="anno">4</span><span><b>One overflow menu</b> holds Add Case, Import, Export CSV,
+          Settings, theme and the version string — five once-a-session actions that were costing four
+          permanent buttons.</span></li>
+      </ol>
+      <figcaption>The welcome strip is deleted outright. It said "paste a token then Run All", which is
+        the empty state's job, and the empty state (§2) can say it while pointing at the thing you have
+        to do first — pick a module.</figcaption>
+    </figure>
+  </div>
+
+  <div class="wrap">
+    <table style="margin-top:26px">
+      <thead><tr><th style="width:22%">Control today</th><th style="width:14%">Verdict</th><th>Where it goes, and why</th></tr></thead>
+      <tbody>
+        <tr><td><b>v1.9</b> chip</td><td><span class="chip gone">deleted</span></td>
+          <td>Nobody reads it during a run. Bottom line of the ⋯ menu.</td></tr>
+        <tr><td><b>Env</b> dropdown</td><td><span class="chip moved">into module chip</span></td>
+          <td>Env is one half of the chip label and one section of the switcher popover.</td></tr>
+        <tr><td><b>Base URL</b> input</td><td><span class="chip moved">derived</span></td>
+          <td>Becomes <code>service + env</code> (§2). Shown read-only in the popover with an
+            <em>Override</em> link for the one-off case.</td></tr>
+        <tr><td><b>API Version</b> input</td><td><span class="chip moved">module property</span></td>
+          <td>It is per-module data, not per-session: Templates pins 5.0.0, Building Unit's whole point is
+            6.1.0 vs 6.2.0, Customer Availability needs ≥ 5.7.0 for two routes.</td></tr>
+        <tr><td><b>Auth type</b> select</td><td><span class="chip moved">token popover</span></td>
+          <td>Bearer on every one of the 411 preset cases. Three clicks away is correct for the exception.</td></tr>
+        <tr><td><b>Token</b> input</td><td><span class="chip stays">as a status chip</span></td>
+          <td>A 900-character JWT in a 200 px input told you nothing. The chip tells you the only thing
+            you need: how long it has left.</td></tr>
+        <tr><td><b>⚙ Settings</b></td><td><span class="chip moved">⋯ menu</span></td><td>CORS proxy and defaults. Touched on setup day.</td></tr>
+        <tr><td><b>Cases | Run Report</b></td><td><span class="chip stays">stays</span></td><td>It's the second half of the loop. Label shortens to <em>Report</em>.</td></tr>
+        <tr><td><b>Swagger</b> button</td><td><span class="chip gone">absorbed</span></td>
+          <td>A spec is no longer a global thing you attach — it is what a module <em>is</em>. The button
+            becomes <em>Manage modules</em> inside the switcher.</td></tr>
+        <tr><td><b>Add Case</b> / <b>Import</b> / <b>Export CSV</b></td><td><span class="chip moved">⋯ menu</span></td>
+          <td>Three buttons, all once-per-session. Export also lands on the Run Report where the thing
+            you want to export actually is.</td></tr>
+        <tr><td><b>Run All</b></td><td><span class="chip stays">split button</span></td>
+          <td>"All" was the bug: it is why runs take minutes. The default becomes an explicit,
+            countable scope.</td></tr>
+        <tr><td><b>Theme</b> toggle</td><td><span class="chip moved">⋯ menu</span></td><td>Set once, ever.</td></tr>
+        <tr><td><b>Welcome strip</b></td><td><span class="chip gone">deleted</span></td>
+          <td>Replaced by a first-run state that has something to ask for.</td></tr>
+      </tbody>
+    </table>
+    <div class="note"><b>Retrofit:</b> mostly subtraction — roughly 120 lines of topbar markup down to about
+      35, and the handlers behind the deleted inputs stay exactly as they are, just called from popover fields
+      instead. The only new component is one positioned popover, reused three times (module switcher, token,
+      ⋯ menu) — around 60 lines of CSS and a 15-line open/close helper with an outside-click listener.
+      <span class="chip cli">client-side only</span></div>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <p class="sec-no">§2 — module-wise Swagger</p>
+    <h3 style="max-width:26ch">A module is a spec, a host, a case list and a run history — bundled</h3>
+    <p class="lede">Today <code>state.swaggerSpec</code> is a single slot and <code>state.cases</code> is
+      a single flat array, so attaching the Billing spec means throwing away the Templates one. The fix
+      is not a second slot; it is admitting the app has always been holding <em>one</em> module and
+      giving that thing a name, an identity and a plural.</p>
+  </div>
+
+  <div class="wrap">
+    <div class="grid2">
+      <div class="card" style="border:1px solid var(--edge);border-radius:10px">
+        <span class="tagn">Owned by the module</span>
+        <h4>Switches when you switch</h4>
+        <p style="margin-bottom:8px">OpenAPI spec · service host key · <code>x-api-version</code> ·
+          case list · tag taxonomy · smoke set · fixtures &amp; captured chain variables ·
+          run history · colour swatch.</p>
+        <p><b style="color:var(--ink)">Why version is here:</b> Building Unit's entire suite is
+          6.1.0-vs-6.2.0 behaviour and two Customer Availability routes need ≥ 5.7.0. A single global
+          version box makes those suites impossible to hold at the same time.</p>
+      </div>
+      <div class="card" style="border:1px solid var(--edge);border-radius:10px">
+        <span class="tagn">Owned by the session</span>
+        <h4>Survives every switch</h4>
+        <p style="margin-bottom:8px">Environment (Stage / Local / Custom) · auth type · bearer token ·
+          CORS proxy · timeout · theme · cloud-sync credentials.</p>
+        <p><b style="color:var(--ink)">Why auth is here:</b> it is the same tenant token for every
+          Swivl service. Making it per-module would mean pasting the same JWT seven times and
+          re-pasting all seven when it expires in 41 minutes.</p>
+      </div>
+    </div>
+
+    <h4 style="margin-top:8px">Base URL stops being a field and becomes a lookup</h4>
+    <p style="max-width:70ch;color:var(--ink-2)">The module names a <em>service</em>; the session names an
+      <em>environment</em>; the base URL is the cell where they meet. That is the whole reason the Base URL
+      input can leave the topbar — and it is also why switching module while staying on Stage does the right
+      thing without touching anything.</p>
+    <table>
+      <thead><tr><th style="width:28%">Service key</th><th class="mono">env = stage</th><th class="mono">env = local</th><th style="width:26%">Modules on it</th></tr></thead>
+      <tbody>
+        <tr><td class="mono"><b>template</b></td><td class="mono">https://template.dev.swivlconnect.com</td>
+          <td class="mono">http://localhost:3000</td><td>Templates</td></tr>
+        <tr><td class="mono"><b>core</b></td><td class="mono">https://api.dev.swivlconnect.com</td>
+          <td class="mono">http://localhost:8080</td><td>the other six</td></tr>
+      </tbody>
+    </table>
+    <p style="max-width:70ch;color:var(--ink-2);margin-top:-6px">A module may also carry
+      <code>baseOverride</code>, which wins over the lookup and shows an amber dot on the chip so you
+      can see you are off the matrix. <code>env: "custom"</code> keeps the free-text box it has today,
+      inside the popover.</p>
+
+    <pre class="src"><span class="c">// state, after — the migration is one wrap and one rename</span>
+state = {
+  <span class="c">/* session-wide, unchanged */</span>
+  env, authType, authToken, proxyUrl, timeoutMs, theme, syncUrl, syncToken,
+
+  activeModuleId: <span class="s">"templates"</span>,        <span class="c">// null on first run → empty state</span>
+  modules: [{
+    id: <span class="s">"templates"</span>, name: <span class="s">"Templates"</span>, swatch: <span class="s">"#8b5cf6"</span>,
+    service: <span class="s">"template"</span>,            <span class="c">// → base URL, via the matrix above</span>
+    baseOverride: <span class="k">null</span>,
+    apiVersion: <span class="s">"5.0.0"</span>,
+    spec: {…}, specSource: <span class="s">"built-in"</span>, specFetchedAt: 1754…,
+    cases: [ …102 ],               <span class="c">// today's state.cases, verbatim</span>
+    tagSource: <span class="s">"openapi"</span>,           <span class="c">// vs "column" for workbook imports</span>
+    smoke: [<span class="s">"TC_001"</span>,<span class="s">"TC_046"</span>,<span class="s">"TC_054"</span>,…],
+    fixtures: { },                 <span class="c">// typed-once values, e.g. jobId</span>
+    runs: [ …last 5 ]              <span class="c">// per module, not global</span>
+  }, …]
+}</pre>
+    <div class="note"><b>Retrofit:</b> ~180 lines. Every existing read of <code>state.cases</code> /
+      <code>state.swaggerSpec</code> / <code>state.runs</code> goes through three one-line accessors
+      (<code>mod()</code>, <code>cases()</code>, <code>runs()</code>) — a mechanical find-and-replace across
+      roughly 60 call sites. Migration for existing users: wrap whatever is in localStorage into a module
+      called "Templates" and set it active, so a returning user sees exactly their current state with a chip
+      on top. <span class="chip cli">client-side only</span></div>
+    <div class="note bad"><b>Storage is the one real constraint.</b> localStorage is ~5 MB and
+      <code>save()</code> already sheds old runs when it overflows. Seven modules × run history will hit that
+      wall. Fix without a server: keep the case lists in localStorage (small — 411 cases is ~180 KB) and move
+      <code>runs</code> to IndexedDB, which is same-origin, needs no build step, and has a quota in the
+      hundreds of MB. ~50 lines with a tiny promise wrapper. <span class="chip cli">still client-side</span></div>
+  </div>
+
+  <!-- ============================ switcher ============================ -->
+  <div class="bleed">
+    <div class="fig-h"><span class="n">Fig 2.1</span><h4>The switcher — one chip, ⌘K, or the keyboard alone</h4></div>
+    <figure>
+      <div class="mk-frame">
+        <div class="mk">
+          <div class="mk-chrome"><span class="mk-dots"><i></i><i></i><i></i></span>
+            <span class="mk-url">apitest.swivl.tech</span></div>
+          <div class="tb-new">
+            <div class="m-brand"><div class="m-logo">A</div><span>API Test Studio</span></div>
+            <span class="mod-chip" style="border-color:var(--accent);background:var(--accent-soft)">
+              <span class="sw" style="background:#8b5cf6"></span><b>Templates</b>
+              <span class="sep">·</span><span class="cv">Stage</span><span class="car">▾</span></span>
+            <span class="tb-count">102 cases <span style="color:#334155">·</span> 9 tags</span>
+            <span style="flex:1"></span>
+            <span class="tok-chip"><span class="dot pass"></span>Token <span class="mono">41 m</span></span>
+            <div class="viewsw"><button class="on">Cases</button><button>Report <span class="badge">37</span></button></div>
+            <span class="split"><span class="go">▶ Run 102</span><span class="car">▾</span></span>
+            <span class="m-btn ghost" style="padding:5px 9px">⋯</span>
+          </div>
+          <div class="mk-body" style="height:520px">
+            <div style="position:absolute;inset:0;background:rgba(10,14,20,.72);z-index:3"></div>
+            <aside class="a-rail" style="opacity:.5">
+              <div class="rail-h">
+                <div class="rail-search">🔍 Search scenario or path…</div>
+                <div class="rail-scope"><span class="on">All</span><span>Fail</span><span>Smoke</span><span>★</span></div>
+              </div>
+              <div class="rail-list">
+                <div class="rail-tag on"><span class="nm">templates/types</span><span class="rail-bar"><i style="width:71%"></i></span><span class="ct">45</span></div>
+                <div class="rail-tag"><span class="nm">templates</span><span class="rail-bar"><i style="width:52%"></i></span><span class="ct">23</span></div>
+                <div class="rail-tag"><span class="nm">ai-generate</span><span class="rail-bar"><i style="width:86%"></i></span><span class="ct">7</span></div>
+                <div class="rail-tag"><span class="nm">sections</span><span class="rail-bar"><i style="width:33%"></i></span><span class="ct">6</span></div>
+                <div class="rail-tag"><span class="nm">publish</span><span class="rail-bar"><i style="width:60%"></i></span><span class="ct">5</span></div>
+                <div class="rail-tag"><span class="nm">fields</span><span class="rail-bar"><i style="width:40%"></i></span><span class="ct">5</span></div>
+                <div class="rail-tag"><span class="nm">submissions</span><span class="rail-bar"><i style="width:80%"></i></span><span class="ct">5</span></div>
+                <div class="rail-tag"><span class="nm">uploads</span><span class="rail-bar"><i style="width:0%"></i></span><span class="ct">4</span></div>
+                <div class="rail-tag"><span class="nm">preview</span><span class="rail-bar"><i style="width:50%"></i></span><span class="ct">2</span></div>
+              </div>
+            </aside>
+            <div class="a-main" style="opacity:.5">
+              <div class="cl-head"><span class="ttl">templates/types</span>
+                <span class="dim" style="font-size:11px">45 cases</span></div>
+              <div class="cl">
+                <div class="cl-row"><span class="dot fail"></span><span class="id">TC_013</span><span class="sc">POST not allowed on /templates/types</span><span class="pa">/templates/types</span><span class="ex">405</span></div>
+                <div class="cl-row"><span class="dot fail"></span><span class="id">TC_014</span><span class="sc">PUT not allowed on /templates/types</span><span class="pa">/templates/types</span><span class="ex">405</span></div>
+                <div class="cl-row"><span class="dot pass"></span><span class="id">TC_001</span><span class="sc">Retrieve all template types with valid Bearer token</span><span class="pa">/templates/types</span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot pass"></span><span class="id">TC_002</span><span class="sc">Response schema validation</span><span class="pa">/templates/types</span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot pass"></span><span class="id">TC_003</span><span class="sc">Canonical categories present</span><span class="pa">/templates/types</span><span class="ex">200</span></div>
+              </div>
+            </div>
+
+            <!-- popover -->
+            <div class="pop" style="left:206px;top:0;width:520px">
+              <div class="pop-h"><span class="pop-search">🔍 <span style="color:var(--text-muted)">Jump to a module…</span></span>
+                <span class="kbd">⌘K</span></div>
+              <div class="pop-sec">Modules — 7 · 411 cases</div>
+              <div class="pop-row on"><span class="sw" style="background:#8b5cf6"></span>
+                <span class="nm"><b>Templates</b><small>template.dev.swivlconnect.com · v5.0.0 · OpenAPI, built-in</small></span>
+                <span class="rt"><b>102</b><span class="mini-bar"><i style="width:56%"></i><i class="f" style="width:36%;margin-top:-4px;margin-left:56%"></i></span></span></div>
+              <div class="pop-row"><span class="sw" style="background:#3b82f6"></span>
+                <span class="nm"><b>Job Detail</b><small>api.dev.swivlconnect.com · v6.2.0 · GET /jobs/{id}</small></span>
+                <span class="rt"><b>94</b>run #4 · 6 fail</span></div>
+              <div class="pop-row"><span class="sw" style="background:#10b981"></span>
+                <span class="nm"><b>Recurring Service &amp; SLA</b><small>api.dev.swivlconnect.com · v6.2.0 · /api/v1/estimate, /api/v1/invoice, /jobs, /tasks</small></span>
+                <span class="rt"><b>101</b>run #2 · 15 fail</span></div>
+              <div class="pop-row"><span class="sw" style="background:#f59e0b"></span>
+                <span class="nm"><b>Billing API Flow</b><small>api.dev.swivlconnect.com · v6.2.0 · /billing/*, /webhook/platform-account/*</small></span>
+                <span class="rt"><b>30</b>never run</span></div>
+              <div class="pop-row"><span class="sw" style="background:#ec4899"></span>
+                <span class="nm"><b>Building Unit · BE323</b><small>api.dev.swivlconnect.com · v6.2.0 · /jobs, /user/table-config, /customer/*</small></span>
+                <span class="rt"><b>30</b>run #1 · 3 fail</span></div>
+              <div class="pop-row"><span class="sw" style="background:#06b6d4"></span>
+                <span class="nm"><b>Job Detail — Page Exclusions</b><small>api.dev.swivlconnect.com · v6.2.0 · /jobs/{id}, /tasks, /api/v1/estimate, /api/v1/invoice</small></span>
+                <span class="rt"><b>30</b>run #1 · all pass</span></div>
+              <div class="pop-row"><span class="sw" style="background:#64748b"></span>
+                <span class="nm"><b>Customer Availability</b><small>api.dev.swivlconnect.com · v5.7.0 · /tasks, /tasks/:id, /tasks/team, /tasks/scheduler</small></span>
+                <span class="rt"><b>24</b>never run</span></div>
+              <div class="pop-sec" style="border-top:1px solid var(--border);margin-top:4px">Session — applies to every module</div>
+              <div class="pop-row" style="gap:8px;flex-wrap:wrap">
+                <span class="m-lab">Env</span>
+                <span class="viewsw" style="border-radius:6px"><button class="on">Stage</button><button>Local</button><button>Custom</button></span>
+                <span class="m-lab" style="margin-left:8px">Resolved</span>
+                <span class="m-in mono" style="flex:1">https://template.dev.swivlconnect.com</span>
+                <span class="m-btn sm ghost">Override…</span>
+              </div>
+              <div class="pop-foot">
+                <span class="m-btn sm">＋ Add module</span>
+                <span class="m-btn sm">Manage…</span>
+                <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+                  <span class="kbd">↑↓</span><span class="dim" style="font-size:10.5px">move</span>
+                  <span class="kbd">⏎</span><span class="dim" style="font-size:10.5px">switch</span>
+                  <span class="kbd">⌘1-7</span><span class="dim" style="font-size:10.5px">direct</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption>Each row carries the four things that decide whether you want it: how many cases, what host
+        and version it runs against, what its spec is, and how its last run went. <b>Switching is free and
+        non-destructive</b> — it swaps which module object the renderers read from; nothing is fetched, nothing
+        is lost, the previous module's run history stays attached to it. The env row at the bottom is the whole
+        of the session config that used to occupy the topbar.</figcaption>
+    </figure>
+  </div>
+
+  <!-- ============================ cases view ============================ -->
+  <div class="bleed">
+    <div class="fig-h"><span class="n">Fig 2.2</span><h4>Cases, with a non-Templates module active</h4></div>
+    <figure>
+      <div class="mk-frame">
+        <div class="mk">
+          <div class="tb-new">
+            <div class="m-brand"><div class="m-logo">A</div><span>API Test Studio</span></div>
+            <span class="mod-chip"><span class="sw" style="background:#3b82f6"></span><b>Job Detail</b>
+              <span class="sep">·</span><span class="cv">Stage</span><span class="car">▾</span></span>
+            <span class="tb-count">94 cases <span style="color:#334155">·</span> v6.2.0</span>
+            <span style="flex:1"></span>
+            <span class="tok-chip"><span class="dot pass"></span>Token <span class="mono">38 m</span></span>
+            <div class="viewsw"><button class="on">Cases</button><button>Report <span class="badge">6</span></button></div>
+            <span class="split"><span class="go">▶ Run 94</span><span class="car">▾</span></span>
+            <span class="m-btn ghost" style="padding:5px 9px">⋯</span>
+          </div>
+          <div class="mk-body" style="height:470px">
+            <aside class="a-rail">
+              <div class="rail-h">
+                <div class="rail-search">🔍 Search scenario or path…</div>
+                <div class="rail-scope"><span class="on">All</span><span>Fail</span><span>Smoke</span><span>★</span></div>
+              </div>
+              <div style="padding:7px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px">
+                <span class="lbl">Group by</span>
+                <span class="viewsw" style="border-radius:6px;margin-left:auto">
+                  <button class="on" style="padding:2px 7px;font-size:10.5px">Type</button>
+                  <button style="padding:2px 7px;font-size:10.5px">Path</button></span>
+              </div>
+              <div class="rail-list">
+                <div class="rail-tag on"><span class="nm">Happy</span><span class="rail-bar"><i style="width:100%"></i></span><span class="ct">41</span></div>
+                <div class="rail-tag"><span class="nm">Edge</span><span class="rail-bar"><i style="width:88%"></i></span><span class="ct">32</span></div>
+                <div class="rail-tag"><span class="nm">Negative</span><span class="rail-bar"><i style="width:81%"></i></span><span class="ct">21</span></div>
+              </div>
+              <div class="rail-foot">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                  <span class="lbl">Fixtures</span><span class="m-btn ghost sm" style="margin-left:auto;padding:1px 6px">Edit</span></div>
+                <div class="mono" style="font-size:10.5px;color:var(--text-muted)">
+                  <span class="varchip">jobId</span> JSSS01186<br>
+                  <span class="varchip">tenantId</span> acme-ops</div>
+              </div>
+            </aside>
+            <div class="a-main">
+              <div class="cl-head">
+                <span class="ttl">Happy</span><span class="dim" style="font-size:11px">41 cases · GET /jobs/{id}</span>
+                <span style="margin-left:auto;display:flex;gap:6px">
+                  <span class="m-btn sm">★ Add to smoke</span><span class="m-btn sm">▶ Run tag (41)</span></span>
+              </div>
+              <div class="cl">
+                <div class="cl-row sel"><span class="dot pass"></span><span class="star on">★</span><span class="id">TC001</span>
+                  <span class="sc">Fetch valid jobId returns 200 with full envelope</span>
+                  <span class="pa">/jobs/<span class="varchip">jobId</span></span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot pass"></span><span class="star">☆</span><span class="id">TC002</span>
+                  <span class="sc">Top-level identifiers present</span><span class="pa">/jobs/{id}</span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot fail"></span><span class="star">☆</span><span class="id">TC003</span>
+                  <span class="sc">jobNumber format matches JOB-YYYY-NNN</span><span class="pa">/jobs/{id}</span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot pass"></span><span class="star">☆</span><span class="id">TC004</span>
+                  <span class="sc">createdAt is valid ISO-8601 UTC</span><span class="pa">/jobs/{id}</span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot pass"></span><span class="star">☆</span><span class="id">TC005</span>
+                  <span class="sc">status returned in uppercase enum (OPEN/CLOSED/IN_PROGRESS/CANCELLED)</span><span class="pa">/jobs/{id}</span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot pass"></span><span class="star on">★</span><span class="id">TC009</span>
+                  <span class="sc">Customer block populated</span><span class="pa">/jobs/{id}</span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot pass"></span><span class="star">☆</span><span class="id">TC011</span>
+                  <span class="sc">jobMedia array with one image</span><span class="pa">/jobs/{id}</span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot fail"></span><span class="star">☆</span><span class="id">TC015</span>
+                  <span class="sc">Full siteAddress populated — lat/long, fullAddress</span><span class="pa">/jobs/{id}</span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot pass"></span><span class="star on">★</span><span class="id">TC020</span>
+                  <span class="sc">All hierarchy levels populated — buildingUnit, complex, block, floor</span><span class="pa">/jobs/{id}</span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot pass"></span><span class="star">☆</span><span class="id">TC023</span>
+                  <span class="sc">jobZones array with items</span><span class="pa">/jobs/{id}</span><span class="ex">200</span></div>
+                <div class="cl-row"><span class="dot pass"></span><span class="star">☆</span><span class="id">TC028</span>
+                  <span class="sc">jobLead full profile — userId, username, phoneNumber, email</span><span class="pa">/jobs/{id}</span><span class="ex">200</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ol class="annos" style="grid-template-columns:1fr 1fr">
+        <li><span class="anno">A</span><span><b>Tag source follows the module.</b> Templates has an OpenAPI
+          spec, so the rail is its nine spec tags. Job Detail came from a workbook with no tag column and a
+          single endpoint, so the rail is the workbook's own <em>Type</em> column — Happy / Edge / Negative.
+          Grouping by path would be one row of 94, which is why <em>Group by</em> exists and defaults to
+          whichever axis has more than one value.</span></li>
+        <li><span class="anno">B</span><span><b>Fixtures live in the rail foot.</b> Job Detail's whole suite
+          needs one real job; the workbook already names it (<code>JSSS01186</code>). Typing it once turns
+          <code>{id}</code> into a resolved <code>jobId</code> chip on every row — no chaining machinery
+          needed for the modules whose ids are stable test data. §3 covers the ones that aren't.</span></li>
+      </ol>
+    </figure>
+  </div>
+
+  <!-- ==================== add module + empty state ==================== -->
+  <div class="wrap">
+    <div class="grid2" style="grid-template-columns:1.15fr .85fr;align-items:start">
+      <div>
+        <div class="fig-h" style="margin-top:20px"><span class="n">Fig 2.3</span><h4>Adding a module</h4></div>
+        <figure>
+          <div class="mk-frame">
+            <div class="mk" style="padding:0">
+              <div style="padding:12px 15px;border-bottom:1px solid var(--border);background:var(--bg-elev);
+                          display:flex;align-items:center;font-size:13px;font-weight:600">Add module
+                <span class="m-btn ghost sm" style="margin-left:auto">×</span></div>
+              <div style="padding:14px 15px;background:var(--bg-elev)">
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                  <span class="m-in" style="flex:1;color:var(--text)">Billing API Flow</span>
+                  <span class="m-in" style="width:78px">🟡 colour</span>
+                </div>
+                <div class="lbl" style="margin-bottom:6px">Where does the spec come from?</div>
+                <div style="display:flex;flex-direction:column;gap:7px">
+                  <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;
+                              border:1px solid var(--accent);background:var(--accent-soft)">
+                    <span class="dot run"></span><span style="flex:1;font-size:12px"><b>Fetch from a URL</b>
+                      <span class="dim mono" style="display:block;font-size:10.5px">/api-docs/json, /openapi.json, Scalar or Swagger UI page</span></span>
+                  </div>
+                  <div style="display:flex;gap:6px">
+                    <span class="m-in mono" style="flex:1">https://api.dev.swivlconnect.com/api-docs/json</span>
+                    <span class="m-btn primary sm">Fetch</span></div>
+                  <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;
+                              border:1px solid var(--border);background:var(--bg-elev-2)">
+                    <span class="dot"></span><span style="flex:1;font-size:12px">Paste JSON / YAML
+                      <span class="dim" style="display:block;font-size:10.5px">the existing Swagger modal, scoped to this module</span></span></div>
+                  <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;
+                              border:1px solid var(--border);background:var(--bg-elev-2)">
+                    <span class="dot"></span><span style="flex:1;font-size:12px">Upload a file
+                      <span class="dim" style="display:block;font-size:10.5px">.json / .yaml spec, or a .xlsx / .csv of test cases</span></span></div>
+                  <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;
+                              border:1px solid var(--border);background:var(--bg-elev-2)">
+                    <span class="dot"></span><span style="flex:1;font-size:12px">No spec — cases only
+                      <span class="dim" style="display:block;font-size:10.5px">import a workbook and skip the docs pane</span></span></div>
+                </div>
+                <div style="margin-top:13px;padding:11px;border:1px solid var(--border);border-radius:8px;background:var(--bg)">
+                  <div style="display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:7px">
+                    <span class="dot pass"></span><b>Spec parsed — 41 paths, 9 tags</b>
+                    <span class="dim mono" style="margin-left:auto;font-size:10.5px">312 KB</span></div>
+                  <div style="font-size:11.5px;color:var(--text-muted);margin-bottom:9px">
+                    Matched 30 imported cases to 9 of those paths. 32 paths have no case yet.</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <span class="m-btn primary sm">Create module with 30 cases</span>
+                    <span class="m-btn sm">+ generate 32 from spec</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <figcaption>Four sources, one of which is "none" — Billing, Job Detail and the rest exist as
+            workbooks today with no published spec, and refusing to create a module without one would block
+            six of seven. A specless module simply hides the docs pane.</figcaption>
+        </figure>
+      </div>
+      <div>
+        <div class="fig-h" style="margin-top:20px"><span class="n">Fig 2.4</span><h4>Before any module is chosen</h4></div>
+        <figure>
+          <div class="mk-frame">
+            <div class="mk">
+              <div class="tb-new">
+                <div class="m-brand"><div class="m-logo">A</div><span>API Test Studio</span></div>
+                <span class="mod-chip" style="border-style:dashed;color:var(--text-dim)">
+                  <span class="sw" style="background:#334155"></span>No module<span class="car">▾</span></span>
+                <span style="flex:1"></span>
+                <span class="m-btn ghost" style="padding:5px 9px">⋯</span>
+              </div>
+              <div style="padding:42px 34px 38px;background:var(--bg);min-height:392px">
+                <div style="max-width:430px">
+                  <div class="lbl" style="margin-bottom:10px">Start here</div>
+                  <div style="font-size:19px;font-weight:600;margin-bottom:8px">Pick an API area to test</div>
+                  <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:18px;line-height:1.55">
+                    Each module carries its own spec, endpoints and test cases. Your token and environment
+                    are shared, so you only set those once.</div>
+                  <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
+                    <div class="pop-row" style="border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)">
+                      <span class="sw" style="background:#8b5cf6;width:8px;height:8px;border-radius:2px"></span>
+                      <span class="nm"><b>Templates</b><small>102 cases · built-in spec</small></span>
+                      <span class="rt">▸</span></div>
+                    <div class="pop-row" style="border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)">
+                      <span class="sw" style="background:#3b82f6;width:8px;height:8px;border-radius:2px"></span>
+                      <span class="nm"><b>Job Detail</b><small>94 cases · GET /jobs/{id}</small></span>
+                      <span class="rt">▸</span></div>
+                    <div class="pop-row" style="border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)">
+                      <span class="sw" style="background:#10b981;width:8px;height:8px;border-radius:2px"></span>
+                      <span class="nm"><b>Recurring Service &amp; SLA</b><small>101 cases · 7 paths</small></span>
+                      <span class="rt">▸</span></div>
+                    <div style="padding:7px 13px;font-size:11.5px;color:var(--text-dim)">+ 4 more · 411 cases total</div>
+                  </div>
+                  <div style="display:flex;gap:7px"><span class="m-btn">＋ Add a module</span>
+                    <span class="m-btn ghost">Import a workbook</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <figcaption>This replaces the welcome strip. It asks for one decision instead of narrating four,
+            and the token prompt appears on the chip the moment a module is live — at the point it is
+            actually needed.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== cross-module ==================== -->
+  <div class="wrap">
+    <div class="fig-h"><span class="n">Fig 2.5</span><h4>Running across modules, and what the Report does about it</h4></div>
+    <p style="max-width:70ch;color:var(--ink-2)">Yes, you can run across modules — but not by merging the
+      lists. A <b>suite</b> is a saved set of modules with a scope each; running it executes them
+      back-to-back, module by module, and writes <em>one run record per module</em> plus a thin suite
+      header that links them. That keeps every existing Run Report behaviour intact, because each report
+      still describes one module against one base URL.</p>
+    <div class="grid2" style="grid-template-columns:.9fr 1.1fr">
+      <div>
+        <div class="mk-frame">
+          <div class="mk" style="padding:0">
+            <div style="padding:10px 13px;border-bottom:1px solid var(--border);background:var(--bg-elev-2);
+                        font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px">
+              Run scope <span class="dim" style="margin-left:auto;font-weight:400;font-size:11px">from the ▾ caret</span></div>
+            <div style="background:var(--bg-elev);padding:5px 0">
+              <div class="pop-row on"><span class="nm">This module — Templates</span><span class="rt">102</span></div>
+              <div class="pop-row"><span class="nm">★ Smoke</span><span class="rt">9</span></div>
+              <div class="pop-row"><span class="nm">Failed in run #12</span><span class="rt">37</span></div>
+              <div class="pop-row"><span class="nm">Current tag — templates/types</span><span class="rt">45</span></div>
+              <div class="pop-row"><span class="nm">Selected</span><span class="rt dim">0</span></div>
+              <div class="pop-sec" style="border-top:1px solid var(--border);margin-top:4px">Suites</div>
+              <div class="pop-row"><span class="nm"><b>Pre-release smoke</b><small>7 modules · smoke set of each</small></span><span class="rt">63</span></div>
+              <div class="pop-row"><span class="nm"><b>Jobs surface</b><small>Job Detail + Exclusions + Building Unit</small></span><span class="rt">154</span></div>
+              <div class="pop-foot"><span class="m-btn sm">＋ New suite</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="mk-frame">
+          <div class="mk" style="padding:0">
+            <div class="rp-h">
+              <div style="display:flex;align-items:center;gap:9px">
+                <span class="lbl">Suite run</span><b style="font-size:13px">Pre-release smoke</b>
+                <span class="dim mono" style="font-size:11px">63 cases · 14.2 s · 12:41</span>
+                <span class="pill fail" style="margin-left:auto">8 fail</span></div>
+              <div class="rp-stats"><div class="rp-stat pass"><div class="v">53</div><div class="k">pass</div></div>
+                <div class="rp-stat fail"><div class="v">8</div><div class="k">fail</div></div>
+                <div class="rp-stat skip"><div class="v">2</div><div class="k">skip</div></div>
+                <div class="rp-stat" style="margin-left:auto"><div class="v" style="color:var(--text-muted)">7</div><div class="k">modules</div></div></div>
+            </div>
+            <div style="background:var(--bg);padding:11px 0 4px">
+              <div class="pop-sec" style="padding-left:16px">Per module — click through to that module's report</div>
+              <div class="rp-row"><span class="sw" style="width:8px;height:8px;border-radius:2px;background:#8b5cf6;flex:none"></span>
+                <span class="sc">Templates</span><span class="dim mono" style="font-size:10.5px">9 cases</span>
+                <span class="mini-bar" style="width:80px"><i style="width:78%"></i></span><span class="code">2 fail</span></div>
+              <div class="rp-row"><span class="sw" style="width:8px;height:8px;border-radius:2px;background:#3b82f6;flex:none"></span>
+                <span class="sc">Job Detail</span><span class="dim mono" style="font-size:10.5px">12 cases</span>
+                <span class="mini-bar" style="width:80px"><i style="width:100%"></i></span><span class="code" style="color:var(--success)">clean</span></div>
+              <div class="rp-row"><span class="sw" style="width:8px;height:8px;border-radius:2px;background:#10b981;flex:none"></span>
+                <span class="sc">Recurring Service &amp; SLA</span><span class="dim mono" style="font-size:10.5px">14 cases</span>
+                <span class="mini-bar" style="width:80px"><i style="width:71%"></i></span><span class="code">4 fail</span></div>
+              <div class="rp-row"><span class="sw" style="width:8px;height:8px;border-radius:2px;background:#f59e0b;flex:none"></span>
+                <span class="sc">Billing API Flow</span><span class="dim mono" style="font-size:10.5px">8 cases</span>
+                <span class="mini-bar" style="width:80px"><i style="width:88%"></i></span><span class="code">1 fail</span></div>
+              <div class="rp-row"><span class="sw" style="width:8px;height:8px;border-radius:2px;background:#ec4899;flex:none"></span>
+                <span class="sc">Building Unit · BE323</span><span class="dim mono" style="font-size:10.5px">8 cases</span>
+                <span class="mini-bar" style="width:80px"><i style="width:88%"></i></span><span class="code">1 fail</span></div>
+              <div class="rp-row"><span class="sw" style="width:8px;height:8px;border-radius:2px;background:#06b6d4;flex:none"></span>
+                <span class="sc">Job Detail — Page Exclusions</span><span class="dim mono" style="font-size:10.5px">6 cases</span>
+                <span class="mini-bar" style="width:80px"><i style="width:100%"></i></span><span class="code" style="color:var(--success)">clean</span></div>
+              <div class="rp-row"><span class="sw" style="width:8px;height:8px;border-radius:2px;background:#64748b;flex:none"></span>
+                <span class="sc">Customer Availability</span><span class="dim mono" style="font-size:10.5px">6 cases</span>
+                <span class="mini-bar" style="width:80px"><i style="width:100%"></i></span><span class="code" style="color:var(--success)">clean</span></div>
+              <div class="pop-sec" style="padding-left:16px;border-top:1px solid var(--border);margin-top:8px">Failures across the suite, grouped by cause — the round-one grouping, unchanged</div>
+              <div class="rp-grp" style="margin-top:4px">
+                <div class="rp-grp-h"><span class="dot fail"></span>
+                  <span class="t">405 is never returned — the router falls through to 404</span><span class="n">2</span></div>
+                <div class="rp-row"><span class="modtag" style="background:rgba(139,92,246,.18);color:#a78bfa">Templates</span>
+                  <span class="id">TC_013</span><span class="sc">POST not allowed on /templates/types</span><span class="code">405 → 404</span></div>
+                <div class="rp-row"><span class="modtag" style="background:rgba(139,92,246,.18);color:#a78bfa">Templates</span>
+                  <span class="id">TC_014</span><span class="sc">PUT not allowed on /templates/types</span><span class="code">405 → 404</span></div>
+              </div>
+              <div class="rp-grp">
+                <div class="rp-grp-h"><span class="dot fail"></span>
+                  <span class="t">Invalid input was accepted — a 2xx where a 4xx was expected</span><span class="n">4</span></div>
+                <div class="rp-row"><span class="modtag" style="background:rgba(16,185,129,.18);color:#34d399">Recurring SLA</span>
+                  <span class="id">TC018</span><span class="sc">Invalid visitFrequency value (DAILY)</span><span class="code">400 → 201</span></div>
+                <div class="rp-row"><span class="modtag" style="background:rgba(16,185,129,.18);color:#34d399">Recurring SLA</span>
+                  <span class="id">TC021</span><span class="sc">numberOfVisits = 0</span><span class="code">400 → 201</span></div>
+                <div class="rp-row"><span class="modtag" style="background:rgba(16,185,129,.18);color:#34d399">Recurring SLA</span>
+                  <span class="id">TC022</span><span class="sc">numberOfVisits negative (-3)</span><span class="code">400 → 201</span></div>
+                <div class="rp-row"><span class="modtag" style="background:rgba(245,158,11,.18);color:#fbbf24">Billing</span>
+                  <span class="id">TC020</span><span class="sc">Missing newPlanId on schedule-downgrade</span><span class="code">400 → 200</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption style="max-width:none"><b>The one genuinely new report surface is the suite header</b> —
+      seven rows and a module tag on each failure row. Everything under it is <code>classifyFailure()</code>
+      exactly as it ships today, and it turns out to earn its keep across modules: "invalid input was
+      accepted" groups a Recurring SLA bug with a Billing bug, which is one validation-middleware story, not
+      two tickets. <span class="chip cli">client-side only</span> <b>Retrofit ~90 lines</b> — a suite runner
+      that loops modules calling the existing run function, plus one new report header.</figcaption>
+  </div>
+</section>
+<section class="band">
+  <div class="wrap">
+    <p class="sec-no">§3 — efficient</p>
+    <h3 style="max-width:24ch">Concurrency buys 3×. The timeout buys the other 3×.</h3>
+    <p class="lede">Measured against the real suite at 240 ms average latency: 102 sequential requests plus
+      120 ms of throttle each is 96 s, and two thirds of that is <code>TC_028</code> and <code>TC_037</code>
+      sitting on the 30 s default. A pool of six drops it to 31 s — and then stops dead, because one 30 s
+      request is now the whole critical path. Both fixes together get the suite under 12 s.</p>
+    <div class="tl">
+  <div class="tl-row">
+    <div class="tl-name">Sequential + 120 ms throttle — the run today<b>1m 36s</b></div>
+    <div class="tl-lanes">
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:9.988%"><i>27 cases</i></span>
+        <span class="tl-b slow" style="left:10.112%;width:31.211%"><i>TC_028 · timeout</i></span>
+        <span class="tl-b" style="left:41.448%;width:2.871%"></span>
+        <span class="tl-b slow" style="left:44.444%;width:31.211%"><i>TC_037 · timeout</i></span>
+        <span class="tl-b" style="left:75.780%;width:24.220%"><i>65 cases</i></span>
+      </div>
+    </div>
+  </div>
+  <div class="tl-row">
+    <div class="tl-name">Pool of 6, throttle removed<b>31.4 s</b></div>
+    <div class="tl-lanes">
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:5.743%"><i>23 cases</i></span>
+      </div>
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:1.498%"></span>
+        <span class="tl-b slow" style="left:1.498%;width:31.211%"><i>TC_037 · timeout</i></span>
+      </div>
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:5.743%"><i>23 cases</i></span>
+      </div>
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:0.999%"></span>
+        <span class="tl-b slow" style="left:0.999%;width:31.211%"><i>TC_028 · timeout</i></span>
+      </div>
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:5.493%"><i>22 cases</i></span>
+      </div>
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:5.493%"><i>22 cases</i></span>
+      </div>
+    </div>
+  </div>
+  <div class="tl-row">
+    <div class="tl-name">Pool of 6 + a 10 s per-case timeout on the two known slow cases<b>11.4 s</b></div>
+    <div class="tl-lanes">
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:5.743%"><i>23 cases</i></span>
+      </div>
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:1.498%"></span>
+        <span class="tl-b slow" style="left:1.498%;width:10.404%"><i>TC_037 · timeout</i></span>
+      </div>
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:5.743%"><i>23 cases</i></span>
+      </div>
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:0.999%"></span>
+        <span class="tl-b slow" style="left:0.999%;width:10.404%"><i>TC_028 · timeout</i></span>
+      </div>
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:5.493%"><i>22 cases</i></span>
+      </div>
+      <div class="tl-lane">
+        <span class="tl-b" style="left:0.000%;width:5.493%"><i>22 cases</i></span>
+      </div>
+    </div>
+  </div>      <div class="tl-axis"><span>0 s</span><span>24 s</span><span>48 s</span><span>72 s</span><span>96 s</span></div>
+    </div>
+    <figcaption style="margin-bottom:26px">Same scale on all three rows. Red is a request on the timeout;
+      green is a lane of ordinary requests, merged where they are too narrow to label.
+      <b>The middle row is the honest one</b> — parallelism alone leaves you staring at a 30 s bar with five
+      idle lanes beside it, which is exactly what the mid-run UI has to make visible so you know to stop
+      waiting.</figcaption>
+  </div>
+
+  <!-- ---------------- mid run ---------------- -->
+  <div class="bleed">
+    <div class="fig-h"><span class="n">Fig 3.1</span><h4>Mid-run — six lanes, 8.4 s in</h4></div>
+    <figure>
+      <div class="mk-frame">
+        <div class="mk">
+          <div class="tb-new">
+            <div class="m-brand"><div class="m-logo">A</div><span>API Test Studio</span></div>
+            <span class="mod-chip"><span class="sw" style="background:#8b5cf6"></span><b>Templates</b>
+              <span class="sep">·</span><span class="cv">Stage</span><span class="car">▾</span></span>
+            <span style="flex:1"></span>
+            <span class="tok-chip"><span class="dot pass"></span>Token <span class="mono">39 m</span></span>
+            <div class="viewsw"><button class="on">Cases</button><button>Report</button></div>
+            <span class="split" style="opacity:.55"><span class="go" style="background:#3f3357;border-color:#3f3357">
+              <span class="spin"></span> Running…</span></span>
+            <span class="m-btn ghost" style="padding:5px 9px">⋯</span>
+          </div>
+
+          <div class="tray">
+            <div class="tray-top">
+              <span class="anno">1</span>
+              <span class="scope">Run&nbsp;#13 · <b>all 102</b> <span class="dim">· Templates · Stage</span></span>
+              <span class="tray-el">8.4 s elapsed · ~3 s left</span>
+              <span class="dim" style="font-size:11px">concurrency</span>
+              <span class="viewsw" style="border-radius:6px"><button style="padding:2px 7px;font-size:10.5px">1</button>
+                <button style="padding:2px 7px;font-size:10.5px">3</button>
+                <button class="on" style="padding:2px 7px;font-size:10.5px">6</button>
+                <button style="padding:2px 7px;font-size:10.5px">10</button></span>
+              <span class="tray-counts">
+                <span class="tcount p">● 47</span><span class="tcount f">● 24</span>
+                <span class="tcount q">◌ 25 queued</span>
+                <span class="m-btn sm">❚❚ Pause</span><span class="m-btn sm" style="border-color:var(--danger);color:var(--danger)">■ Stop</span></span>
+            </div>
+            <div class="tray-prog"><i style="width:75%"></i></div>
+            <div class="lanes">
+              <div class="lane"><span class="ln">1</span><span class="spin"></span><span class="method POST">POST</span>
+                <span class="nm">TC_062 · AI-generate — prompt injection</span><span class="ms">1.9 s</span></div>
+              <div class="lane"><span class="ln">2</span><span class="spin"></span><span class="method DELETE">DEL</span>
+                <span class="nm">TC_072 · Delete published template</span><span class="ms">0.3 s</span></div>
+              <div class="lane serial"><span class="ln">3</span><span class="spin"></span><span class="method GET">GET</span>
+                <span class="nm"><span class="anno">2</span> TC_028 · Oversized query string (10k+ chars)</span><span class="ms">8.1 s</span></div>
+              <div class="lane"><span class="ln">4</span><span class="spin"></span><span class="method POST">POST</span>
+                <span class="nm">TC_090 · Submit filled runtime form</span><span class="ms">0.5 s</span></div>
+              <div class="lane idle"><span class="ln">5</span><span class="dot"></span>
+                <span class="nm"><span class="anno">3</span> waiting on <span class="varchip">sectionId</span> from TC_079</span><span class="ms">—</span></div>
+              <div class="lane"><span class="ln">6</span><span class="spin"></span><span class="method PATCH">PATCH</span>
+                <span class="nm">TC_083 · Reorder sections</span><span class="ms">0.2 s</span></div>
+            </div>
+          </div>
+
+          <div class="mk-body" style="height:344px">
+            <aside class="a-rail">
+              <div class="rail-h">
+                <div class="rail-search">🔍 Search scenario or path…</div>
+                <div class="rail-scope"><span>All</span><span class="on">Fail</span><span>Smoke</span><span>★</span></div>
+              </div>
+              <div class="rail-list">
+                <div class="rail-tag on"><span class="nm">templates/types</span><span class="rail-bar"><i style="width:62%"></i></span><span class="ct">45</span></div>
+                <div class="rail-tag"><span class="nm">templates</span><span class="rail-bar"><i style="width:78%"></i></span><span class="ct">23</span></div>
+                <div class="rail-tag"><span class="nm">ai-generate</span><span class="rail-bar"><i style="width:57%"></i></span><span class="ct">7</span></div>
+                <div class="rail-tag"><span class="nm">sections</span><span class="rail-bar"><i style="width:33%"></i></span><span class="ct">6</span></div>
+                <div class="rail-tag"><span class="nm">publish</span><span class="rail-bar"><i style="width:80%"></i></span><span class="ct">5</span></div>
+                <div class="rail-tag"><span class="nm">fields</span><span class="rail-bar"><i style="width:20%"></i></span><span class="ct">5</span></div>
+                <div class="rail-tag"><span class="nm">submissions</span><span class="rail-bar"><i style="width:60%"></i></span><span class="ct">5</span></div>
+                <div class="rail-tag"><span class="nm">uploads</span><span class="rail-bar"><i style="width:0%"></i></span><span class="ct">4</span></div>
+                <div class="rail-tag"><span class="nm">preview</span><span class="rail-bar"><i style="width:50%"></i></span><span class="ct">2</span></div>
+              </div>
+              <div class="rail-foot"><span class="anno">4</span> Failures stream in — the rail bars and this
+                list update per result, not at the end.</div>
+            </aside>
+            <div class="a-main">
+              <div class="cl-head"><span class="ttl">Failing so far</span>
+                <span class="dim" style="font-size:11px">24 · sorted newest first</span>
+                <span style="margin-left:auto"><span class="m-btn sm">▶ Re-run these when the run ends</span></span></div>
+              <div class="cl">
+                <div class="cl-row"><span class="dot fail"></span><span class="id">TC_056</span>
+                  <span class="sc">Create template — invalid category</span><span class="pa">POST /templates</span>
+                  <span class="ex" style="color:var(--danger)">400→201</span></div>
+                <div class="cl-row"><span class="dot fail"></span><span class="id">TC_055</span>
+                  <span class="sc">Create template — missing 'name'</span><span class="pa">POST /templates</span>
+                  <span class="ex" style="color:var(--danger)">400→201</span></div>
+                <div class="cl-row"><span class="dot fail"></span><span class="id">TC_016</span>
+                  <span class="sc">PATCH not allowed on /templates/types</span><span class="pa">/templates/types</span>
+                  <span class="ex" style="color:var(--danger)">405→404</span></div>
+                <div class="cl-row"><span class="dot fail"></span><span class="id">TC_015</span>
+                  <span class="sc">DELETE not allowed on /templates/types</span><span class="pa">/templates/types</span>
+                  <span class="ex" style="color:var(--danger)">405→404</span></div>
+                <div class="cl-row"><span class="dot fail"></span><span class="id">TC_014</span>
+                  <span class="sc">PUT not allowed on /templates/types</span><span class="pa">/templates/types</span>
+                  <span class="ex" style="color:var(--danger)">405→404</span></div>
+                <div class="cl-row"><span class="dot fail"></span><span class="id">TC_013</span>
+                  <span class="sc">POST not allowed on /templates/types</span><span class="pa">/templates/types</span>
+                  <span class="ex" style="color:var(--danger)">405→404</span></div>
+                <div class="cl-row"><span class="dot fail"></span><span class="id">TC_027</span>
+                  <span class="sc">Path traversal attempt</span><span class="pa">/templates/types/../../etc/passwd</span>
+                  <span class="ex" style="color:var(--danger)">400|404→200</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ol class="annos" style="grid-template-columns:1fr 1fr">
+        <li><span class="anno">1</span><span><b>The 3 px progress bar becomes a tray.</b> It is the only new
+          chrome this round adds, it exists only while a run is live, and it is the answer to "is it stuck or
+          is it working" — which the 3 px bar could never give you.</span></li>
+        <li><span class="anno">2</span><span><b>A pinned serial lane, amber-edged.</b> Three cases are
+          meaningless in a pool: <code>TC_034</code> baseline response time (a contended lane inflates it),
+          <code>TC_035</code> rate limiting and <code>TC_036</code> concurrent load (the pool is <em>already</em>
+          hammering, so a 429 no longer proves anything). They carry <code>serial:true</code> and get lane 3 to
+          themselves. This is a correctness fix, not a nicety — without it, parallelism silently changes what
+          three tests mean.</span></li>
+        <li><span class="anno">3</span><span><b>An idle lane says why it is idle.</b> Chained cases wait on
+          their producer; the lane shows the variable and the case it is waiting for rather than going
+          blank.</span></li>
+        <li><span class="anno">4</span><span><b>Results stream.</b> Today <code>renderSidebar()</code> is
+          called after every case and the report only appears at the end. With a pool, the failing list is
+          useful at 8 s, so the Cases pane switches to a live failure feed and the Report is one click, not a
+          hard redirect.</span></li>
+      </ol>
+      <figcaption><b>The one real cost of concurrency:</b> the Run Report's rows are stored "in execution
+        order", and with a pool that ordering becomes <em>start</em> order. Since round one's report already
+        sorts failures first and groups by cause, nothing visible changes — but the field should be renamed
+        and the report should keep <code>startedAt</code> per result so a slow case doesn't look out of
+        sequence.</figcaption>
+    </figure>
+  </div>
+
+  <div class="wrap">
+    <pre class="src"><span class="c">// replaces the for-loop in runAll() — ~40 lines, no library</span>
+<span class="k">async function</span> runPool(targets, limit = 6) {
+  <span class="k">const</span> serial = targets.filter(c =&gt; c.serial);       <span class="c">// TC_034 / 035 / 036</span>
+  <span class="k">const</span> pooled = targets.filter(c =&gt; !c.serial);
+  <span class="k">let</span> i = 0;
+  <span class="k">const</span> worker = <span class="k">async</span> () =&gt; {
+    <span class="k">while</span> (i &lt; pooled.length &amp;&amp; !runCtl.stopped) {
+      <span class="k">const</span> c = pooled[i++];
+      <span class="k">await</span> waitForDeps(c);                        <span class="c">// §3.2 — resolves {{vars}}</span>
+      <span class="k">await</span> sendRequest(c);                        <span class="c">// unchanged</span>
+      onResult(c);                                   <span class="c">// stream into tray + rail + feed</span>
+    }
+  };
+  <span class="k">await</span> Promise.all([...Array(limit)].map(worker));  <span class="c">// N workers, one queue</span>
+  <span class="k">for</span> (<span class="k">const</span> c <span class="k">of</span> serial) { <span class="k">await</span> sendRequest(c); onResult(c); }
+}</pre>
+    <div class="note"><b>Retrofit ~40 lines</b> plus ~70 for the tray markup and its per-result render.
+      <code>sendRequest()</code>, <code>buildUrl()</code>, <code>buildHeaders()</code> and
+      <code>snapshotResult()</code> are untouched — they are already per-case and stateless.
+      <span class="chip cli">client-side only — <code>Promise.all</code> over a fixed worker count is real
+      parallelism in one tab</span> Two browser limits to respect: Chrome allows 6 concurrent connections per
+      origin over HTTP/1.1, which is why the default is 6 and 10 is offered rather than 20. Over HTTP/2 to a
+      single host the ceiling is far higher, so the slider is worth having.</div>
+    <div class="note bad"><b>Per-case timeout needs a decision, not code.</b> Dropping the global 30 s to 10 s
+      is one number, but <code>TC_037</code> <em>expects</em> 500/503 from a downstream failure and may
+      legitimately be slow. The proposal is a <code>timeoutMs</code> field per case, defaulting to the module's
+      value, set to 10 s on the two known offenders — visible in the case editor so it is never a mystery why
+      one case gave up early.</div>
+  </div>
+  <div class="wrap">
+    <div class="fig-h"><span class="n">Fig 3.2</span><h4>Chaining — capture once, unblock 33 cases</h4></div>
+    <p style="max-width:72ch;color:var(--ink-2)">Two sources of values, because the modules genuinely differ.
+      <b>Fixtures</b> are typed once and stored on the module — right for Job Detail, whose workbook already
+      names the job (<code>JSSS01186</code>). <b>Captures</b> read a value out of a response — the only option
+      for Templates, where the <code>{id}</code> has to be a template this run just created, and where
+      <code>TC_071</code> then deletes it.</p>
+
+    <div class="grid2" style="grid-template-columns:1fr 1fr;align-items:stretch">
+      <div class="mk-frame" style="display:flex;flex-direction:column">
+        <div class="mk" style="flex:1;display:flex;flex-direction:column">
+          <div style="padding:9px 13px;border-bottom:1px solid var(--border);background:var(--bg-elev-2);
+                      display:flex;align-items:center;gap:9px;font-size:12px">
+            <span class="method POST">POST</span><b>TC_054</b>
+            <span class="dim">Create template — valid payload</span>
+            <span class="pill pass" style="margin-left:auto">201</span></div>
+          <div style="background:var(--bg-elev);padding:12px 13px;flex:1">
+            <div class="viewsw" style="margin-bottom:11px">
+              <button style="padding:3px 9px;font-size:11px">Params</button>
+              <button style="padding:3px 9px;font-size:11px">Body</button>
+              <button class="on" style="padding:3px 9px;font-size:11px">Capture <span class="badge" style="background:var(--accent)">1</span></button>
+              <button style="padding:3px 9px;font-size:11px">Expect</button></div>
+            <div class="lbl" style="margin-bottom:7px">Capture from the response</div>
+            <div style="display:flex;gap:6px;align-items:center;margin-bottom:9px">
+              <span class="m-in mono" style="flex:1.2">$.data.id</span>
+              <span class="dim" style="font-size:11px">→</span>
+              <span class="m-in mono" style="flex:.8;color:var(--accent);border-color:rgba(139,92,246,.5)">templateId</span>
+              <span class="m-btn ghost sm">×</span></div>
+            <div style="padding:9px 11px;border:1px solid var(--border);border-radius:7px;background:var(--bg);
+                        font-size:11.5px;color:var(--text-muted);margin-bottom:11px">
+              <span class="dot pass"></span> Last run captured
+              <span class="varchip">templateId</span>
+              <span class="mono" style="font-size:10.5px;color:var(--text)">8f2c1a94-6d10-4b7e-9a03-2f5be1c7d840</span></div>
+            <div class="lbl" style="margin-bottom:6px">Unblocks — 33 cases</div>
+            <div style="font-size:11.5px;color:var(--text-muted);line-height:1.7">
+              <span class="chainchip">TC_064</span> <span class="chainchip">TC_067</span>
+              <span class="chainchip">TC_068</span> <span class="chainchip">TC_069</span>
+              <span class="chainchip">TC_070</span> <span class="chainchip">TC_071</span>
+              <span class="chainchip">TC_072</span> <span class="chainchip">TC_073</span>
+              <span class="chainchip">TC_074</span> <span class="chainchip">TC_075</span>
+              <span class="chainchip">TC_076</span> <span class="chainchip">TC_077</span>
+              <span class="chainchip">TC_078</span> <span class="chainchip">TC_079</span>
+              <span class="dim">… and 19 more</span></div>
+            <div style="margin-top:12px;padding-top:11px;border-top:1px solid var(--border);font-size:11.5px;color:var(--text-dim)">
+              <b style="color:var(--text-muted)">Second hop:</b> <span class="mono">TC_079</span> captures
+              <span class="varchip">sectionId</span>, <span class="mono">TC_085</span> captures
+              <span class="varchip">fieldId</span>, <span class="mono">TC_090</span> captures
+              <span class="varchip">subId</span> — 11 more cases behind those.</div>
+          </div>
+        </div>
+      </div>
+      <div class="mk-frame" style="display:flex;flex-direction:column">
+        <div class="mk" style="flex:1;display:flex;flex-direction:column">
+          <div style="padding:9px 13px;border-bottom:1px solid var(--border);background:var(--bg-elev-2);
+                      display:flex;align-items:center;gap:9px;font-size:12px">
+            <span class="method PUT">PUT</span><b>TC_068</b>
+            <span class="dim">Update template fields</span>
+            <span class="pill blocked" style="margin-left:auto">was blocked</span></div>
+          <div style="background:var(--bg-elev);padding:12px 13px;flex:1;display:flex;flex-direction:column">
+            <div class="lbl" style="margin-bottom:6px">Request URL</div>
+            <div style="padding:9px 11px;border:1px solid var(--border);border-radius:7px;background:var(--bg);
+                        font-family:var(--mono);font-size:11.5px;margin-bottom:11px;line-height:1.6">
+              <span class="dim">https://template.dev.swivlconnect.com</span>/templates/<span
+                class="varchip" style="font-size:11px">{{templateId}}</span></div>
+            <div style="padding:9px 11px;border:1px solid rgba(59,130,246,.4);border-radius:7px;
+                        background:var(--info-soft);font-size:11.5px;color:var(--text-muted);margin-bottom:11px">
+              <b style="color:var(--info)">Depends on TC_054.</b> The pool holds this case until
+              <span class="varchip">templateId</span> is captured, then releases it. If TC_054 fails, this one
+              is marked <span class="pill blocked" style="font-size:9.5px">blocked — upstream failed</span>
+              instead of counting as a failure of its own.</div>
+            <div class="lbl" style="margin-bottom:6px">Resolution order</div>
+            <div style="font-size:11.5px;color:var(--text-muted);line-height:1.8;font-family:var(--mono)">
+              1. <span class="varchip">{{templateId}}</span> <span style="font-family:var(--sans)">— captured this run</span><br>
+              2. <span class="varchip">{{jobId}}</span> <span style="font-family:var(--sans)">— module fixture</span><br>
+              3. <span class="varchip">{{$uuid}}</span> <span style="font-family:var(--sans)">— built-in generator</span><br>
+              4. <span style="font-family:var(--sans);color:var(--text-dim)">unresolved → the case is
+                 <b style="color:var(--info)">blocked</b>, never silently sent with a literal
+                 <code style="background:none;border:0;padding:0">{id}</code> in the path</span></div>
+            <div style="margin-top:auto;padding-top:11px;border-top:1px solid var(--border);
+                        display:flex;gap:6px;align-items:center">
+              <span class="m-btn sm">▶ Send with captured value</span>
+              <span class="m-btn ghost sm">Pin a fixture instead</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Retrofit ~70 lines.</b> Three pieces: a five-line
+      <code>{{var}}</code> interpolator run over path / query / headers / body just before
+      <code>buildUrl()</code>; a ~25-line getter supporting the <code>$.a.b[0].c</code> subset of JSONPath
+      (a dotted-path walker with bracket indices — not a JSONPath library); and a pre-pass that reads every
+      case's <code>{{vars}}</code> and <code>capture</code> to build the dependency edges the pool waits on.
+      Cycles are rejected at run start with a named pair, not discovered at runtime.
+      <span class="chip cli">client-side only</span></div>
+    <div class="note bad"><b>Ordering caveat worth stating.</b> <code>TC_071</code> deletes the draft and
+      <code>TC_072</code> deletes a published one — chaining them off the same captured
+      <code>templateId</code> means the second gets a 404 from an already-deleted resource. Destructive cases
+      need their own producer, so <code>TC_054</code> should be marked <code>reusable:false</code> and re-run
+      per consumer, or the module should carry a fixture template that is never deleted. This is a test-design
+      decision the app can surface — flag it when two consumers of one capture both use DELETE — but it cannot
+      resolve it.</div>
+
+    <div class="fig-h"><span class="n">Fig 3.3</span><h4>Scopes and the smoke set</h4></div>
+    <div class="grid2" style="grid-template-columns:1fr 1fr">
+      <div class="card" style="border:1px solid var(--edge);border-radius:10px">
+        <span class="tagn">Smoke</span>
+        <h4>A star on the row, one set per module</h4>
+        <p>Nine stars for Templates — one per tag — is a 2 s run you can afford after every deploy.
+          Seeding it is free: on first use, star the first Happy case of each tag. The rail gets a
+          <b>★</b> scope alongside All / Fail, so the smoke set is also a filter, not just a run target.</p>
+      </div>
+      <div class="card" style="border:1px solid var(--edge);border-radius:10px">
+        <span class="tagn">Scope menu</span>
+        <h4>The Run button always names a number</h4>
+        <p>"Run All" hid the cost. <code>▶ Run 102</code> / <code>▶ Run 9</code> / <code>▶ Re-run 37 failed</code>
+          puts it on the button face, and the <code>confirm()</code> dialog that currently gates every run
+          can go — the count <em>is</em> the confirmation. One fewer modal in the loop.</p>
+      </div>
+    </div>
+    <div class="note"><b>Retrofit ~30 lines</b> — a <code>smoke: []</code> array on the module, a star toggle
+      in the row renderer, one filter branch, and a scope resolver that returns the target array. The scope
+      menu reuses the same popover component as the module switcher.
+      <span class="chip cli">client-side only</span></div>
+
+    <div class="fig-h"><span class="n">Fig 3.4</span><h4>The token that expires mid-run</h4></div>
+    <div class="bleed" style="padding:0">
+      <div class="mk-frame" style="max-width:960px">
+        <div class="mk">
+          <div style="display:flex;gap:1px;background:var(--border)">
+            <div style="flex:1;background:var(--bg-elev);padding:13px 15px">
+              <div class="lbl" style="margin-bottom:9px">Healthy</div>
+              <span class="tok-chip"><span class="dot pass"></span>Token <span class="mono">41 m</span></span>
+              <p style="font-size:11.5px;color:var(--text-muted);margin:10px 0 0;line-height:1.5">
+                The JWT's <code style="background:none;border:0;color:var(--text)">exp</code> claim, read with
+                <code style="background:none;border:0;color:var(--text)">atob()</code> on the middle segment.
+                No verification, no network — just reading a number the token already carries.</p>
+            </div>
+            <div style="flex:1;background:var(--bg-elev);padding:13px 15px">
+              <div class="lbl" style="margin-bottom:9px">Under 5 minutes</div>
+              <span class="tok-chip warn"><span class="dot skip"></span>Token <span class="mono">3 m</span> — expiring</span>
+              <p style="font-size:11.5px;color:var(--text-muted);margin:10px 0 0;line-height:1.5">
+                Amber before you start a run, so you paste a fresh one now rather than 40 s into a suite.
+                Starting a long run under 5 minutes prompts once.</p>
+            </div>
+            <div style="flex:1;background:var(--bg-elev);padding:13px 15px">
+              <div class="lbl" style="margin-bottom:9px">401 storm, mid-run</div>
+              <span class="tok-chip" style="border-color:var(--danger);color:var(--danger);background:var(--danger-soft)">
+                <span class="dot fail"></span>Token expired — run paused</span>
+              <p style="font-size:11.5px;color:var(--text-muted);margin:10px 0 0;line-height:1.5">
+                Three consecutive 401s on cases that don't expect one, and the pool
+                <b style="color:var(--text)">pauses instead of burning the remaining 60</b>. Paste, and it
+                resumes at the case it stopped on — the 47 already-passed results are kept.</p>
+            </div>
+          </div>
+          <div style="background:var(--bg);padding:11px 15px;display:flex;align-items:center;gap:9px;
+                      border-top:1px solid var(--border)">
+            <span class="m-in mono" style="flex:1">paste a fresh bearer token…</span>
+            <span class="m-btn primary sm">Resume run #13 from TC_058</span>
+            <span class="m-btn sm">Discard the run</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note" style="margin-top:14px"><b>Retrofit ~25 lines</b> for the decode, the countdown, and the
+      consecutive-401 counter; the pause/resume machinery is shared with the tray's Pause button.
+      <span class="chip cli">client-side</span> <b>What cannot be done client-side:</b> actually
+      <em>refreshing</em> the token. That needs a refresh-token grant the API is willing to expose to a browser
+      origin, or a server the app can ask — and a refresh token sitting in localStorage next to the run history
+      is a worse idea than retyping a JWT every 40 minutes. <span class="chip srv">needs a server, and is not
+      worth it</span></div>
+  </div>
+</section>
+
+<section class="band wrap">
+  <p class="sec-no">§4 — cost, and what I am not doing</p>
+  <h3>Everything above fits in the one file</h3>
+  <table style="margin-top:18px">
+    <thead><tr><th style="width:30%">Proposal</th><th style="width:12%">New / changed</th>
+      <th style="width:16%">Feasibility</th><th>The catch</th></tr></thead>
+    <tbody>
+      <tr><td><b>Topbar reduction</b></td><td class="mono">−85 net</td><td><span class="chip cli">client</span></td>
+        <td>Mostly deletion. One popover component, reused three times.</td></tr>
+      <tr><td><b>Module registry + switcher</b></td><td class="mono">~180</td><td><span class="chip cli">client</span></td>
+        <td>~60 call sites move behind three accessors. Mechanical, but it touches most of the file.</td></tr>
+      <tr><td><b>Run history → IndexedDB</b></td><td class="mono">~50</td><td><span class="chip cli">client</span></td>
+        <td>Forced by the module concept, not optional: 7 modules of run history will not fit in 5 MB.</td></tr>
+      <tr><td><b>Add-module flow</b></td><td class="mono">~70</td><td><span class="chip cli">client</span></td>
+        <td>Reuses <code>connectSwagger()</code>, <code>loadSwagger()</code> and the CSV importer verbatim —
+          they just write into a module instead of the root state. <code>.xlsx</code> parsing is the one
+          genuinely new bit; a minimal reader is <code>zip + sharedStrings + sheet XML</code>, about 60 lines,
+          or keep asking for CSV.</td></tr>
+      <tr><td><b>Suite runner + suite report</b></td><td class="mono">~90</td><td><span class="chip cli">client</span></td>
+        <td>Loops modules calling the existing run function. Per-module reports stay untouched.</td></tr>
+      <tr><td><b>Concurrency pool + tray</b></td><td class="mono">~110</td><td><span class="chip cli">client</span></td>
+        <td>Real parallelism — 6 workers over one queue. Browser caps at 6 per origin on HTTP/1.1.
+          Three cases must be pinned serial or their results become meaningless.</td></tr>
+      <tr><td><b>Per-case timeout</b></td><td class="mono">~10</td><td><span class="chip cli">client</span></td>
+        <td>Bigger win than the pool. Needs a per-case number chosen by a human.</td></tr>
+      <tr><td><b>Chaining — capture + <code>{{vars}}</code></b></td><td class="mono">~70</td><td><span class="chip cli">client</span></td>
+        <td>The DELETE-collision problem is a test-design decision the app can only flag.</td></tr>
+      <tr><td><b>Smoke sets + scope menu</b></td><td class="mono">~30</td><td><span class="chip cli">client</span></td>
+        <td>None. Cheapest item here and probably the largest daily saving.</td></tr>
+      <tr><td><b>Token expiry + 401 pause</b></td><td class="mono">~25</td><td><span class="chip cli">client</span></td>
+        <td>Reads <code>exp</code>; cannot refresh.</td></tr>
+      <tr><td colspan="4" style="padding-top:16px;border-bottom:0"><b style="color:var(--ink)">≈ 550 net lines
+        on 4,027.</b> The file grows to roughly 250 KB with all seven modules' case lists inlined; specs are
+        fetched on demand and cached, not bundled, so it does not balloon past that. Still one file, still no
+        build step.</td></tr>
+    </tbody>
+  </table>
+
+  <h4 style="margin-top:22px">Left alone, on purpose</h4>
+  <div class="grid3">
+    <div class="card"><span class="tagn">Not touching</span><h4>The request builder</h4>
+      <p>The three-column Params / Headers / Body editor and the response pane work. Round one proposed
+        restructuring them; this round adds a chip and a Capture tab and otherwise leaves them exactly
+        as they are.</p></div>
+    <div class="card"><span class="tagn">Not touching</span><h4>The four upload cases</h4>
+      <p><code>TC_095</code>–<code>TC_098</code> stay blocked. Multipart with a real file is possible in a
+        browser, but the cases need fixture files of specific sizes and MIME types that no one is going to
+        re-pick every session. They keep their honest "use curl" note.</p></div>
+    <div class="card"><span class="tagn">Not touching</span><h4>Assertions beyond status code</h4>
+      <p>Most workbook rows have an <em>ExpectedResult</em> in prose — "fullAddress = addressLine1 + ', ' +
+        city…". Turning those into runnable body assertions is the highest-value thing left, and it is a whole
+        round of its own.</p></div>
+    <div class="card"><span class="tagn">Still needs a server</span><h4>CORS</h4>
+      <p>Unchanged. Cross-origin requests still need the API to send the headers or a proxy in Settings.
+        Modules make this slightly worse — two hosts to get CORS right on instead of one.</p></div>
+    <div class="card"><span class="tagn">Still needs a server</span><h4>Scheduled / CI runs</h4>
+      <p>A tab that isn't open runs nothing. Nightly regression across all seven modules is a CI job, and the
+        right shape for it is exporting the modules as JSON and running them in a Node harness — not
+        pretending the browser can do it.</p></div>
+    <div class="card"><span class="tagn">Still needs a server</span><h4>Sharing modules with the team</h4>
+      <p>The cloud-sync worker already in the repo could carry modules instead of one blob, which would make
+        "here is the Billing module" a link. Out of scope here, but the data model above is shaped so it
+        would be a small change.</p></div>
+  </div>
+</section>
+
+<footer class="doc">
+  <div class="wrap">
+    <p>Mockups only — <code>index.html</code> and <code>design-directions.html</code> were not modified.
+      Endpoint paths, test-case ids and scenario text are the real ones from <code>PRESET_CASES</code> and
+      from the six workbooks in the repo; run counts and latencies are plausible figures held internally
+      consistent (411 cases across 7 modules; 96 s / 31 s / 11 s derived from 240 ms average latency and the
+      two 30 s timeout cases).</p>
+  </div>
+</footer>
+<script>
+/* Nothing here is required for the page to read — it only wires the theme
+   toggle the artifact host stamps onto <html>, which the tokens already cover. */
+</script>
