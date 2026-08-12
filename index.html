@@ -183,6 +183,28 @@
     .rp-rail{width:150px}
   }
 
+  /* ---------- assertions ---------- */
+  .as-head{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .as-blurb{font-size:11.5px;color:var(--text-muted);line-height:1.6}
+  .as-actions{display:flex;gap:6px;align-items:center}
+  .as-actions select{width:auto;height:28px;font-size:11.5px}
+  .as-list{display:flex;flex-direction:column;gap:6px}
+  .as-row{display:grid;grid-template-columns:auto minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr) auto;gap:5px;align-items:center;
+    padding:7px;border:1px solid var(--border);border-radius:7px;background:var(--bg-elev)}
+  .as-row.ok{border-left:2px solid var(--success)}
+  .as-row.bad{border-left:2px solid var(--danger)}
+  .as-row select,.as-row input[type=text],.as-row input:not([type]){height:26px;font-size:11px;padding:3px 6px}
+  .as-row input{height:26px;font-size:11px;padding:3px 6px}
+  .as-novalue{color:var(--text-dim);text-align:center;font-size:11px}
+  .as-del{color:var(--text-dim);font-size:15px;line-height:1;padding:0 4px}
+  .as-del:hover{color:var(--danger)}
+  .as-result{grid-column:1/-1;font-size:10.5px;padding-left:22px}
+  .as-result.ok{color:var(--success)} .as-result.bad{color:var(--danger)}
+  .as-sum{margin-top:10px;font-size:11.5px;padding:7px 10px;border-radius:6px;background:var(--bg-elev-2)}
+  .as-sum.ok{color:var(--success)} .as-sum.bad{color:var(--danger)}
+  .as-empty{padding:18px 14px;text-align:center;color:var(--text-muted);font-size:12px;border:1px dashed var(--border);border-radius:8px}
+  .as-empty p{font-size:11px;line-height:1.7;margin:8px 0 0;color:var(--text-dim)}
+
   /* ---------- API explorer ---------- */
   .sb-modes{display:flex;gap:0;border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:8px}
   .sb-modes button{flex:1;padding:5px 8px;font-size:11.5px;font-weight:500;color:var(--text-muted);border-right:1px solid var(--border)}
@@ -596,6 +618,7 @@
         <div class="tp-tab active" data-tab="params">Params<span class="badge" id="bParams">0</span></div>
         <div class="tp-tab" data-tab="headers">Headers<span class="badge" id="bHeaders">0</span></div>
         <div class="tp-tab" data-tab="body">Body</div>
+        <div class="tp-tab" data-tab="assert">Assertions<span class="badge" id="bAssert">0</span></div>
         <div class="tp-tab" data-tab="preview">Preview</div>
       </div>
       <div class="tp-content" id="tpContent"></div>
@@ -1320,6 +1343,167 @@ const state = (() => {
 })();
 /* Modules are wired up at boot — SEED_MODULES and friends are consts declared
    further down, so they can't be touched from here. */
+
+/* =========================================================================
+   Assertions — the optional layer that turns a request into a test
+   -------------------------------------------------------------------------
+   A case with no assertions still works exactly as before: its verdict comes
+   from the expected status. Add assertions and they decide the verdict
+   instead. Drafts may carry assertions too — they're evaluated and shown,
+   but a draft still records no verdict, so nothing leaks into the suite.
+   ========================================================================= */
+const ASSERT_TYPES = {
+  status: { label: "Status code", ops: ["equals", "is one of", "is less than", "is at least"] },
+  json:   { label: "JSON field",  ops: ["exists", "equals", "contains", "is not empty", "is of type"] },
+  header: { label: "Header",      ops: ["exists", "equals", "contains"] },
+  time:   { label: "Response time", ops: ["is under"] },
+  body:   { label: "Body text",   ops: ["contains", "does not contain", "matches regex"] },
+};
+
+function newAssertion(type) {
+  const t = type || "status";
+  const base = { id: "a" + Math.random().toString(36).slice(2, 8), type: t, enabled: true, op: ASSERT_TYPES[t].ops[0] };
+  if (t === "status") return { ...base, value: "200" };
+  if (t === "json")   return { ...base, path: "data.id", value: "" };
+  if (t === "header") return { ...base, name: "content-type", value: "application/json" };
+  if (t === "time")   return { ...base, value: "1000" };
+  return { ...base, value: "" };
+}
+
+/* Human-readable line for a single assertion, used in the editor, the
+   response panel, the Run Report and the CSV. */
+function assertionLabel(a) {
+  const v = String(a.value == null ? "" : a.value);
+  switch (a.type) {
+    case "status": return `Status ${a.op} ${v || "—"}`;
+    case "json":   return `${a.path || "$"} ${a.op}${a.op === "exists" || a.op === "is not empty" ? "" : " " + (v || "—")}`;
+    case "header": return `Header "${a.name || "—"}" ${a.op}${a.op === "exists" ? "" : ` "${v}"`}`;
+    case "time":   return `Response time ${a.op} ${v || "—"} ms`;
+    case "body":   return `Body ${a.op} "${v}"`;
+    default:       return a.type;
+  }
+}
+
+/* Evaluate one assertion against a completed run. Returns {ok, actual}. */
+function evalAssertion(a, run) {
+  const status = run.status || 0;
+  const bodyText = run.body || "";
+  let json = null;
+  try { json = JSON.parse(bodyText); } catch (e) {}
+  const num = n => { const x = Number(n); return isNaN(x) ? null : x; };
+
+  if (a.type === "status") {
+    if (a.op === "is one of") {
+      const list = String(a.value || "").split(/[,\s|]+/).filter(Boolean).map(Number);
+      return { ok: list.includes(status), actual: status };
+    }
+    const want = num(a.value);
+    if (want == null) return { ok: false, actual: status, note: "no value set" };
+    if (a.op === "equals") return { ok: status === want, actual: status };
+    if (a.op === "is less than") return { ok: status < want, actual: status };
+    if (a.op === "is at least") return { ok: status >= want, actual: status };
+  }
+
+  if (a.type === "json") {
+    if (json == null) return { ok: false, actual: "response is not JSON" };
+    const val = dig(json, String(a.path || "").replace(/^\$\.?/, ""));
+    const shown = val === undefined ? "(missing)" : (typeof val === "object" ? JSON.stringify(val).slice(0, 60) : String(val));
+    if (a.op === "exists") return { ok: val !== undefined, actual: shown };
+    if (a.op === "is not empty") return { ok: val !== undefined && val !== null && val !== "" && !(Array.isArray(val) && !val.length), actual: shown };
+    if (a.op === "equals") return { ok: String(val) === String(a.value), actual: shown };
+    if (a.op === "contains") return { ok: String(val == null ? "" : val).includes(String(a.value)), actual: shown };
+    if (a.op === "is of type") {
+      const t = Array.isArray(val) ? "array" : val === null ? "null" : typeof val;
+      return { ok: t === String(a.value || "").toLowerCase(), actual: t };
+    }
+  }
+
+  if (a.type === "header") {
+    const hdrs = run.headers || {};
+    const key = Object.keys(hdrs).find(k => k.toLowerCase() === String(a.name || "").toLowerCase());
+    const val = key ? hdrs[key] : undefined;
+    if (a.op === "exists") return { ok: val !== undefined, actual: val === undefined ? "(missing)" : val };
+    if (a.op === "equals") return { ok: String(val || "") === String(a.value), actual: val === undefined ? "(missing)" : val };
+    if (a.op === "contains") return { ok: String(val || "").includes(String(a.value)), actual: val === undefined ? "(missing)" : val };
+  }
+
+  if (a.type === "time") {
+    const want = num(a.value);
+    return { ok: want != null && (run.durationMs || 0) < want, actual: (run.durationMs || 0) + " ms" };
+  }
+
+  if (a.type === "body") {
+    if (a.op === "contains") return { ok: bodyText.includes(String(a.value)), actual: bodyText.length + " chars" };
+    if (a.op === "does not contain") return { ok: !bodyText.includes(String(a.value)), actual: bodyText.length + " chars" };
+    if (a.op === "matches regex") {
+      try { return { ok: new RegExp(a.value).test(bodyText), actual: bodyText.slice(0, 40) }; }
+      catch (e) { return { ok: false, actual: "invalid regex" }; }
+    }
+  }
+  return { ok: false, actual: "unsupported assertion" };
+}
+
+function activeAssertions(c) { return (c.assertions || []).filter(a => a.enabled !== false); }
+
+/* Run every enabled assertion; null when the case has none (so the caller
+   falls back to the expected-status rule). */
+function evaluateAssertions(c, run) {
+  const list = activeAssertions(c);
+  if (!list.length) return null;
+  const results = list.map(a => {
+    const r = run.error ? { ok: false, actual: run.error.slice(0, 60) } : evalAssertion(a, run);
+    return { id: a.id, label: assertionLabel(a), ok: !!r.ok, actual: r.actual, note: r.note };
+  });
+  return { results, passed: results.filter(r => r.ok).length, failed: results.filter(r => !r.ok).length,
+           ok: results.every(r => r.ok) };
+}
+
+/* --- assertion editing --- */
+function addAssertion(type) {
+  const c = currentCase(); if (!c) return;
+  c.assertions = c.assertions || [];
+  c.assertions.push(newAssertion(type));
+  save(); renderTry();
+}
+function updateAssertion(i, field, value) {
+  const c = currentCase(); if (!c || !c.assertions || !c.assertions[i]) return;
+  c.assertions[i][field] = value;
+  if (field === "type") Object.assign(c.assertions[i], newAssertion(value), { id: c.assertions[i].id });
+  save();
+  if (field === "type") renderTry(); else renderAssertionResults();
+}
+function removeAssertion(i) {
+  const c = currentCase(); if (!c || !c.assertions) return;
+  c.assertions.splice(i, 1); save(); renderTry();
+}
+/* Build a starting set from what the API actually returned — far faster than
+   typing four assertions by hand, and you can prune from there. */
+function assertionsFromResponse() {
+  const c = currentCase(); if (!c) return;
+  const run = c.lastRun;
+  if (!run || !run.at) { toast("Send the request first — there's no response to describe", "error"); return; }
+  c.assertions = c.assertions || [];
+  const add = a => { if (!c.assertions.some(x => assertionLabel(x) === assertionLabel(a))) c.assertions.push(a); };
+  add({ ...newAssertion("status"), op: "equals", value: String(run.status) });
+  const ct = Object.keys(run.headers || {}).find(k => k.toLowerCase() === "content-type");
+  if (ct) add({ ...newAssertion("header"), name: "content-type", op: "contains", value: String(run.headers[ct]).split(";")[0] });
+  try {
+    const json = JSON.parse(run.body || "");
+    const seed = json && typeof json === "object" ? (json.data !== undefined ? json : json) : null;
+    if (seed && typeof seed === "object") {
+      const keys = Object.keys(seed).slice(0, 3);
+      keys.forEach(k => {
+        const v = seed[k];
+        if (v !== null && typeof v !== "object") add({ ...newAssertion("json"), path: k, op: "equals", value: String(v) });
+        else add({ ...newAssertion("json"), path: k, op: "exists", value: "" });
+      });
+    }
+  } catch (e) {}
+  const budget = Math.max(500, Math.ceil(((run.durationMs || 0) * 2) / 100) * 100);
+  add({ ...newAssertion("time"), value: String(budget) });
+  save(); renderTry();
+  toast(`Added ${c.assertions.length} assertion(s) from the last response — edit or delete any of them`, "success");
+}
 
 /* =========================================================================
    Modules — one API area at a time
@@ -2090,6 +2274,7 @@ function renderTry() {
   // tab counts
   $("#bParams").textContent = (c.query||[]).filter(q=>q.enabled!==false).length;
   $("#bHeaders").textContent = (c.headers||[]).filter(h=>h.enabled!==false).length;
+  const ab = $("#bAssert"); if (ab) ab.textContent = activeAssertions(c).length;
 
   // tab active state
   document.querySelectorAll(".tp-tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
@@ -2146,6 +2331,8 @@ function renderTry() {
     } else {
       html += `<div class="muted" style="padding:16px;text-align:center;font-size:12px">No request body will be sent.</div>`;
     }
+  } else if (tab === "assert") {
+    html = renderAssertionsTab(c);
   } else if (tab === "preview") {
     html = renderRequestPreview(c);
   }
@@ -2633,6 +2820,62 @@ function histRowHtml(e, i) {
   </div>`;
 }
 function renderHistory() { if (isDraft(currentCase())) renderDoc(); }
+
+/* The Assertions tab. Deliberately empty by default — a request with no
+   assertions is a perfectly good request. */
+function renderAssertionsTab(c) {
+  const list = c.assertions || [];
+  const run = c.lastRun && c.lastRun.at ? c.lastRun : null;
+  const evald = run ? evaluateAssertions(c, run) : null;
+  const byId = {};
+  if (evald) evald.results.forEach(r => { byId[r.id] = r; });
+
+  const head = `
+    <div class="as-head">
+      <div class="as-blurb">${list.length
+        ? `This case passes when every enabled assertion passes.${isDraft(c) ? " Saving it as a test case keeps them." : ""}`
+        : `No assertions — ${isDraft(c) ? "this request just runs" : `this case passes on status <span class="mono">${esc(statusList(c.expected).join(" or ") || "—")}</span> alone`}. Add one to check more than the status code.`}</div>
+      <div class="as-actions">
+        <select id="as_add" onchange="if(this.value){addAssertion(this.value);this.value='';}">
+          <option value="">+ Add assertion…</option>
+          ${Object.entries(ASSERT_TYPES).map(([k, v]) => `<option value="${k}">${esc(v.label)}</option>`).join("")}
+        </select>
+        <button class="btn small" onclick="assertionsFromResponse()" ${run ? "" : "disabled title='Send the request first'"}>From last response</button>
+      </div>
+    </div>`;
+
+  if (!list.length) return head + `<div class="as-empty">
+      <div>Nothing asserted yet.</div>
+      <p>Send the request, then <b>From last response</b> writes a starting set you can prune — status, content type, a few JSON fields and a time budget.</p>
+    </div>`;
+
+  const rows = list.map((a, i) => {
+    const r = byId[a.id];
+    const ops = ASSERT_TYPES[a.type].ops;
+    return `<div class="as-row ${r ? (r.ok ? "ok" : "bad") : ""}">
+      <input type="checkbox" class="sb-check" ${a.enabled !== false ? "checked" : ""} onchange="updateAssertion(${i},'enabled',this.checked)" title="Enable/disable" />
+      <select onchange="updateAssertion(${i},'type',this.value)">
+        ${Object.entries(ASSERT_TYPES).map(([k, v]) => `<option value="${k}" ${a.type === k ? "selected" : ""}>${esc(v.label)}</option>`).join("")}
+      </select>
+      ${a.type === "json" ? `<input class="mono" placeholder="data.id" value="${esc(a.path || "")}" oninput="updateAssertion(${i},'path',this.value)" title="Dotted path, e.g. data.items[0].id" />` : ""}
+      ${a.type === "header" ? `<input class="mono" placeholder="content-type" value="${esc(a.name || "")}" oninput="updateAssertion(${i},'name',this.value)" />` : ""}
+      <select onchange="updateAssertion(${i},'op',this.value)">
+        ${ops.map(o => `<option ${a.op === o ? "selected" : ""}>${esc(o)}</option>`).join("")}
+      </select>
+      ${(a.op === "exists" || a.op === "is not empty") ? `<span class="as-novalue">—</span>`
+        : `<input class="mono" placeholder="value" value="${esc(a.value == null ? "" : a.value)}" oninput="updateAssertion(${i},'value',this.value)" />`}
+      <button class="as-del" onclick="removeAssertion(${i})" title="Remove">×</button>
+      ${r ? `<div class="as-result ${r.ok ? "ok" : "bad"}">${r.ok ? "✓" : "✕"} actual: <span class="mono">${esc(String(r.actual))}</span></div>` : ""}
+    </div>`;
+  }).join("");
+
+  const summary = evald ? `<div class="as-sum ${evald.ok ? "ok" : "bad"}">
+      ${evald.ok ? "✓" : "✕"} ${evald.passed}/${evald.results.length} passed on the last response${isDraft(c) ? " — drafts don't record a verdict" : ""}
+    </div>` : `<div class="as-sum muted">Send the request to evaluate these.</div>`;
+
+  return head + `<div class="as-list">${rows}</div>` + summary;
+}
+function renderAssertionResults() { if (state.activeTab === "assert") renderTry(); }
 
 /* Captured values, and where each came from. */
 function renderVarsPanel() {
@@ -3392,7 +3635,13 @@ async function sendRequest(caseOverride) {
     if (proxyErr) error = proxyErr;
   }
   const expected = statusList(c.expected);
-  const verdict = error ? "fail" : (expected.length === 0 || expected.includes(status) ? "pass" : "fail");
+  // Assertions decide the verdict when there are any; otherwise the
+  // expected-status rule stands, exactly as before.
+  const provisional = { status, durationMs: dur, error, body: text, headers: respHdrs };
+  const asserted = evaluateAssertions(c, provisional);
+  const verdict = asserted
+    ? (asserted.ok ? "pass" : "fail")
+    : (error ? "fail" : (expected.length === 0 || expected.includes(status) ? "pass" : "fail"));
   // Spec check — if a spec is loaded and the operation matches, compare status code + response shape
   let specCheck = null;
   if (state.swaggerSpec && !error) {
@@ -3406,7 +3655,8 @@ async function sendRequest(caseOverride) {
   c.lastRun = { status, durationMs:dur, at:Date.now(), error,
     verdict: isDraft(c) ? null : verdict,   // a draft has nothing to pass or fail
     body:text.slice(0,20000), bodyTruncated: text.length > 20000, bytes: byteLen(text),
-    headers:respHdrs, specCheck };
+    headers:respHdrs, specCheck,
+    assertions: asserted ? asserted.results : null };
   // only auto-update status if still pending — and never for a draft
   if (!isDraft(c) && (c.status === "pending" || !c.status)) c.status = verdict;
   pushHistory(c, c.lastRun);
@@ -3444,6 +3694,7 @@ function renderResp() {
     <span class="resp-meta">${sizeLabel}</span>
     ${specBadge}
     ${last.verdict ? `<span class="resp-verdict ${last.verdict}" ${specBadge?'style="margin-left:6px"':''}>${last.verdict==='pass'?'✓ passed':'✗ failed'}</span>` : ""}
+    ${last.assertions && last.assertions.length ? `<span class="resp-verdict ${last.assertions.every(a=>a.ok)?'pass':'fail'}" style="margin-left:6px" title="${esc(last.assertions.map(a=>(a.ok?'✓ ':'✕ ')+a.label).join('\n'))}">${last.assertions.filter(a=>a.ok).length}/${last.assertions.length} assertions</span>` : ""}
   `;
   $("#respBody").className = "resp-body";
 
@@ -3663,7 +3914,7 @@ function describeReqBody(c) {
 function exportReport() {
   const header = [
     "Test Case ID","Scenario","Method","Path","Tag","Expected Status",
-    "Actual Status","Duration (ms)","Verdict","Status","Notes",
+    "Actual Status","Duration (ms)","Verdict","Status","Assertions","Notes",
     "Last Run (UTC)","Error",
     "Full URL","Request Headers","Request Body",
     "Response Headers","Response Body"
@@ -3684,6 +3935,9 @@ function exportReport() {
       last.status || "", last.durationMs ?? "",
       last.verdict || "",
       c.status || "pending",
+      (last.assertions && last.assertions.length)
+        ? last.assertions.map(a => `${a.ok ? "PASS" : "FAIL"} ${a.label}${a.ok ? "" : ` (actual: ${a.actual})`}`).join("\n")
+        : ((c.assertions||[]).length ? `${(c.assertions||[]).length} defined, not run` : ""),
       c.notes || "",
       last.at ? new Date(last.at).toISOString() : "",
       last.error || "",
@@ -4816,6 +5070,7 @@ function snapshotResult(c) {
   if (r.verdict === "fail") {
     r.body = (last.body || "").slice(0, RUN_BODY_CAP);
     r.ctype = (last.headers || {})["content-type"] || "";
+    if (last.assertions) r.assertions = last.assertions;
   }
   r.cause = classifyFailure(r);
   return r;
@@ -4825,6 +5080,13 @@ function snapshotResult(c) {
    expected 405 and got 404 are one bug, not four. */
 function classifyFailure(r) {
   const exp = r.expected || [], got = r.code;
+  // When assertions decided the failure, group by which assertion broke —
+  // that is the thing to fix, not the status code.
+  if (r.assertions && r.assertions.length && r.assertions.some(a => !a.ok) && !r.error) {
+    const first = r.assertions.find(a => !a.ok);
+    return { key: "assert:" + first.label, title: `Assertion failed — ${first.label}`,
+             note: "The response came back, but it isn't what this case asserts." };
+  }
   if (r.error && /timed out/i.test(r.error))
     return { key: "timeout", title: "Request timed out", note: `No response within ${state.timeoutMs || 30000} ms.` };
   if (r.error && /Network\/CORS/i.test(r.error))
@@ -5095,12 +5357,18 @@ function failOpenHtml(r) {
   const curl = c ? buildCurl(c) : `curl -X ${r.method} '${(state.baseUrl || "") + r.path}'`;
   const expected = r.expected.join(" or ") || "—";
   const asserts = [];
-  if (r.error) {
+  if (r.assertions && r.assertions.length) {
+    // Real assertions, so show exactly which ones failed and what came back.
+    r.assertions.forEach(a => {
+      asserts.push(`<div><span class="mark ${a.ok ? "ok" : "no"}">${a.ok ? "✓" : "✕"}</span> ${esc(a.label)}` +
+        `${a.ok ? "" : ` — got <span class="mono" style="color:var(--danger)">${esc(String(a.actual))}</span>`}</div>`);
+    });
+  } else if (r.error) {
     asserts.push(`<div><span class="mark no">✕</span> request completed — <span class="mono" style="color:var(--danger)">${esc(r.error.slice(0, 160))}</span></div>`);
   } else {
     asserts.push(`<div><span class="mark no">✕</span> status is <span class="mono">${esc(expected)}</span> — got <span class="mono" style="color:var(--danger)">${r.code}</span></div>`);
+    asserts.push(`<div><span class="mark ${r.ms < 2000 ? "ok" : "no"}">${r.ms < 2000 ? "✓" : "✕"}</span> responded under 2000 ms — <span class="mono">${r.ms} ms</span></div>`);
   }
-  asserts.push(`<div><span class="mark ${r.ms < 2000 ? "ok" : "no"}">${r.ms < 2000 ? "✓" : "✕"}</span> responded under 2000 ms — <span class="mono">${r.ms} ms</span></div>`);
   let body = r.body || "";
   try { body = JSON.stringify(JSON.parse(body), null, 2); } catch (e) {}
   const truncated = (r.body || "").length >= RUN_BODY_CAP;
