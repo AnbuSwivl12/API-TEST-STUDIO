@@ -185,6 +185,14 @@
     .rp-rail{width:150px}
   }
 
+  /* ---------- onboarding ---------- */
+  .ob-choice{border:1px solid var(--border);border-radius:9px;padding:13px 15px;margin-bottom:9px;cursor:pointer;transition:border-color .15s,background .15s}
+  .ob-choice:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .ob-t{font-size:13.5px;font-weight:600;margin-bottom:3px}
+  .ob-d{font-size:11.5px;color:var(--text-muted);line-height:1.6}
+  .ob-row{display:flex;gap:6px;margin-top:10px}
+  .ob-row input{flex:1;min-width:0;height:30px;font-size:12px}
+
   /* ---------- browser-blocked cases + streaming ---------- */
   .blocked-note{padding:12px 14px;font-size:12px;line-height:1.7;color:var(--text-muted)}
   .blocked-note p{margin:0 0 10px;color:var(--text)}
@@ -723,6 +731,8 @@
   <button onclick="closeAllPops();openModal('addModule')">Add module…</button>
   <div class="sep"></div>
   <button onclick="closeAllPops();toggleTheme()">Toggle theme</button>
+  <button onclick="closeAllPops();shareModuleLink()">Share this module…</button>
+  <button onclick="closeAllPops();openModal('welcome')">Getting started…</button>
   <button onclick="closeAllPops();openModal('shortcuts')">Keyboard shortcuts <span class="k">?</span></button>
 </div>
 
@@ -754,6 +764,40 @@
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('addModule')">Cancel</button>
       <button class="btn primary" onclick="saveNewModule()">Add module</button>
+    </div>
+  </div>
+</div>
+
+<!-- first run -->
+<div class="modal-backdrop" id="modalWelcome">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">Welcome to API Test Studio<button onclick="skipOnboarding()" aria-label="Close">&times;</button></div>
+    <div class="modal-body">
+      <p class="muted" style="margin-top:0;font-size:12.5px;line-height:1.7">
+        Test any HTTP API from your browser. Nothing is installed, and nothing you do here leaves your machine —
+        tokens, requests and results stay in this browser.
+      </p>
+      <div class="ob-choice" onclick="obConnect()">
+        <div class="ob-t">Connect my API</div>
+        <div class="ob-d">Paste an OpenAPI/Swagger URL — JSON or YAML — and get every endpoint, ready to send.</div>
+        <div class="ob-row" onclick="event.stopPropagation()">
+          <input id="ob_url" placeholder="https://api.example.com/openapi.json"
+                 onkeydown="if(event.key==='Enter')obConnect()" />
+          <button class="btn primary small" onclick="obConnect()">Import</button>
+        </div>
+      </div>
+      <div class="ob-choice" onclick="obBlank()">
+        <div class="ob-t">Start with a single request</div>
+        <div class="ob-d">No spec handy? Type a URL, set a method, send it. You can import a spec later.</div>
+      </div>
+      <div class="ob-choice" onclick="obDemo()">
+        <div class="ob-t">Explore the demo</div>
+        <div class="ob-d">A real 22-endpoint API with 102 example test cases, to see how the whole thing works.</div>
+      </div>
+      <small class="muted" style="display:block;margin-top:12px;font-size:11px;line-height:1.6">
+        Heads up: a browser can only call APIs that permit it (CORS). If yours doesn't, Settings → Relay explains
+        the one-time fix.
+      </small>
     </div>
   </div>
 </div>
@@ -792,7 +836,32 @@
       <hr style="border:none;border-top:1px solid var(--border);margin:14px 0" />
       <div style="font-size:13px;font-weight:600;margin-bottom:6px">Running</div>
       <div class="form-row">
-        <label>CORS proxy URL (optional)</label>
+        <label>Relay URL (for APIs that don't allow browser calls)</label>
+        <input id="set_relay" placeholder="https://your-worker.your-subdomain.workers.dev" />
+        <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.6">
+          Most APIs can't be called from a web page unless they send CORS headers. Deploy the bundled
+          <code class="mono">worker/worker.js</code> to Cloudflare (free) and paste its URL here — it forwards every
+          method and returns the real response. See the README for the two config values that keep it from
+          becoming an open proxy.
+        </small>
+      </div>
+      <div class="form-row">
+        <label>Relay token (if your relay sets RELAY_TOKEN)</label>
+        <input id="set_relay_token" placeholder="leave empty if your relay uses an allow-list instead" />
+      </div>
+      <div class="form-row" style="display:flex;align-items:flex-start;gap:8px">
+        <input type="checkbox" id="set_relay_trusted" style="width:auto;margin-top:2px" />
+        <label for="set_relay_trusted" style="margin:0;cursor:pointer;font-weight:400;line-height:1.6">
+          Send my auth token through this relay.<br>
+          <span class="muted" style="font-size:11px">Only tick this for a relay you or your team deployed —
+          whoever runs it can read every credential that passes through. Left unticked, requests still go through
+          the relay but without the Authorization header, so protected endpoints will return 401.</span>
+        </label>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0" />
+      <div class="form-row">
+        <label>CORS proxy URL (legacy, optional)</label>
         <input id="set_proxy" placeholder="https://your-proxy.example.com/?url=" oninput="proxyHint(this.value)" />
         <div id="proxy_hint" style="display:none;margin-top:6px;padding:8px 10px;border-radius:4px;background:rgba(230,183,62,.12);border:1px solid rgba(230,183,62,.4);color:var(--warn,#e6b73e);font-size:11px;line-height:1.5"></div>
         <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.5">
@@ -1377,6 +1446,10 @@ const state = (() => {
     authToken: "",
     apiVersion: "",
     proxyUrl: "",
+    relayUrl: "",       // your own Cloudflare relay, for APIs without CORS
+    relayToken: "",
+    relayTrusted: false,// send credentials through it? an explicit decision
+    onboarded: false,
     timeoutMs: 30000,     // ceiling, used by timing/load cases
     caseTimeoutMs: 10000, // fail-fast default for everything else
     lanes: 6,             // parallel requests during a run
@@ -1766,6 +1839,7 @@ function openModulePicker() {
     <div class="mp-foot">
       <button class="btn small" onclick="openModal('addModule')">+ Add module</button>
       <button class="btn ghost small" onclick="openModal('swagger')">Spec for this module</button>
+      <button class="btn ghost small" onclick="shareModuleLink()" title="Copy a link that sets up this module for a teammate">Share</button>
       ${activeModule() && !activeModule().builtin ? `<button class="btn ghost small danger-text" style="margin-left:auto" onclick="deleteModule('${state.moduleId}')">Delete</button>` : ""}
     </div>`;
   p.classList.add("open");
@@ -3370,6 +3444,14 @@ function toggleTheme() {
 /* =========================================================================
    Request sending
    ========================================================================= */
+/* A relay you deployed yourself, unlike a public CORS proxy: it forwards every
+   method, and — only if you say so — your credentials with them. */
+function relayActive() { return !!(state.relayUrl || "").trim(); }
+function applyRelay(url) {
+  const base = state.relayUrl.trim().replace(/\/+$/, "");
+  return base + "/v1/relay?url=" + encodeURIComponent(url);
+}
+
 function applyProxy(url) {
   if (!state.proxyUrl) return url;
   const p = state.proxyUrl.trim();
@@ -3539,6 +3621,7 @@ function buildUrl(c, opts) {
   });
   const qs = (c.query||[]).filter(q=>q.enabled!==false && q.key).map(q => encodeURIComponent(q.key) + "=" + encodeURIComponent(subVars(q.value||""))).join("&");
   const full = base + path + (qs ? (path.includes("?") ? "&" : "?") + qs : "");
+  if (opts && opts.withProxy && relayActive()) return applyRelay(full);
   if (opts && opts.withProxy && state.proxyUrl) {
     // skip GET-only public proxies for write methods — they return 404 like
     // "Cannot POST /?url=..." and are useless for our actual API calls.
@@ -3553,6 +3636,8 @@ function buildUrl(c, opts) {
    Anything sent then is readable by that proxy operator, so credentials
    must not go along for the ride. */
 function willUseProxy(c) {
+  // A relay you own and have marked trusted is not a stranger's proxy.
+  if (relayActive()) return !state.relayTrusted;
   if (!state.proxyUrl) return false;
   const method = (c && c.method || "GET").toUpperCase();
   const writeVerb = method !== "GET" && method !== "HEAD";
@@ -3588,6 +3673,7 @@ function buildHeaders(c, opts) {
 }
 /* Non-credential headers, applied whether or not auth was withheld. */
 function finishHeaders(hdrs, c) {
+  if (relayActive() && (state.relayToken || "").trim()) hdrs["X-Relay-Token"] = state.relayToken.trim();
   // Global API version header — auto-injected if the case doesn't already set one
   if (state.apiVersion && !hdrs["x-api-version"] && !hdrs["X-API-Version"] && !hdrs["X-Api-Version"]) {
     hdrs["x-api-version"] = state.apiVersion;
@@ -3810,7 +3896,7 @@ async function sendRequest(caseOverride) {
   }
 
   if (!caseOverride) setSendButton(true);
-  const url = buildUrl(c, { withProxy: !!state.proxyUrl });
+  const url = buildUrl(c, { withProxy: relayActive() || !!state.proxyUrl });
 
   // pre-flight URL validation
   let urlError = null;
@@ -4291,6 +4377,9 @@ function openModal(id) {
       $("#set_host").value = (m.baseUrls || {})[state.env] || baseUrlFor(m, state.env) || state.baseUrl || "";
     }
     $("#set_apiversion").value = state.apiVersion || "";
+    $("#set_relay").value = state.relayUrl || "";
+    $("#set_relay_token").value = state.relayToken || "";
+    $("#set_relay_trusted").checked = !!state.relayTrusted;
     $("#set_proxy").value = state.proxyUrl || "";
     $("#set_timeout").value = state.timeoutMs || 30000;
     $("#set_casetimeout").value = state.caseTimeoutMs || 10000;
@@ -4333,6 +4422,9 @@ function saveSettings() {
     state.env = envForBase(state.baseUrl);
   }
   state.apiVersion = $("#set_apiversion").value.trim();
+  state.relayUrl = $("#set_relay").value.trim().replace(/\/+$/, "");
+  state.relayToken = $("#set_relay_token").value.trim();
+  state.relayTrusted = !!$("#set_relay_trusted").checked;
   state.proxyUrl = $("#set_proxy").value.trim();
   state.timeoutMs = parseInt($("#set_timeout").value, 10) || 30000;
   state.caseTimeoutMs = parseInt($("#set_casetimeout").value, 10) || 10000;
@@ -5922,6 +6014,105 @@ function toggleAuthPop() { popToggle("authPop", "authChip"); renderAuthChip(); }
 function toggleMoreMenu() { popToggle("moreMenu"); }
 
 /* =========================================================================
+   ONBOARDING + SHARING
+   -------------------------------------------------------------------------
+   A first-time visitor should not land inside somebody else's test suite,
+   and a colleague should be able to receive a working setup as a link.
+   ========================================================================= */
+function needsOnboarding() {
+  // Only for a genuinely fresh browser: no saved state, nothing imported.
+  if (state.onboarded) return false;
+  if (state.history && state.history.length) return false;
+  return !state.modules.some(m => m.spec || m.runs.length) ;
+}
+function finishOnboarding() { state.onboarded = true; save(); closeModal("welcome"); }
+function skipOnboarding() { finishOnboarding(); }
+
+function obConnect() {
+  const url = ($("#ob_url").value || "").trim();
+  finishOnboarding();
+  // Their API, their module — don't drop them into the demo one.
+  const m = ensureUserModule();
+  loadModuleIntoState(m);
+  renderAll();
+  openModal("swagger");
+  if (url) { $("#sw_url").value = url; connectSwagger(); }
+}
+function obBlank() {
+  finishOnboarding();
+  loadModuleIntoState(ensureUserModule());
+  renderAll();
+  newRequest({ method: "GET", path: "/" });
+  toast("Set a host in Settings, or paste a full URL into the path box", "");
+}
+function obDemo() {
+  finishOnboarding();
+  const t = moduleById("templates");
+  if (t) { syncActiveModule(); loadModuleIntoState(t); }
+  state.swaggerSpec = SWIVL_SPEC; state.swaggerSource = "built-in demo";
+  state.sbMode = "endpoints";
+  save(); renderAll();
+  toast("Demo API loaded — 22 endpoints, 102 example cases", "success");
+}
+/* A module of their own, created once. */
+function ensureUserModule() {
+  let m = moduleById("my-api");
+  if (!m) {
+    m = { id: "my-api", name: "My API", service: null, baseUrls: {}, cases: [], runs: [],
+          spec: null, specSource: "", selectedId: null, collapsedTags: {}, vars: {}, varSource: {}, apiVersion: "" };
+    syncActiveModule();
+    state.modules.unshift(m);
+  }
+  return m;
+}
+
+/* --- share a module as a link ---------------------------------------------
+   Only the shape of the workspace travels: name, spec location, hosts. Never
+   tokens, never captured values, never anyone's cases. */
+function shareModuleLink(id) {
+  const m = moduleById(id || state.moduleId); if (!m) return;
+  const payload = { n: m.name, s: (m.specSource && m.specSource !== "pasted" && m.specSource !== "built-in demo") ? m.specSource : "", h: m.baseUrls || {} };
+  if (!payload.s && !Object.keys(payload.h).length) {
+    toast("Nothing to share yet — connect a spec by URL, or set a host", "error"); return;
+  }
+  let enc;
+  try { enc = btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).replace(/=+$/, ""); }
+  catch (e) { toast("Couldn't build the link", "error"); return; }
+  const link = location.origin + location.pathname + "?m=" + encodeURIComponent(enc);
+  navigator.clipboard.writeText(link).then(
+    () => toast("Link copied — it carries the spec URL and hosts, no credentials", "success"),
+    () => window.prompt("Copy this link:", link));
+}
+/* Accept ?m= on load: adds the module, doesn't overwrite one you already have. */
+function applyShareLink(enc) {
+  let p;
+  try { p = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(enc))))); }
+  catch (e) { toast("That shared link is malformed", "error"); return false; }
+  if (!p || (!p.s && !p.h)) return false;
+  const name = String(p.n || "Shared API").slice(0, 60);
+  const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || ("shared" + Date.now());
+  let m = moduleById(id);
+  if (!m) {
+    m = { id, name, service: null, baseUrls: (p.h && typeof p.h === "object") ? p.h : {}, cases: [], runs: [],
+          spec: null, specSource: "", selectedId: null, collapsedTags: {}, vars: {}, varSource: {}, apiVersion: "" };
+    syncActiveModule();
+    state.modules.unshift(m);
+  }
+  loadModuleIntoState(m);
+  state.onboarded = true;
+  save();
+  renderAll();
+  if (p.s) {
+    openModal("swagger");
+    $("#sw_url").value = p.s;
+    connectSwagger();
+  } else {
+    toast(`${name} added — connect its spec or start a request`, "success");
+  }
+  return true;
+}
+
+/* =========================================================================
    Keyboard
    -------------------------------------------------------------------------
    Everything reachable by mouse should be reachable without one. Shortcuts
@@ -6011,6 +6202,14 @@ function boot() {
   if (window.__loadError) {
     toast("Your saved data couldn't be read, so this session started fresh. Details are in the browser console.", "error");
   }
+
+  // A shared link wins over onboarding — they already know what they want.
+  let shared = false;
+  try {
+    const q = new URLSearchParams(location.search);
+    if (q.get("m")) shared = applyShareLink(q.get("m"));
+  } catch (e) {}
+  if (!shared && needsOnboarding()) openModal("welcome");
 
   installKeyboard();
 }

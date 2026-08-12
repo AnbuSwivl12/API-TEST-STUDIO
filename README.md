@@ -1,19 +1,24 @@
 # API Test Studio
 
-Single-file Scalar/Postman-style runner for the Swivl Template API.
+A single-file API testing workspace. Point it at any OpenAPI/Swagger spec —
+JSON or YAML — browse the endpoints, edit anything, send, inspect. Test cases and
+assertions are optional, layered on top of ordinary exploration.
+
+No install, no build step, no account: one HTML file you can open, host anywhere,
+or email to a colleague.
 
 ## 🌍 Live — open this on any device
 
 **https://anbuswivl12.github.io/API-TEST-STUDIO/**
 
-No install, no local server, nothing to configure. The app opens pointed at the
-**Stage** API (`https://template.dev.swivlconnect.com`), which allows browser
-calls from any origin — so requests work straight from the hosted page.
+No install, no local server, nothing to configure. A fresh browser is asked what
+it wants: connect your own API, start with a single request, or explore the
+bundled demo.
 
-To start testing:
+Using it against the Swivl Template API:
 
-1. Open the link above.
-2. Paste your **bearer token** in the top bar (`Auth: Bearer`).
+1. Open the link above and choose **Explore the demo**.
+2. Paste your **bearer token** in the top bar.
 3. Hit **Run All**, or pick a case and **Send**.
 
 Everything you edit is saved in that browser's `localStorage`. Want the same
@@ -38,7 +43,7 @@ The **Env** dropdown in the top bar switches where every request goes:
 
 ```
 API test studio/
-├── index.html         ← the app (single self-contained file, v1.9)
+├── index.html         ← the whole app (single self-contained file)
 ├── package.json       ← npm scripts to run/deploy
 ├── deploy.sh          ← commit + push → GitHub Pages redeploys
 ├── start.sh           ← bash launcher (no Node required)
@@ -46,7 +51,7 @@ API test studio/
 ├── .gitignore
 ├── README.md          ← this file
 └── worker/
-    ├── worker.js          ← Cloudflare Worker (cross-device sync)
+    ├── worker.js          ← Cloudflare Worker: CORS relay + cross-device sync
     ├── wrangler.toml      ← worker config
     └── package.json
 ```
@@ -76,6 +81,72 @@ Same thing (uses `npx serve` on port 5173).
 **VS Code Live Server extension:** install it, right-click `index.html` → **Open with Live Server**.
 
 > Why a server instead of double-clicking the `.html`? Opening it directly works for the UI but the `file://` origin makes browsers block cross-origin API calls and Google Sheet fetches. A local server gives the page a normal `http://` origin so everything works.
+
+---
+
+## Using it with *your* API
+
+The app is API-agnostic — nothing about Swivl is baked into the workflow. On a
+fresh browser it asks what you want:
+
+- **Connect my API** — paste an OpenAPI/Swagger URL (JSON or YAML)
+- **Start with a single request** — no spec needed
+- **Explore the demo** — the bundled 22-endpoint API with 102 example cases
+
+Each API you connect becomes a **module** with its own cases, spec, hosts and run
+history. Environment, token and settings are shared across modules, so switching
+doesn't mean setting up again.
+
+### The one real constraint: CORS
+
+A web page may only call an API that permits it. If your API already sends
+`Access-Control-Allow-Origin`, everything works with zero setup — that is how the
+bundled demo works.
+
+If it doesn't, you have three options:
+
+1. Add the header on your dev/stage environment (best — one line of server config)
+2. Run this app locally on the same origin as your API
+3. Deploy the **relay** below
+
+### Deploying the relay (for APIs without CORS)
+
+`worker/worker.js` includes `/v1/relay`, which forwards any method to any URL and
+returns the real response with permissive CORS. It is **closed by default** — an
+open relay is an abuse magnet — so configure at least one of:
+
+```bash
+cd worker
+npx wrangler secret put RELAY_TOKEN         # a long random string
+npx wrangler deploy
+# or, instead of a token, restrict by host:
+npx wrangler deploy --var RELAY_ALLOW:"api.acme.com,.internal.acme.dev"
+```
+
+Then in the app: **Settings → Relay URL** (and the token, if you set one).
+
+One deliberate speed bump: the app will **not** send your `Authorization` header
+through a relay unless you tick *"Send my auth token through this relay"*. Whoever
+runs the relay can read everything passing through it, so that has to be a
+decision, not a default. Protected endpoints will return 401 until you tick it.
+
+### Sharing a setup with your team
+
+**Module → Share** copies a link that carries the module name, its spec URL and
+its hosts — and nothing else. No tokens, no captured values, no test cases. A
+colleague opening it lands with the module created and the spec importing.
+
+To share *cases*, either export CSV/JSON, or deploy the sync worker below so a
+team token keeps everyone's suite in step.
+
+### What can't work in a browser
+
+| | |
+|---|---|
+| Bearer / API key / Basic auth | works |
+| OAuth 2 flows, cookie/session auth | not implemented |
+| Cases setting `Origin`, `Cookie`, `Host`… | forbidden by the browser — flagged, with a cURL to run instead |
+| `http://localhost` API from the HTTPS page | run the app locally over http instead |
 
 ---
 
