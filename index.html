@@ -185,6 +185,12 @@
     .rp-rail{width:150px}
   }
 
+  /* ---------- browser-blocked cases + streaming ---------- */
+  .blocked-note{padding:12px 14px;font-size:12px;line-height:1.7;color:var(--text-muted)}
+  .blocked-note p{margin:0 0 10px;color:var(--text)}
+  .stream-chip{font-family:var(--mono);font-size:9.5px;padding:1px 6px;border-radius:8px;
+    background:var(--info-soft);color:var(--info);margin-left:6px}
+
   /* ---------- assertions ---------- */
   .as-head{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
   .as-blurb{font-size:11.5px;color:var(--text-muted);line-height:1.6}
@@ -3644,6 +3650,70 @@ function isSerialCase(c) {
   return /response time|rate limit|concurrent|throughput|load test|baseline timing/.test(s);
 }
 
+/* =========================================================================
+   Streaming responses (SSE / chunked text)
+   ========================================================================= */
+const STREAM_CAP = 200 * 1024;   // stop accumulating past this
+function isStreamingResponse(hdrs) {
+  const ct = String((hdrs || {})["content-type"] || "").toLowerCase();
+  return ct.includes("text/event-stream") || ct.includes("application/x-ndjson") || ct.includes("stream+json");
+}
+/* Read the body chunk by chunk so a long-lived stream is visible while it
+   runs, and so the abort signal can actually end it. */
+async function readStream(resp, onChunk) {
+  const reader = resp.body.getReader();
+  const dec = new TextDecoder();
+  let out = "", lastPaint = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    out += dec.decode(value, { stream: true });
+    if (out.length > STREAM_CAP) { out = out.slice(0, STREAM_CAP) + "\n… stream truncated at 200 KB"; try { await reader.cancel(); } catch (e) {} break; }
+    const now = Date.now();
+    if (onChunk && now - lastPaint > 150) { lastPaint = now; onChunk(out); }
+  }
+  out += dec.decode();
+  if (onChunk) onChunk(out);
+  return out;
+}
+/* Live view while the stream is open — the response panel would otherwise
+   sit on "no response yet" for the whole call. */
+function renderStreamProgress(sofar) {
+  const host = $("#respBody"); if (!host) return;
+  const hdr = $("#respHeader");
+  if (hdr) hdr.innerHTML = `<span class="resp-status">streaming…</span>
+    <span class="resp-meta">${fmtBytes(byteLen(sofar))} received</span>
+    <span class="muted" style="font-size:11px">click Send/Cancel to stop</span>`;
+  host.className = "resp-body";
+  const tail = sofar.length > 4000 ? sofar.slice(-4000) : sofar;
+  host.innerHTML = `<pre class="mono" style="margin:0;white-space:pre-wrap;word-break:break-word;font-size:11px">${esc(tail)}</pre>`;
+  host.scrollTop = host.scrollHeight;
+}
+
+/* =========================================================================
+   Requests a browser is not allowed to make
+   -------------------------------------------------------------------------
+   fetch() silently refuses to set these headers, so a case built around one
+   can never do what it says. Better to say so and hand over a cURL than to
+   fail forever with a confusing result.
+   ========================================================================= */
+const FORBIDDEN_HEADERS = new Set([
+  "origin", "host", "referer", "cookie", "cookie2", "connection", "content-length",
+  "date", "dnt", "expect", "keep-alive", "te", "trailer", "transfer-encoding",
+  "upgrade", "via", "accept-encoding", "accept-charset", "sec-fetch-mode", "user-agent",
+]);
+function browserBlockedHeaders(c) {
+  return (c.headers || [])
+    .filter(h => h && h.enabled !== false && h.key)
+    .map(h => h.key.trim())
+    .filter(k => FORBIDDEN_HEADERS.has(k.toLowerCase()) || /^proxy-|^sec-/i.test(k));
+}
+function browserBlockReason(c) {
+  const hdrs = browserBlockedHeaders(c);
+  if (!hdrs.length) return null;
+  return `${hdrs.map(h => `"${h}"`).join(", ")} ${hdrs.length > 1 ? "are headers" : "is a header"} the browser controls — fetch() drops ${hdrs.length > 1 ? "them" : "it"}, so this can't be tested from a page. Run it with the cURL below.`;
+}
+
 function cancelRequest() {
   if (window.__inflight) { window.__inflight.abort(); toast("Request cancelled", ""); }
 }
@@ -3664,6 +3734,19 @@ async function sendRequest(caseOverride) {
   const c = caseOverride || currentCase(); if (!c) return;
   // Don't let a double-click fire the same request twice.
   if (!caseOverride && $("#sendBtn") && $("#sendBtn").dataset.busy) return;
+
+  // Some cases can't be honestly run from a browser at all. Don't pretend.
+  const blockReason = browserBlockReason(c);
+  if (blockReason) {
+    c.lastRun = { status: 0, durationMs: 0, at: Date.now(), error: blockReason,
+      verdict: null, browserBlocked: true, body: "", headers: {} };
+    if (!isDraft(c)) c.status = "blocked";
+    save();
+    if (!caseOverride) { renderResp(); renderDoc(); renderSidebar();
+      toast("Not runnable in a browser — copy the cURL instead", ""); }
+    return c.lastRun;
+  }
+
   if (!caseOverride) setSendButton(true);
   const url = buildUrl(c, { withProxy: !!state.proxyUrl });
 
@@ -3695,12 +3778,20 @@ async function sendRequest(caseOverride) {
   if (!caseOverride) window.__inflight = ctrl;
 
   const t0 = performance.now();
-  let status = 0, text = "", error = null, respHdrs = {};
+  let status = 0, text = "", error = null, respHdrs = {}, streamed = false;
   try {
     const resp = await fetch(url, opts);
     status = resp.status;
     resp.headers.forEach((v,k) => { respHdrs[k] = v; });
-    text = await resp.text();
+    // A server-sent-events response never "finishes" until the stream closes,
+    // so awaiting .text() looks like a hang. Read it incrementally instead and
+    // show tokens as they land.
+    if (isStreamingResponse(respHdrs) && resp.body && resp.body.getReader) {
+      streamed = true;
+      text = await readStream(resp, caseOverride ? null : chunk => renderStreamProgress(chunk));
+    } else {
+      text = await resp.text();
+    }
   } catch (e) {
     if (e.name === "AbortError") error = ctrl.__timedOut ? `Request timed out after ${caseTimeout}ms` : "Cancelled";
     else if (/Failed to fetch|NetworkError|CORS|blocked/i.test(String(e.message))) {
@@ -3737,7 +3828,7 @@ async function sendRequest(caseOverride) {
   c.lastRun = { status, durationMs:dur, at:Date.now(), error,
     verdict: isDraft(c) ? null : verdict,   // a draft has nothing to pass or fail
     body:text.slice(0,20000), bodyTruncated: text.length > 20000, bytes: byteLen(text),
-    headers:respHdrs, specCheck,
+    headers:respHdrs, specCheck, streamed,
     assertions: asserted ? asserted.results : null };
   // only auto-update status if still pending — and never for a draft
   if (!isDraft(c) && (c.status === "pending" || !c.status)) c.status = verdict;
@@ -3750,6 +3841,26 @@ async function sendRequest(caseOverride) {
 function renderResp() {
   const c = currentCase();
   const last = c?.lastRun;
+  // Cases the browser can't run get an explanation and a way out, not a red
+  // "failed" badge they can never clear.
+  const blocked = c ? browserBlockReason(c) : null;
+  if (blocked) {
+    $("#respHeader").innerHTML = `<span class="resp-status" style="background:var(--info-soft);color:var(--info)">Not runnable here</span>
+      <span class="muted" style="font-size:11px">browser restriction, not a bug in your API</span>`;
+    $("#respBody").className = "resp-body";
+    $("#respBody").innerHTML = `<div class="blocked-note">
+      <p>${esc(blocked)}</p>
+      <div class="code-block mono" style="white-space:pre-wrap;word-break:break-all">${esc(buildCurl(c))}</div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+        <button class="btn small primary" onclick="copyText(buildCurl(currentCase()))">Copy cURL</button>
+        ${isDraft(c) ? "" : `<button class="btn small" onclick="setStatus('blocked')">Mark blocked</button>`}
+      </div>
+      <small class="muted" style="display:block;margin-top:8px;line-height:1.6">
+        Run All skips these and reports them as blocked, so they don't sit in your failure count forever.
+      </small>
+    </div>`;
+    return;
+  }
   if (!last) {
     // No run yet — preview the spec example if available
     const previewHtml = specExamplePreviewHtml(c);
@@ -3776,6 +3887,7 @@ function renderResp() {
     <span class="resp-meta">${sizeLabel}</span>
     ${specBadge}
     ${last.verdict ? `<span class="resp-verdict ${last.verdict}" ${specBadge?'style="margin-left:6px"':''}>${last.verdict==='pass'?'✓ passed':'✗ failed'}</span>` : ""}
+    ${last.streamed ? `<span class="stream-chip" title="Read incrementally as a stream">streamed</span>` : ""}
     ${last.assertions && last.assertions.length ? `<span class="resp-verdict ${last.assertions.every(a=>a.ok)?'pass':'fail'}" style="margin-left:6px" title="${esc(last.assertions.map(a=>(a.ok?'✓ ':'✕ ')+a.label).join('\n'))}">${last.assertions.filter(a=>a.ok).length}/${last.assertions.length} assertions</span>` : ""}
   `;
   $("#respBody").className = "resp-body";
@@ -3885,7 +3997,7 @@ function specExamplePreviewHtml(c) {
    Run-all + export
    ========================================================================= */
 async function runAll() {
-  const targets = state.selection.length ? state.cases.filter(c => state.selection.includes(c.id)) : state.cases.slice();
+  let targets = state.selection.length ? state.cases.filter(c => state.selection.includes(c.id)) : state.cases.slice();
   const scope = state.selection.length ? `${targets.length} selected` : `all ${targets.length}`;
   const nSerial = targets.filter(isSerialCase).length;
   const laneNote = (state.lanes || 6) > 1
@@ -3914,6 +4026,8 @@ async function runAll() {
   const lanes = Math.max(1, Math.min(12, state.lanes || 6));
   // Consumers of a captured value must not race the creator that produces it,
   // so they run in a second wave after the independent cases have finished.
+  const unrunnable = targets.filter(c => browserBlockReason(c));
+  targets = targets.filter(c => !browserBlockReason(c));
   const independent = targets.filter(c => !isSerialCase(c) && !caseNeedsVars(c));
   const dependent   = targets.filter(c => !isSerialCase(c) && caseNeedsVars(c));
   const serial      = targets.filter(isSerialCase);
@@ -3921,7 +4035,7 @@ async function runAll() {
   let done = 0;
   const tick = () => {
     done++;
-    fill.style.width = Math.round((done / targets.length) * 100) + "%";
+    fill.style.width = Math.round((done / Math.max(1, targets.length)) * 100) + "%";
     renderRunTray(run, done, targets.length, lanes);
   };
   showRunTray(true);
@@ -3960,6 +4074,18 @@ async function runAll() {
   showRunTray(false);
   fill.style.width = "100%";
   setTimeout(() => { bar.classList.remove("active"); fill.style.width = "0"; }, 600);
+
+  // Record the ones a browser can't run as blocked, with the reason, rather
+  // than dropping them silently out of the totals.
+  unrunnable.forEach(c => {
+    c.status = "blocked";
+    c.lastRun = { status: 0, durationMs: 0, at: Date.now(), error: browserBlockReason(c),
+      verdict: null, browserBlocked: true, body: "", headers: {} };
+    const r = snapshotResult(c);
+    r.status = "blocked"; r.verdict = null;
+    run.results.push(r);
+  });
+  if (unrunnable.length) toast(`${unrunnable.length} case(s) skipped — not runnable in a browser`, "");
 
   window.__suppressHistory = false;
   run.durationMs = Date.now() - startedAt;
