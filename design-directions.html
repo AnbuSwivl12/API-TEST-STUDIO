@@ -1,0 +1,1358 @@
+<title>API Test Studio — three directions</title>
+<style>
+/* ============================== document tokens ============================ */
+:root{
+  --paper:#eceef0; --paper-2:#f6f7f8; --edge:#d3d8dc; --edge-2:#bfc6cc;
+  --ink:#14181b; --ink-2:#4b555d; --ink-3:#78848c;
+  --brass:#8a6413; --brass-bg:rgba(200,146,42,.14); --anno-ink:#fff8ec;
+  --good:#0f7a58; --bad:#c0392f;
+  --mono:"SF Mono","JetBrains Mono",Menlo,Monaco,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --gutter:clamp(18px,4vw,44px);
+  --col:1120px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#0f1214; --paper-2:#161a1d; --edge:#262c31; --edge-2:#363e45;
+    --ink:#e6eaec; --ink-2:#9aa5ac; --ink-3:#6d787f;
+    --brass:#e6b73e; --brass-bg:rgba(230,183,62,.13); --anno-ink:#1a1206;
+    --good:#3ec99a; --bad:#f2776b;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0f1214; --paper-2:#161a1d; --edge:#262c31; --edge-2:#363e45;
+  --ink:#e6eaec; --ink-2:#9aa5ac; --ink-3:#6d787f;
+  --brass:#e6b73e; --brass-bg:rgba(230,183,62,.13); --anno-ink:#1a1206;
+  --good:#3ec99a; --bad:#f2776b;
+}
+:root[data-theme="light"]{
+  --paper:#eceef0; --paper-2:#f6f7f8; --edge:#d3d8dc; --edge-2:#bfc6cc;
+  --ink:#14181b; --ink-2:#4b555d; --ink-3:#78848c;
+  --brass:#8a6413; --brass-bg:rgba(200,146,42,.14); --anno-ink:#fff8ec;
+  --good:#0f7a58; --bad:#c0392f;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--col);margin:0 auto;padding:0 var(--gutter)}
+.bleed{max-width:1460px;margin:0 auto;padding:0 var(--gutter)}
+p{margin:0 0 1em}
+a{color:var(--brass)}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px;border-radius:3px}
+
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--brass);margin:0 0 14px}
+h1{font-family:var(--mono);font-size:clamp(30px,4.4vw,50px);line-height:1.05;letter-spacing:-.03em;
+  font-weight:600;margin:0 0 18px;text-wrap:balance}
+h1 em{font-style:normal;color:var(--brass)}
+.deck{font-size:18px;line-height:1.55;color:var(--ink-2);max-width:64ch;margin:0 0 22px}
+
+header.doc{padding:clamp(44px,7vw,84px) 0 30px;border-bottom:1px solid var(--edge)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 10px;font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+.meta span{border:1px solid var(--edge);border-radius:999px;padding:3px 10px;background:var(--paper-2)}
+
+/* problem audit */
+section.audit{padding:34px 0 8px}
+h2{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:600;margin:0 0 16px}
+.problems{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;
+  background:var(--edge);border:1px solid var(--edge);border-radius:10px;overflow:hidden}
+.prob{background:var(--paper-2);padding:14px 16px 16px}
+.prob .tag{font-family:var(--mono);font-size:11px;color:var(--brass);letter-spacing:.08em}
+.prob h3{font-size:14.5px;margin:5px 0 5px;font-weight:600;line-height:1.3}
+.prob p{font-size:13px;line-height:1.5;color:var(--ink-2);margin:0}
+
+/* tabs */
+.tabs{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--edge);margin-top:34px}
+.tabs-inner{max-width:1460px;margin:0 auto;padding:0 var(--gutter);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tab{appearance:none;border:0;background:transparent;font-family:var(--mono);font-size:12px;
+  letter-spacing:.04em;color:var(--ink-3);padding:14px 12px;cursor:pointer;border-bottom:2px solid transparent;
+  display:inline-flex;gap:8px;align-items:center}
+.tab b{color:var(--ink-2);font-weight:600}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brass)}
+.tab[aria-selected="true"] b{color:var(--brass)}
+.tabs .spacer{margin-left:auto}
+.themeBtn{appearance:none;border:1px solid var(--edge);background:var(--paper-2);color:var(--ink-2);
+  font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:6px;cursor:pointer}
+.themeBtn:hover{color:var(--ink);border-color:var(--edge-2)}
+
+/* direction panel */
+.dir[hidden]{display:none}
+.dir{padding:34px 0 70px}
+.dir-head{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(20px,4vw,52px);
+  align-items:start}
+@media (max-width:900px){.dir-head{grid-template-columns:1fr}}
+.dir-letter{font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--brass);margin:0 0 10px}
+.dir-title{font-family:var(--mono);font-size:clamp(23px,3vw,33px);letter-spacing:-.02em;line-height:1.1;
+  font-weight:600;margin:0 0 12px}
+.thesis{font-size:16.5px;line-height:1.55;color:var(--ink-2);margin:0}
+.thesis strong{color:var(--ink);font-weight:600}
+
+.tradeoffs{display:flex;flex-direction:column;gap:1px;background:var(--edge);border:1px solid var(--edge);
+  border-radius:10px;overflow:hidden}
+.trade{background:var(--paper-2);padding:12px 15px}
+.trade h4{margin:0 0 6px;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  font-weight:600;color:var(--ink-3)}
+.trade.win h4{color:var(--good)}
+.trade.lose h4{color:var(--bad)}
+.trade ul{margin:0;padding-left:16px;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.trade li+li{margin-top:4px}
+.trade li b{color:var(--ink);font-weight:600}
+.cost{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dots{display:inline-flex;gap:4px}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--edge-2);display:block}
+.dots i.on{background:var(--brass)}
+.cost .lbl{font-family:var(--mono);font-size:11.5px;color:var(--ink)}
+.trade.cost-box p{font-size:13px;line-height:1.5;color:var(--ink-2);margin:8px 0 0}
+.hits{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.hits span{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:3px 9px;border-radius:999px;
+  border:1px solid var(--edge-2);color:var(--ink-2);background:var(--paper-2)}
+.hits span.on{color:var(--brass);border-color:var(--brass);background:var(--brass-bg)}
+
+/* annotations legend */
+.anno{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;
+  background:var(--brass);color:var(--anno-ink);font-family:var(--mono);font-size:10px;font-weight:700;
+  vertical-align:middle;flex:none}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px 24px;margin-top:18px}
+.legend li{display:flex;gap:9px;font-size:13.5px;line-height:1.45;color:var(--ink-2);align-items:start}
+.legend li .anno{margin-top:2px}
+.legend{list-style:none;padding:0}
+.legend b{color:var(--ink);font-weight:600}
+.frame-cap{font-family:var(--mono);font-size:11px;color:var(--ink-3);margin:10px 0 0;letter-spacing:.03em}
+.figrow{display:grid;grid-template-columns:330px minmax(0,1fr);gap:clamp(20px,3.5vw,44px);align-items:start;margin-top:18px}
+@media (max-width:900px){.figrow{grid-template-columns:1fr}}
+.figrow .legend{margin-top:0;grid-template-columns:1fr}
+.fig{margin:0}
+.fig figcaption{font-size:12.5px;line-height:1.45;color:var(--ink-3);margin-top:9px}
+
+/* ============================== mock chrome ================================ */
+.mkwrap{margin-top:26px;overflow-x:auto;padding-bottom:4px}
+.mk{min-width:1180px;border:1px solid #232c38;border-radius:12px;overflow:hidden;
+  box-shadow:0 20px 50px rgba(0,0,0,.30);background:#0a0e14}
+.mk.wide{min-width:1340px}
+.mk-bar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#10161f;
+  border-bottom:1px solid #1f2937}
+.mk-dots{display:flex;gap:6px}
+.mk-dots i{width:9px;height:9px;border-radius:50%;background:#2b3543;display:block}
+.mk-url{font-family:var(--mono);font-size:10.5px;color:#64748b;background:#0a0e14;border:1px solid #1f2937;
+  border-radius:5px;padding:3px 10px;margin:0 auto}
+
+/* app tokens, fixed dark — mockups are shown in the product's default theme */
+.mk,.b-pop-static{
+  --bg:#0a0e14; --bg-elev:#10161f; --bg-elev-2:#1a2330; --bg-hover:#1f2937; --bg-deep:#0d1117;
+  --border:#1f2937; --border-strong:#334155;
+  --text:#e5e7eb; --text-muted:#94a3b8; --text-dim:#64748b;
+  --accent:#8b5cf6; --accent-soft:rgba(139,92,246,.12);
+  --success:#10b981; --warning:#f59e0b; --danger:#ef4444; --info:#3b82f6;
+  --success-soft:rgba(16,185,129,.12); --danger-soft:rgba(239,68,68,.12);
+  --warning-soft:rgba(245,158,11,.12); --info-soft:rgba(59,130,246,.12);
+  font-family:var(--sans);font-size:13px;color:var(--text);line-height:1.45;
+}
+.mk *{box-sizing:border-box}
+.mk .mono{font-family:var(--mono)}
+.mk-body{height:716px;display:flex;position:relative;overflow:hidden}
+.mk ::-webkit-scrollbar{width:9px;height:9px}
+.mk ::-webkit-scrollbar-thumb{background:#243043;border-radius:9px;border:2px solid var(--bg)}
+.mk ::-webkit-scrollbar-track{background:transparent}
+
+/* shared app atoms */
+.m-brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:13px;flex:none}
+.m-logo{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#8b5cf6,#ec4899);
+  display:grid;place-items:center;color:#fff;font-weight:700;font-size:11px}
+.m-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;
+  background:var(--bg-elev-2);border:1px solid var(--border);font-size:11.5px;font-weight:500;
+  color:var(--text);white-space:nowrap}
+.m-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.m-btn.ghost{background:transparent;border-color:transparent;color:var(--text-muted)}
+.method{font-family:var(--mono);font-size:9.5px;font-weight:700;padding:2px 4px;border-radius:3px;
+  min-width:40px;text-align:center;flex:none;letter-spacing:.02em}
+.method.GET{background:var(--success-soft);color:var(--success)}
+.method.POST{background:var(--warning-soft);color:var(--warning)}
+.method.PUT{background:var(--info-soft);color:var(--info)}
+.method.PATCH{background:var(--accent-soft);color:var(--accent)}
+.method.DELETE{background:var(--danger-soft);color:var(--danger)}
+.method.HEAD,.method.OPTIONS{background:var(--bg-elev-2);color:var(--text-muted)}
+.dot{width:7px;height:7px;border-radius:50%;flex:none;background:var(--text-dim)}
+.dot.pass{background:var(--success)}
+.dot.fail{background:var(--danger);box-shadow:0 0 6px rgba(239,68,68,.7)}
+.dot.skip{background:var(--warning)}
+.dot.blocked{background:var(--info)}
+.dot.pending{background:#3b4655}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.02em}
+.pill.pass{background:var(--success-soft);color:var(--success)}
+.pill.fail{background:var(--danger-soft);color:var(--danger)}
+.pill.skip{background:var(--warning-soft);color:var(--warning)}
+.pill.blocked{background:var(--info-soft);color:var(--info)}
+.pill.pending{background:var(--bg-elev-2);color:var(--text-dim)}
+.lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-dim);font-weight:600}
+.mk .anno,.b-pop-static .anno{width:15px;height:15px;font-size:9.5px;background:#e6b73e;color:#1a1206}
+
+/* json */
+.json{font-family:var(--mono);font-size:11.5px;line-height:1.62;background:var(--bg-deep);margin:0;
+  padding:8px 0;overflow:auto}
+.json .ln{display:block;white-space:pre;padding-right:12px}
+.json .n{display:inline-block;width:30px;padding-right:10px;color:#484f58;text-align:right;user-select:none}
+.jz-k{color:#79c0ff}.jz-s{color:#a5d6ff}.jz-n{color:#ffa657}.jz-b{color:#ff7b72}
+
+/* ---------- direction A : run report ---------- */
+.a-top{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--bg-elev);
+  border-bottom:1px solid var(--border);flex:none}
+.sess{display:inline-flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:999px;
+  background:var(--bg-elev-2);overflow:hidden;font-size:11.5px}
+.sess .seg{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-right:1px solid var(--border);
+  white-space:nowrap}
+.sess .seg:last-child{border-right:0}
+.sess .seg.env{font-weight:600}
+.sess .seg .k{color:var(--text-dim);font-family:var(--mono);font-size:10px;letter-spacing:.06em}
+.sess .seg .v{font-family:var(--mono);font-size:11px;color:var(--text-muted)}
+.sess .seg.ok .v{color:var(--success)}
+.sess .caret{color:var(--text-dim);padding:0 9px 0 3px}
+.a-rail{width:216px;flex:none;background:var(--bg-elev);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden}
+.a-rail-h{padding:11px 13px 8px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center}
+.a-tags{overflow-y:auto;padding:6px 0 14px}
+.a-tag{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:8px 13px;cursor:default;
+  border-left:2px solid transparent}
+.a-tag:hover{background:var(--bg-elev-2)}
+.a-tag.on{background:var(--accent-soft);border-left-color:var(--accent)}
+.a-tag .nm{font-family:var(--mono);font-size:11px;color:var(--text)}
+.a-tag .ct{font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+.a-bars{grid-column:1/-1;display:flex;height:3px;border-radius:2px;overflow:hidden;background:#1b2431;margin-top:3px}
+.a-main{flex:1;overflow-y:auto;padding:18px 22px 40px;min-width:0}
+.a-runhead{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.a-runsel{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:16px;font-weight:600}
+.a-runsel .cv{color:var(--text-dim);font-size:11px}
+.a-delta{font-size:11.5px;color:var(--text-muted);margin-top:3px;font-family:var(--mono)}
+.a-delta b.up{color:var(--success)}.a-delta b.dn{color:var(--danger)}
+.a-stats{margin-left:auto;display:flex;gap:16px;align-items:flex-end}
+.a-stat .v{font-family:var(--mono);font-size:19px;font-weight:700;line-height:1}
+.a-stat .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--text-dim);margin-top:4px}
+.a-stat.pass .v{color:var(--success)}.a-stat.fail .v{color:var(--danger)}
+.a-stat.skip .v{color:var(--warning)}.a-stat.blocked .v{color:var(--info)}
+.a-stat.pending .v{color:var(--text-muted)}
+.a-timeline{margin:16px 0 6px}
+.a-ticks{display:flex;gap:1.5px;align-items:flex-end;height:34px}
+.a-ticks i{flex:1;border-radius:1px;display:block;background:var(--success);height:60%}
+.a-ticks i.fail{background:var(--danger)}
+.a-ticks i.skip{background:var(--warning)}
+.a-ticks i.blocked{background:var(--info)}
+.a-ticks i.pending{background:#2a3444}
+.a-axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;
+  color:var(--text-dim);margin-top:6px}
+.a-sec{margin-top:22px}
+.a-sec-h{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.a-sec-h h4{margin:0;font-size:12.5px;font-weight:600}
+.a-sec-h .why{font-size:11.5px;color:var(--text-muted)}
+.a-group{border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:10px;background:var(--bg-elev)}
+.a-group-h{display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--bg-elev-2);
+  border-bottom:1px solid var(--border);font-size:11.5px}
+.a-group-h .cause{color:var(--text);font-weight:600}
+.a-group-h .n{font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-left:auto}
+.a-row{display:grid;grid-template-columns:16px 46px 62px 1fr auto auto;gap:10px;align-items:center;
+  padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;cursor:default}
+.a-row:last-child{border-bottom:0}
+.a-row:hover{background:var(--bg-elev-2)}
+.a-row .id{font-family:var(--mono);font-size:10.5px;color:var(--text-dim)}
+.a-row .sc{color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.a-row .exp{font-family:var(--mono);font-size:10.5px;color:var(--text-muted);white-space:nowrap}
+.a-row .exp s{color:var(--text-dim);text-decoration:none}
+.a-row .exp b{color:var(--danger)}
+.a-row .ms{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);text-align:right;min-width:46px}
+.a-open{background:var(--bg-deep);border-bottom:1px solid var(--border);padding:0}
+.a-open-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:1px;background:var(--border)}
+.a-open-col{background:var(--bg-elev);padding:11px 13px;min-width:0}
+.a-open-col.res{padding:0;background:var(--bg-deep);display:flex;flex-direction:column}
+.a-open-col h5{margin:0 0 8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-dim);font-weight:600}
+.code{font-family:var(--mono);font-size:11px;line-height:1.6;color:var(--text-muted);background:var(--bg-deep);
+  border:1px solid var(--border);border-radius:6px;padding:8px 10px;white-space:pre-wrap;word-break:break-all}
+.assert{display:flex;flex-direction:column;gap:6px;margin-top:11px}
+.assert div{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--text-muted)}
+.assert .mark{font-family:var(--mono);font-weight:700;font-size:11px}
+.assert .mark.ok{color:var(--success)}
+.assert .mark.no{color:var(--danger)}
+.a-resh{display:flex;align-items:center;gap:9px;padding:7px 12px;border-bottom:1px solid var(--border);
+  background:var(--bg-elev);flex:none}
+.resp-status{font-family:var(--mono);font-weight:600;padding:2px 9px;border-radius:4px;font-size:10.5px}
+.resp-status.err{background:var(--danger-soft);color:var(--danger)}
+.resp-status.ok{background:var(--success-soft);color:var(--success)}
+.a-actions{display:flex;gap:6px;padding:9px 13px;background:var(--bg-elev);border-top:1px solid var(--border)}
+.a-collapsed{display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);
+  border-radius:9px;background:var(--bg-elev);font-size:12px;color:var(--text-muted);margin-bottom:9px}
+.a-collapsed b{color:var(--text)}
+.a-collapsed .caret{margin-left:auto;color:var(--text-dim)}
+
+/* ---------- direction B : focus + command bar ---------- */
+.b-top{display:flex;align-items:center;gap:12px;padding:9px 14px;background:var(--bg-elev);
+  border-bottom:1px solid var(--border);flex:none}
+.b-kbd{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);border:1px solid var(--border);
+  border-radius:5px;padding:3px 8px;background:var(--bg-elev-2)}
+.b-list{width:290px;flex:none;background:var(--bg-elev);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden}
+.b-list-h{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.b-search{background:var(--bg-elev-2);border:1px solid var(--border);border-radius:6px;padding:6px 9px;
+  font-size:11.5px;color:var(--text-dim);display:flex;justify-content:space-between}
+.b-chips{display:flex;gap:4px;flex-wrap:wrap}
+.b-chip{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);
+  color:var(--text-muted);background:var(--bg-elev-2)}
+.b-chip.on{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
+.b-scroll{flex:1;overflow-y:auto;padding-bottom:12px}
+.b-tag{padding:11px 12px 4px;font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--text-dim);font-weight:600}
+.b-item{display:grid;grid-template-columns:8px 42px 1fr auto;gap:8px;align-items:center;padding:6px 12px;
+  font-size:11.5px;border-left:2px solid transparent}
+.b-item:hover{background:var(--bg-elev-2)}
+.b-item.on{background:var(--accent-soft);border-left-color:var(--accent)}
+.b-item .sc{color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.b-item.on .sc{color:var(--text)}
+.b-item .id{font-family:var(--mono);font-size:9.5px;color:var(--text-dim)}
+.b-main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.b-scrollmain{flex:1;overflow-y:auto;padding:20px 26px 26px}
+.b-h1{display:flex;align-items:center;gap:10px;margin:0 0 6px}
+.b-h1 .method{font-size:11px;padding:3px 8px;min-width:52px}
+.b-h1 h3{margin:0;font-size:17px;font-weight:600}
+.b-url{font-family:var(--mono);font-size:12px;color:var(--text-muted);word-break:break-all;margin-bottom:14px}
+.b-url b{color:var(--text)}
+.b-card{border:1px solid var(--border);border-radius:10px;background:var(--bg-elev);overflow:hidden;margin-bottom:14px}
+.b-card-h{display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--border);
+  background:var(--bg-elev-2)}
+.b-tabs{display:flex;gap:2px}
+.b-tabx{padding:9px 11px;font-size:11.5px;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.b-tabx.on{color:var(--accent);border-bottom-color:var(--accent)}
+.b-tabx .b{font-family:var(--mono);font-size:9.5px;background:var(--bg-hover);color:var(--text-dim);
+  border-radius:8px;padding:1px 5px;margin-left:5px}
+.b-card-h .right{margin-left:auto;display:flex;gap:6px;align-items:center;padding:6px 0}
+.b-body{padding:11px 13px}
+.b-send{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.b-send .m-btn.primary{padding:8px 18px;font-size:12.5px;font-weight:600}
+.b-send .hint{font-family:var(--mono);font-size:10.5px;color:var(--text-dim)}
+.b-verdict{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);
+  background:var(--bg-elev-2);font-size:11.5px;flex-wrap:wrap}
+.b-verdict .mono{color:var(--text-muted);font-size:11px}
+.b-dock{flex:none;border-top:1px solid var(--border);background:var(--bg-elev)}
+.b-dock-bar{display:flex;align-items:center;gap:12px;padding:8px 14px;font-size:11.5px}
+.b-prog{height:4px;background:#1b2431;border-radius:3px;overflow:hidden;flex:1;min-width:120px;display:flex}
+.b-prog i{display:block;height:100%}
+.b-prog i.p{background:var(--success)}
+.b-prog i.f{background:var(--danger)}
+.b-prog i.s{background:var(--warning)}
+.b-dock-bar .now{font-family:var(--mono);color:var(--text-muted);font-size:10.5px}
+.b-fails{display:flex;gap:8px;padding:0 14px 10px;overflow-x:auto}
+.b-failchip{display:flex;align-items:center;gap:7px;border:1px solid var(--border);border-left:2px solid var(--danger);
+  border-radius:7px;padding:6px 10px;background:var(--bg-elev-2);font-size:11px;white-space:nowrap;flex:none}
+.b-failchip .id{font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+.b-failchip .cd{font-family:var(--mono);font-size:10px;color:var(--danger)}
+/* palette */
+.b-scrim{position:absolute;inset:0;background:rgba(4,7,11,.34);z-index:5}
+.b-pal{position:absolute;top:64px;left:50%;transform:translateX(-50%);width:560px;z-index:6;
+  background:#121924;border:1px solid #2c3a4d;border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.6);overflow:hidden}
+.b-pal-in{display:flex;align-items:center;gap:9px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.b-pal-in .q{font-size:14px;color:var(--text)}
+.b-pal-in .car{width:1px;height:16px;background:var(--accent);animation:cb 1.1s steps(1) infinite}
+@keyframes cb{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.b-pal-in .car{animation:none}}
+.b-pal-sec{padding:7px 14px 3px;font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--text-dim);font-weight:600}
+.b-pal-i{display:flex;align-items:center;gap:10px;padding:7px 14px;font-size:12.5px;color:var(--text-muted)}
+.b-pal-i.on{background:var(--accent-soft);color:var(--text)}
+.b-pal-i .k{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+.b-pal-i .ic{font-family:var(--mono);font-size:11px;color:var(--accent);width:14px;text-align:center}
+.b-pal-f{padding:7px 14px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;
+  color:var(--text-dim);display:flex;gap:14px;background:var(--bg-elev-2)}
+/* session popover, shown as its own figure */
+.b-pop-static{width:100%;max-width:330px;background:#121924;border:1px solid #2c3a4d;border-radius:10px;
+  box-shadow:0 14px 34px rgba(0,0,0,.32);overflow:hidden;font-family:var(--sans);font-size:13px;color:var(--text)}
+.b-pop-static *{box-sizing:border-box}
+.b-pop-h{padding:10px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.b-pop-b{padding:11px 13px;display:flex;flex-direction:column;gap:9px}
+.b-fld{display:flex;flex-direction:column;gap:4px}
+.b-fld .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-dim)}
+.b-inp{background:var(--bg-elev-2);border:1px solid var(--border);border-radius:6px;padding:6px 9px;
+  font-family:var(--mono);font-size:11px;color:var(--text-muted);display:flex;justify-content:space-between;gap:8px}
+.b-inp b{color:var(--success);font-weight:600}
+.b-envs{display:flex;gap:5px}
+.b-env{flex:1;text-align:center;border:1px solid var(--border);border-radius:6px;padding:5px 0;font-size:11px;
+  color:var(--text-muted);background:var(--bg-elev-2)}
+.b-env.on{border-color:var(--warning);color:var(--warning);background:var(--warning-soft);font-weight:600}
+
+/* ---------- direction C : suite table + history ---------- */
+.c-top{display:flex;align-items:center;gap:14px;padding:0 14px;background:var(--bg-elev);
+  border-bottom:1px solid var(--border);flex:none;height:46px}
+.c-nav{display:flex;gap:2px;align-self:stretch;align-items:center}
+.c-navi{padding:0 12px;height:100%;display:flex;align-items:center;font-size:12px;color:var(--text-muted);
+  border-bottom:2px solid transparent}
+.c-navi.on{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
+.c-navi .b{font-family:var(--mono);font-size:9.5px;color:var(--text-dim);margin-left:6px}
+.c-sub{display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid var(--border);
+  background:var(--bg-elev);flex:none;flex-wrap:wrap}
+.c-runsel{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:7px;
+  background:var(--bg-elev-2);padding:5px 10px;font-size:11.5px}
+.c-runsel .rn{font-family:var(--mono);font-weight:600}
+.c-diff{display:flex;gap:12px;font-family:var(--mono);font-size:11px;color:var(--text-muted)}
+.c-diff b.up{color:var(--success)}.c-diff b.dn{color:var(--danger)}
+.c-facets{width:196px;flex:none;border-right:1px solid var(--border);background:var(--bg-elev);
+  overflow-y:auto;padding:12px 0 20px}
+.c-fgroup{padding:0 12px 14px}
+.c-fgroup .lbl{display:block;margin-bottom:7px}
+.c-f{display:flex;align-items:center;gap:7px;padding:4px 6px;border-radius:5px;font-size:11.5px;
+  color:var(--text-muted)}
+.c-f:hover{background:var(--bg-elev-2)}
+.c-f.on{background:var(--accent-soft);color:var(--text)}
+.c-f .n{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+.c-f.flaky{color:var(--warning)}
+.c-tablewrap{flex:1;overflow:auto;min-width:0;margin-right:420px}
+.c-table{width:100%;border-collapse:collapse;font-size:11.5px}
+.c-table th{position:sticky;top:0;z-index:2;background:var(--bg-elev-2);text-align:left;padding:7px 10px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-dim);
+  font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+.c-table td{padding:6px 10px;border-bottom:1px solid #161f2b;vertical-align:middle;white-space:nowrap}
+.c-table tr:hover td{background:var(--bg-elev)}
+.c-table tr.on td{background:var(--accent-soft)}
+.c-table td.sc{color:var(--text)}
+.c-table .scw{display:block;max-width:172px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.c-table .pth{font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+.c-table td.id,.c-table td.ms{font-family:var(--mono);font-size:10.5px;color:var(--text-dim)}
+.c-table td.ms{text-align:right;font-variant-numeric:tabular-nums}
+.c-table td.exp{font-family:var(--mono);font-size:10.5px;color:var(--text-muted)}
+.spark{display:inline-flex;gap:2px;align-items:center}
+.spark i{width:4px;height:11px;border-radius:1px;background:var(--success);display:block;opacity:.85}
+.spark i.f{background:var(--danger)}
+.spark i.s{background:var(--warning)}
+.spark i.b{background:var(--info)}
+.spark i.x{background:#2a3444}
+.spark i.last{height:15px;opacity:1}
+.c-sheet{position:absolute;top:0;right:0;bottom:0;width:420px;background:var(--bg-elev);
+  border-left:1px solid var(--border-strong);box-shadow:-18px 0 44px rgba(0,0,0,.45);display:flex;
+  flex-direction:column;z-index:4}
+.c-sheet-h{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:7px}
+.c-sheet-h .row1{display:flex;align-items:center;gap:9px}
+.c-sheet-h h4{margin:0;font-size:13.5px;font-weight:600}
+.c-sheet-b{flex:1;overflow-y:auto}
+.c-sec{padding:12px 14px;border-bottom:1px solid var(--border)}
+.c-sec .lbl{display:block;margin-bottom:8px}
+.c-hist{display:flex;gap:3px;align-items:flex-end}
+.c-hist span{flex:1;text-align:center;font-family:var(--mono);font-size:8.5px;color:var(--text-dim)}
+.c-hist i{display:block;height:22px;border-radius:2px;background:var(--success);margin-bottom:4px}
+.c-hist i.f{background:var(--danger)}
+.c-foot{flex:none;border-top:1px solid var(--border);padding:10px 14px;display:flex;gap:7px;background:var(--bg-elev-2)}
+.c-bulk{display:flex;align-items:center;gap:10px;padding:7px 14px;background:var(--accent-soft);
+  border-bottom:1px solid var(--border);font-size:11.5px;flex:none}
+.c-bulk b{color:var(--accent);font-family:var(--mono)}
+
+/* footer */
+footer.doc{border-top:1px solid var(--edge);padding:26px 0 60px;color:var(--ink-3);font-size:13px}
+footer.doc p{max-width:70ch}
+</style>
+
+<header class="doc">
+  <div class="wrap">
+    <p class="eyebrow">API Test Studio · v1.9 · design exploration</p>
+    <h1>Three ways out of the <em>three-column</em> screen</h1>
+    <p class="deck">The runner works: 102 canned cases against the Swivl Template API, a token, a
+      Run All, a CSV at the end. What it doesn't do is tell you how the run went. Below are three
+      structurally different answers — not three skins — each shown at desktop width with a full
+      102-case load, a real mixed-status run, and one failure opened.</p>
+    <div class="meta">
+      <span>Mockups only — index.html untouched</span>
+      <span>Dark theme, the product default</span>
+      <span>Constraint: one file, vanilla JS, no build</span>
+      <span>Data: the real PRESET_CASES</span>
+    </div>
+  </div>
+</header>
+
+<section class="audit wrap">
+  <h2>What each direction has to answer for</h2>
+  <div class="problems">
+    <div class="prob">
+      <div class="tag">P1 — duplication</div>
+      <h3>Two panes show the same request</h3>
+      <p>The doc pane restates the method, URL, expected result and cURL that the Try It pane is
+        already holding. Three columns, roughly two columns of information.</p>
+    </div>
+    <div class="prob">
+      <div class="tag">P2 — no results view</div>
+      <h3>102 cases run, five tiles reported</h3>
+      <p>After Run All you know 12 failed. Which twelve, and why, is a hunt down the sidebar
+        clicking red dots one at a time.</p>
+    </div>
+    <div class="prob">
+      <div class="tag">P3 — setup reads as config</div>
+      <h3>Six bare inputs in the topbar</h3>
+      <p>Env, base URL, API version, auth type, token, gear. Nothing says "you are hitting Stage as
+        this user, and the token is still good."</p>
+    </div>
+    <div class="prob">
+      <div class="tag">P4 — no progress, no history</div>
+      <h3>A 3px bar and then it's gone</h3>
+      <p>No live count while 102 requests go out, no record of the previous run, no way to see that
+        TC_020 has failed the last three times.</p>
+    </div>
+  </div>
+</section>
+
+<div class="tabs">
+  <div class="tabs-inner" role="tablist" aria-label="Design directions">
+    <button class="tab" role="tab" id="tab-a" aria-controls="dir-a" aria-selected="true"><b>A</b> Run Report</button>
+    <button class="tab" role="tab" id="tab-b" aria-controls="dir-b" aria-selected="false"><b>B</b> Focus &amp; Command Bar</button>
+    <button class="tab" role="tab" id="tab-c" aria-controls="dir-c" aria-selected="false"><b>C</b> Suite Table &amp; History</button>
+    <span class="spacer"></span>
+    <button class="themeBtn" id="themeBtn" type="button">theme</button>
+  </div>
+</div>
+
+<!-- ============================ DIRECTION A ============================ -->
+<section class="dir" id="dir-a" role="tabpanel" aria-labelledby="tab-a">
+  <div class="bleed">
+    <div class="dir-head">
+      <div>
+        <p class="dir-letter">Direction A</p>
+        <h3 class="dir-title">The run is the document</h3>
+        <p class="thesis">The centre of the app stops being "the case you clicked" and becomes
+          <strong>the run you just finished</strong>. Failures sort to the top, grouped by shared cause,
+          and open <strong>in place</strong> — expected vs actual side by side — so the third column
+          disappears entirely. The sidebar demotes to a tag rail with per-tag pass bars, because once
+          you have a report you navigate by what broke, not by alphabet.</p>
+        <div class="hits">
+          <span class="on">P1 solved</span><span class="on">P2 solved</span>
+          <span class="on">P4 solved</span><span>P3 partial</span>
+        </div>
+      </div>
+      <div class="tradeoffs">
+        <div class="trade win">
+          <h4>Optimizes for</h4>
+          <ul>
+            <li><b>Triage after Run All.</b> Twelve failures, four causes, zero clicks to see the first one.</li>
+            <li><b>Reporting.</b> The screen already is the CSV — screenshot it into a ticket.</li>
+            <li><b>Regression reading.</b> Run #47 vs #46 delta sits next to the title.</li>
+          </ul>
+        </div>
+        <div class="trade lose">
+          <h4>Trades away</h4>
+          <ul>
+            <li><b>Exploratory poking.</b> Editing a URL and re-sending moves into a drawer off the row.</li>
+            <li><b>Browsing by endpoint.</b> The 102-row list is gone; you reach a case by tag, search, or failure.</li>
+            <li><b>Cold start.</b> Before the first run the report is empty and has to sell "press Run All".</li>
+          </ul>
+        </div>
+        <div class="trade cost-box">
+          <h4>Retrofit cost — single file, no build</h4>
+          <div class="cost">
+            <span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span>
+            <span class="lbl">moderate · mostly deletion</span>
+          </div>
+          <p>Needs a <span class="mono">state.runs</span> array (cap it at ~10 and truncate bodies —
+            localStorage is 5&nbsp;MB and 102 JSON responses will blow it), plus a cause-grouping pass over
+            results. <span class="mono">renderDoc()</span> and <span class="mono">renderTry()</span> collapse
+            into one renderer, so this removes more code than it adds. No new dependencies.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mkwrap">
+      <div class="mk">
+        <div class="mk-bar"><div class="mk-dots"><i></i><i></i><i></i></div>
+          <div class="mk-url">anbuswivl12.github.io/API-TEST-STUDIO/</div></div>
+        <div style="display:flex;flex-direction:column;height:716px">
+          <div class="a-top" id="a-top"></div>
+          <div style="display:flex;flex:1;overflow:hidden">
+            <aside class="a-rail"><div class="a-rail-h"><span class="anno">2</span><span class="lbl">Coverage by tag</span></div>
+              <div class="a-tags" id="a-tags"></div></aside>
+            <main class="a-main" id="a-main"></main>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="frame-cap">Run #47 · Stage · 102 cases · finished 14:22 · one failure group expanded</p>
+    <ul class="legend">
+      <li><span class="anno">1</span><span><b>Run selector + delta.</b> Named runs, and what changed since the last one, where the page title used to be.</span></li>
+      <li><span class="anno">2</span><span><b>Tag rail with pass bars.</b> 102 rows become 8 tags, each carrying its own pass/fail proportion.</span></li>
+      <li><span class="anno">3</span><span><b>102-tick timeline.</b> One tick per case in execution order — clusters of red read as one broken endpoint, not twelve incidents.</span></li>
+      <li><span class="anno">4</span><span><b>Failures grouped by cause.</b> Four 405-expected cases that all returned 404 are one row group with one fix.</span></li>
+      <li><span class="anno">5</span><span><b>Inline expansion.</b> Request, assertions and actual response open in the row — this is what replaces the Try It column.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ DIRECTION B ============================ -->
+<section class="dir" id="dir-b" role="tabpanel" aria-labelledby="tab-b" hidden>
+  <div class="bleed">
+    <div class="dir-head">
+      <div>
+        <p class="dir-letter">Direction B</p>
+        <h3 class="dir-title">One session chip, one column, one palette</h3>
+        <p class="thesis">Keep the runner's shape but strip the chrome. The six topbar inputs collapse
+          into a single <strong>session chip</strong> that reads like a sentence — Stage, as this token,
+          for 41 more minutes — and opens as a popover when you actually need to change something.
+          Everything else that lived in the topbar moves into <strong>⌘K</strong>. The doc and Try It
+          panes merge into one request-then-response column, and Run All lands in a
+          <strong>bottom dock</strong> that streams progress and collects failures as they happen.</p>
+        <div class="hits">
+          <span class="on">P1 solved</span><span class="on">P3 solved</span>
+          <span class="on">P4 solved</span><span>P2 partial</span>
+        </div>
+      </div>
+      <div class="tradeoffs">
+        <div class="trade win">
+          <h4>Optimizes for</h4>
+          <ul>
+            <li><b>The daily driver.</b> Fastest path from "paste token" to "send" of the three.</li>
+            <li><b>Trust in the setup.</b> Token validity and env are stated, not implied by an input's contents.</li>
+            <li><b>Keeping the current mental model.</b> Still a list plus a request pane.</li>
+          </ul>
+        </div>
+        <div class="trade lose">
+          <h4>Trades away</h4>
+          <ul>
+            <li><b>Discoverability.</b> Actions hidden behind ⌘K are invisible to a first-time QA; the dock and chip carry the whole affordance load.</li>
+            <li><b>Depth on results.</b> The dock ranks failures but never becomes a real report — worst of the three for a 12-failure post-mortem.</li>
+            <li><b>Screen real estate for history.</b> Nowhere for run #46 to live.</li>
+          </ul>
+        </div>
+        <div class="trade cost-box">
+          <h4>Retrofit cost — single file, no build</h4>
+          <div class="cost">
+            <span class="dots"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span>
+            <span class="lbl">light · cheapest of the three</span>
+          </div>
+          <p>The chip and popover reuse the existing <span class="mono">.modal-backdrop</span> pattern; the
+            dock is the <span class="mono">#progressBar</span> grown up. Real work is the palette —
+            substring match, arrow-key nav, focus trap, Escape — call it ~200 lines of plain JS, no library.
+            Merging the panes deletes the duplicated blocks in <span class="mono">renderDoc()</span>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mkwrap">
+      <div class="mk">
+        <div class="mk-bar"><div class="mk-dots"><i></i><i></i><i></i></div>
+          <div class="mk-url">anbuswivl12.github.io/API-TEST-STUDIO/</div></div>
+        <div class="mk-body" style="flex-direction:column">
+          <div class="b-top" id="b-top"></div>
+          <div style="display:flex;flex:1;overflow:hidden">
+            <aside class="b-list"><div class="b-list-h" id="b-listh"></div><div class="b-scroll" id="b-scroll"></div></aside>
+            <main class="b-main"><div class="b-scrollmain" id="b-main"></div><div class="b-dock" id="b-dock"></div></main>
+          </div>
+          <div class="b-scrim"></div>
+          <div class="b-pal" id="b-pal"></div>
+        </div>
+      </div>
+    </div>
+    <p class="frame-cap">Mid-run: 63 of 102 sent · command palette open over the merged request/response column</p>
+    <div class="figrow">
+      <figure class="fig"><div class="b-pop-static" id="b-pop"></div>
+        <figcaption>The chip, opened — the only place environment and auth live. Shown separately because
+          it and the palette are never on screen together.</figcaption></figure>
+    <ul class="legend">
+      <li><span class="anno">1</span><span><b>Session chip.</b> Env, host, token state and API version as one readable object; the popover behind it is the only place config lives.</span></li>
+      <li><span class="anno">2</span><span><b>Merged column.</b> Request on top, verdict strip, response below — the doc pane's duplicate cURL and expected-result cards are gone.</span></li>
+      <li><span class="anno">3</span><span><b>Command palette.</b> Run all, run only the failures, switch env, jump to any TC id — the topbar's buttons with none of its width.</span></li>
+      <li><span class="anno">4</span><span><b>Run dock.</b> Live counts, a three-colour progress bar, and failures accumulating as chips you can click straight into.</span></li>
+    </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ DIRECTION C ============================ -->
+<section class="dir" id="dir-c" role="tabpanel" aria-labelledby="tab-c" hidden>
+  <div class="bleed">
+    <div class="dir-head">
+      <div>
+        <p class="dir-letter">Direction C</p>
+        <h3 class="dir-title">A test suite, not a request builder</h3>
+        <p class="thesis">Stop pretending this is Postman. 102 cases with statuses, durations and a
+          history is a <strong>table</strong>, and QA already knows how to work one: sort it, facet it,
+          multi-select it, export it. Each row carries a <strong>ten-run trend</strong>, which is the only
+          honest way to tell a real regression from a flake. Detail opens in a <strong>sheet docked beside the
+          table</strong> so you never lose your place in the list, and <em>Runs</em> becomes a real
+          top-level section.</p>
+        <div class="hits">
+          <span class="on">P1 solved</span><span class="on">P2 solved</span>
+          <span class="on">P4 solved</span><span>P3 partial</span>
+        </div>
+      </div>
+      <div class="tradeoffs">
+        <div class="trade win">
+          <h4>Optimizes for</h4>
+          <ul>
+            <li><b>Scale.</b> The only direction where 102 rows — or 400 — stays comfortable.</li>
+            <li><b>Evidence.</b> Trend column plus a flaky facet answers "is this new?" without opening anything.</li>
+            <li><b>Bulk work.</b> Select 9, mark blocked, re-run the rest — the existing bulk bar finally has a surface.</li>
+          </ul>
+        </div>
+        <div class="trade lose">
+          <h4>Trades away</h4>
+          <ul>
+            <li><b>The console feel.</b> Reads like a spreadsheet; the pleasant "docs on the left, playground on the right" quality is gone.</li>
+            <li><b>Room for the response.</b> A 420px sheet is a tighter reader than today's full centre pane.</li>
+            <li><b>Simplicity.</b> Adds a second top-level mode and a stored history — the most machinery.</li>
+          </ul>
+        </div>
+        <div class="trade cost-box">
+          <h4>Retrofit cost — single file, no build</h4>
+          <div class="cost">
+            <span class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span>
+            <span class="lbl">heavy · needs a data migration</span>
+          </div>
+          <p>102 rows render fine unvirtualised, but per-case history is new persisted state: keep it to
+            <span class="mono">{code, ms, at}</span> × 10 (~1,020 tiny records) and version the localStorage
+            key so existing saves migrate instead of resetting. Sorting, faceting, the sheet and the Runs
+            view are genuinely new code — roughly double A. Still zero dependencies.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mkwrap">
+      <div class="mk wide">
+        <div class="mk-bar"><div class="mk-dots"><i></i><i></i><i></i></div>
+          <div class="mk-url">anbuswivl12.github.io/API-TEST-STUDIO/</div></div>
+        <div class="mk-body" style="flex-direction:column">
+          <div class="c-top" id="c-top"></div>
+          <div class="c-sub" id="c-sub"></div>
+          <div class="c-bulk" id="c-bulk"></div>
+          <div style="display:flex;flex:1;overflow:hidden;position:relative">
+            <aside class="c-facets" id="c-facets"></aside>
+            <div class="c-tablewrap" id="c-tablewrap"></div>
+            <div class="c-sheet" id="c-sheet"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="frame-cap">Cases view · sorted by last result · TC_013 open in the detail sheet, table keeps its place and scroll position</p>
+    <ul class="legend">
+      <li><span class="anno">1</span><span><b>Runs as a place.</b> A second top-level view holding every run, so "compare to yesterday" has somewhere to happen.</span></li>
+      <li><span class="anno">2</span><span><b>Run diff strip.</b> Two fixed, one newly broken, nine unchanged — stated in words, not inferred from tiles.</span></li>
+      <li><span class="anno">3</span><span><b>Facets with counts.</b> Status, tag, method and a flaky bucket; every count is live against the filtered table.</span></li>
+      <li><span class="anno">4</span><span><b>Trend column.</b> Ten runs per row. Solid red for three runs is a regression; alternating is a flake worth quarantining.</span></li>
+      <li><span class="anno">5</span><span><b>Detail sheet.</b> Expected vs actual, response, and the case's own history — docked beside the table, never replacing it.</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="doc">
+  <div class="wrap">
+    <p><b>All three mockups are the product's dark theme</b>, driven by the same custom properties
+      index.html already defines — nothing here needs a new token. Direction C is the one that also
+      wants a good light theme: a dense table is what people read for an hour straight, and the existing
+      <span class="mono">[data-theme="light"]</span> block covers it without change.</p>
+    <p>Common ground worth taking whichever direction wins: the session chip from B, run history from
+      A or C, and grouping failures by shared cause — four 405-expected cases returning 404 is one bug,
+      and every view here should say so.</p>
+  </div>
+</footer>
+
+<script>
+const CASES=[
+{"i":"TC_001","s":"Retrieve all template types with valid Bearer token","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_002","s":"Response schema validation","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_003","s":"Canonical categories present","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_004","s":"Response headers correct","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_005","s":"Unique template-type IDs","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_006","s":"Missing Authorization header","m":"GET","p":"/templates/types","t":"templates/types","e":"401"},
+{"i":"TC_007","s":"Malformed Bearer token","m":"GET","p":"/templates/types","t":"templates/types","e":"401"},
+{"i":"TC_008","s":"Expired Bearer token","m":"GET","p":"/templates/types","t":"templates/types","e":"401"},
+{"i":"TC_009","s":"Insufficient permission","m":"GET","p":"/templates/types","t":"templates/types","e":"403"},
+{"i":"TC_010","s":"Cross-tenant token","m":"GET","p":"/templates/types","t":"templates/types","e":"401/403"},
+{"i":"TC_011","s":"Wrong auth scheme (Basic)","m":"GET","p":"/templates/types","t":"templates/types","e":"401"},
+{"i":"TC_012","s":"JWT tampered signature","m":"GET","p":"/templates/types","t":"templates/types","e":"401"},
+{"i":"TC_013","s":"POST not allowed on /templates/types","m":"POST","p":"/templates/types","t":"templates/types","e":"405"},
+{"i":"TC_014","s":"PUT not allowed on /templates/types","m":"PUT","p":"/templates/types","t":"templates/types","e":"405"},
+{"i":"TC_015","s":"DELETE not allowed on /templates/types","m":"DELETE","p":"/templates/types","t":"templates/types","e":"405"},
+{"i":"TC_016","s":"PATCH not allowed on /templates/types","m":"PATCH","p":"/templates/types","t":"templates/types","e":"405"},
+{"i":"TC_017","s":"HEAD returns headers without body","m":"HEAD","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_018","s":"OPTIONS (CORS) from allowed origin","m":"OPTIONS","p":"/templates/types","t":"templates/types","e":"200/204"},
+{"i":"TC_019","s":"OPTIONS from disallowed origin","m":"OPTIONS","p":"/templates/types","t":"templates/types","e":"200/204/403"},
+{"i":"TC_020","s":"Trailing slash in URL","m":"GET","p":"/templates/types/","t":"templates/types","e":"200/301/404"},
+{"i":"TC_021","s":"URL case sensitivity","m":"GET","p":"/Templates/Types","t":"templates/types","e":"200/404"},
+{"i":"TC_022","s":"Typo in path","m":"GET","p":"/template/types","t":"templates/types","e":"404"},
+{"i":"TC_023","s":"Unknown query parameter","m":"GET","p":"/templates/types","t":"templates/types","e":"200/400"},
+{"i":"TC_024","s":"SQL injection in query","m":"GET","p":"/templates/types","t":"templates/types","e":"200/400/404"},
+{"i":"TC_025","s":"NoSQL injection","m":"GET","p":"/templates/types","t":"templates/types","e":"200/400"},
+{"i":"TC_026","s":"XSS payload in query","m":"GET","p":"/templates/types","t":"templates/types","e":"200/400"},
+{"i":"TC_027","s":"Path traversal attempt","m":"GET","p":"/templates/types/../../etc/passwd","t":"templates/types","e":"400/404"},
+{"i":"TC_028","s":"Oversized query string (10k+ chars)","m":"GET","p":"/templates/types","t":"templates/types","e":"400/414"},
+{"i":"TC_029","s":"UTF-8 / multibyte chars in query","m":"GET","p":"/templates/types","t":"templates/types","e":"200/400"},
+{"i":"TC_030","s":"Accept: application/json (explicit)","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_031","s":"Accept: application/xml (unsupported)","m":"GET","p":"/templates/types","t":"templates/types","e":"200/406"},
+{"i":"TC_032","s":"Accept-Encoding: gzip","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_033","s":"Invalid Accept-Language","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_034","s":"Baseline response time","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_035","s":"Rate limiting / throttling","m":"GET","p":"/templates/types","t":"templates/types","e":"200/429"},
+{"i":"TC_036","s":"Concurrent load","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_037","s":"Simulated downstream failure","m":"GET","p":"/templates/types","t":"templates/types","e":"500/503"},
+{"i":"TC_038","s":"Idempotency - repeated identical calls","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_039","s":"ETag / If-None-Match","m":"GET","p":"/templates/types","t":"templates/types","e":"200/304"},
+{"i":"TC_040","s":"HTTPS enforcement","m":"GET","p":"/templates/types","t":"templates/types","e":"200/301/308"},
+{"i":"TC_041","s":"No sensitive internals leaked","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_042","s":"Empty dataset","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_043","s":"Large dataset","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_044","s":"Special chars in name","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_045","s":"Multi-tenant isolation","m":"GET","p":"/templates/types","t":"templates/types","e":"200"},
+{"i":"TC_046","s":"List templates - default params","m":"GET","p":"/templates","t":"templates","e":"200"},
+{"i":"TC_047","s":"List templates - search by name","m":"GET","p":"/templates","t":"templates","e":"200"},
+{"i":"TC_048","s":"List templates - filter status=Published","m":"GET","p":"/templates","t":"templates","e":"200"},
+{"i":"TC_049","s":"List templates - filter by category","m":"GET","p":"/templates","t":"templates","e":"200"},
+{"i":"TC_050","s":"List templates - pagination","m":"GET","p":"/templates","t":"templates","e":"200"},
+{"i":"TC_051","s":"List templates - invalid page","m":"GET","p":"/templates","t":"templates","e":"400"},
+{"i":"TC_052","s":"List templates - limit exceeds max","m":"GET","p":"/templates","t":"templates","e":"200/400"},
+{"i":"TC_053","s":"List templates - empty search","m":"GET","p":"/templates","t":"templates","e":"200"},
+{"i":"TC_054","s":"Create template - valid payload","m":"POST","p":"/templates","t":"templates","e":"200/201"},
+{"i":"TC_055","s":"Create template - missing 'name'","m":"POST","p":"/templates","t":"templates","e":"400"},
+{"i":"TC_056","s":"Create template - invalid category","m":"POST","p":"/templates","t":"templates","e":"400"},
+{"i":"TC_057","s":"Create template - name too long","m":"POST","p":"/templates","t":"templates","e":"400"},
+{"i":"TC_058","s":"Create template - duplicate name","m":"POST","p":"/templates","t":"templates","e":"201/409"},
+{"i":"TC_059","s":"AI-generate template from prompt","m":"POST","p":"/templates/ai-generate","t":"ai-generate","e":"200/201"},
+{"i":"TC_060","s":"AI-generate - empty prompt","m":"POST","p":"/templates/ai-generate","t":"ai-generate","e":"400"},
+{"i":"TC_061","s":"AI-generate - overly long prompt","m":"POST","p":"/templates/ai-generate","t":"ai-generate","e":"200/400"},
+{"i":"TC_062","s":"AI-generate - prompt injection","m":"POST","p":"/templates/ai-generate","t":"ai-generate","e":"200/201"},
+{"i":"TC_063","s":"AI-generate - rate limit per user","m":"POST","p":"/templates/ai-generate","t":"ai-generate","e":"200/201/429"},
+{"i":"TC_064","s":"Get template detail by id","m":"GET","p":"/templates/{id}","t":"templates","e":"200"},
+{"i":"TC_065","s":"Get template - non-existent id","m":"GET","p":"/templates/00000000-0000-0000-0000-000000000000","t":"templates","e":"404"},
+{"i":"TC_066","s":"Get template - invalid UUID","m":"GET","p":"/templates/abc","t":"templates","e":"400/404"},
+{"i":"TC_067","s":"Get template from another tenant","m":"GET","p":"/templates/{id}","t":"templates","e":"404"},
+{"i":"TC_068","s":"Update template fields","m":"PUT","p":"/templates/{id}","t":"templates","e":"200"},
+{"i":"TC_069","s":"Update template - no changes","m":"PUT","p":"/templates/{id}","t":"templates","e":"200"},
+{"i":"TC_070","s":"Update - concurrent edit conflict","m":"PUT","p":"/templates/{id}","t":"templates","e":"409/412"},
+{"i":"TC_071","s":"Delete draft template","m":"DELETE","p":"/templates/{id}","t":"templates","e":"200/204"},
+{"i":"TC_072","s":"Delete published template","m":"DELETE","p":"/templates/{id}","t":"templates","e":"204/409"},
+{"i":"TC_073","s":"Delete template used by jobs","m":"DELETE","p":"/templates/{id}","t":"templates","e":"204/409"},
+{"i":"TC_074","s":"Publish a draft template","m":"POST","p":"/templates/{id}/publish","t":"publish","e":"200/201"},
+{"i":"TC_075","s":"Publish already-published","m":"POST","p":"/templates/{id}/publish","t":"publish","e":"200/409"},
+{"i":"TC_076","s":"Publish missing sections","m":"POST","p":"/templates/{id}/publish","t":"publish","e":"400"},
+{"i":"TC_077","s":"Unpublish published template","m":"POST","p":"/templates/{id}/unpublish","t":"publish","e":"200"},
+{"i":"TC_078","s":"Duplicate template","m":"POST","p":"/templates/{id}/duplicate","t":"publish","e":"200/201"},
+{"i":"TC_079","s":"Add section","m":"POST","p":"/templates/{id}/sections","t":"sections","e":"200/201"},
+{"i":"TC_080","s":"Add section - empty title","m":"POST","p":"/templates/{id}/sections","t":"sections","e":"400"},
+{"i":"TC_081","s":"Update section","m":"PUT","p":"/templates/{id}/sections/{sectionId}","t":"sections","e":"200"},
+{"i":"TC_082","s":"Delete section","m":"DELETE","p":"/templates/{id}/sections/{sectionId}","t":"sections","e":"200/204"},
+{"i":"TC_083","s":"Reorder sections","m":"PATCH","p":"/templates/{id}/sections/reorder","t":"sections","e":"200"},
+{"i":"TC_084","s":"Duplicate section","m":"POST","p":"/templates/{id}/sections/{sectionId}/duplicate","t":"sections","e":"200/201"},
+{"i":"TC_085","s":"Add field - text type","m":"POST","p":"/templates/{id}/sections/{sectionId}/fields","t":"fields","e":"200/201"},
+{"i":"TC_086","s":"Add field - unsupported type","m":"POST","p":"/templates/{id}/sections/{sectionId}/fields","t":"fields","e":"400"},
+{"i":"TC_087","s":"Add field - label too long","m":"POST","p":"/templates/{id}/sections/{sectionId}/fields","t":"fields","e":"400"},
+{"i":"TC_088","s":"Reorder fields","m":"PATCH","p":"/templates/{id}/sections/{sectionId}/fields/reorder","t":"fields","e":"200"},
+{"i":"TC_089","s":"Delete field","m":"DELETE","p":"/templates/{id}/sections/{sectionId}/fields/{fieldId}","t":"fields","e":"200/204"},
+{"i":"TC_090","s":"Submit filled runtime form","m":"POST","p":"/templates/{id}/submissions","t":"submissions","e":"200/201"},
+{"i":"TC_091","s":"Submit - missing required field","m":"POST","p":"/templates/{id}/submissions","t":"submissions","e":"400"},
+{"i":"TC_092","s":"Submit - invalid date","m":"POST","p":"/templates/{id}/submissions","t":"submissions","e":"400"},
+{"i":"TC_093","s":"Submit - invalid email","m":"POST","p":"/templates/{id}/submissions","t":"submissions","e":"400"},
+{"i":"TC_094","s":"Submit - invalid phone","m":"POST","p":"/templates/{id}/submissions","t":"submissions","e":"400"},
+{"i":"TC_095","s":"Upload evidence - valid JPG 2MB (multipart)","m":"POST","p":"/uploads","t":"uploads","e":"200/201"},
+{"i":"TC_096","s":"Upload evidence - oversized (>5MB)","m":"POST","p":"/uploads","t":"uploads","e":"400/413"},
+{"i":"TC_097","s":"Upload evidence - disallowed MIME","m":"POST","p":"/uploads","t":"uploads","e":"400/415"},
+{"i":"TC_098","s":"Upload evidence - allowed formats","m":"POST","p":"/uploads","t":"uploads","e":"200/201"},
+{"i":"TC_099","s":"AI-generate field content","m":"POST","p":"/templates/{id}/submissions/{subId}/ai-generate-field","t":"ai-generate","e":"200"},
+{"i":"TC_100","s":"AI-generate field - no context","m":"POST","p":"/templates/{id}/submissions/{subId}/ai-generate-field","t":"ai-generate","e":"200/400"},
+{"i":"TC_101","s":"Generate sample PDF preview","m":"GET","p":"/templates/{id}/preview-pdf","t":"preview","e":"200"},
+{"i":"TC_102","s":"Preview PDF - template with no sections","m":"GET","p":"/templates/{id}/preview-pdf","t":"preview","e":"200/400"}
+];
+
+/* ---------------- run #47: statuses assigned to the real 102 cases -------- */
+const FAILED = {
+  TC_008:{got:200, cause:"auth"},
+  TC_013:{got:404, cause:"405"}, TC_014:{got:404, cause:"405"},
+  TC_015:{got:404, cause:"405"}, TC_016:{got:404, cause:"405"},
+  TC_020:{got:500, cause:"500"}, TC_024:{got:500, cause:"500"}, TC_028:{got:500, cause:"500"},
+  TC_051:{got:200, cause:"validation"}, TC_057:{got:201, cause:"validation"},
+  TC_076:{got:200, cause:"validation"}, TC_092:{got:201, cause:"validation"}
+};
+const SKIPPED = ["TC_036","TC_037","TC_040","TC_042","TC_043","TC_045","TC_063","TC_072"];
+const BLOCKED = ["TC_095","TC_096","TC_097","TC_098"];
+const PENDING = ["TC_064","TC_067","TC_068","TC_069","TC_070","TC_071","TC_073"];
+const FLAKY   = ["TC_020","TC_035","TC_063"];
+
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h}
+CASES.forEach(c=>{
+  c.status = FAILED[c.i] ? "fail" : SKIPPED.includes(c.i) ? "skip"
+           : BLOCKED.includes(c.i) ? "blocked" : PENDING.includes(c.i) ? "pending" : "pass";
+  c.got = FAILED[c.i] ? FAILED[c.i].got : null;
+  c.cause = FAILED[c.i] ? FAILED[c.i].cause : null;
+  c.ms = (c.status==="skip"||c.status==="blocked"||c.status==="pending") ? null
+       : 96 + (hash(c.i)%780);
+});
+const N = {total:CASES.length};
+["pass","fail","skip","blocked","pending"].forEach(k=>N[k]=CASES.filter(c=>c.status===k).length);
+const RUN_MS = CASES.reduce((a,c)=>a+(c.ms||0),0);
+const SLOWEST = CASES.filter(c=>c.status==="pass").sort((a,b)=>b.ms-a.ms)[0];
+const fmtDur = ms => Math.floor(ms/60000)+"m "+String(Math.round(ms%60000/1000)).padStart(2,"0")+"s";
+
+/* ---------------- json highlighting --------------------------------------- */
+function hl(json){
+  return json.replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/("(?:\\.|[^"\\])*"(\s*:)?|\b(?:true|false|null)\b|-?\d+(?:\.\d+)?)/g, m=>{
+      let c="jz-n";
+      if(m[0]==='"') c = /:\s*$/.test(m) ? "jz-k" : "jz-s";
+      else if(/^(true|false|null)$/.test(m)) c="jz-b";
+      return '<span class="'+c+'">'+m+"</span>";
+    });
+}
+function jsonBlock(txt, style){
+  const lines = txt.split("\n").map((l,i)=>
+    '<span class="ln"><span class="n">'+(i+1)+"</span>"+hl(l)+"</span>").join("");
+  return '<pre class="json"'+(style?' style="'+style+'"':"")+">"+lines+"</pre>";
+}
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const el = id => document.getElementById(id);
+
+const TYPES_200 = `{
+  "success": true,
+  "data": [
+    { "type": "CHECKLIST", "enabled": true }
+  ],
+  "error": null,
+  "message": "Operation successful",
+  "statusCode": 200
+}`;
+const NOT_FOUND_404 = `{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Cannot POST /templates/types"
+  },
+  "message": "Route not found",
+  "statusCode": 404
+}`;
+const AI_201 = `{
+  "success": true,
+  "data": {
+    "id": "a23dba7f-52e7-45c8-8a36-88d45ac09111",
+    "name": "Electrician Post-Job",
+    "status": "DRAFT",
+    "category": { "id": "01ea652c-fdab-4030", "name": "Post Job" },
+    "sections": [
+      { "name": "Work Performed", "items": 6 },
+      { "name": "Materials Used", "items": 4 },
+      { "name": "Customer Sign-off", "items": 3 }
+    ],
+    "createdAt": "2026-08-11T14:19:07.412Z"
+  },
+  "error": null,
+  "message": "Operation successful",
+  "statusCode": 201
+}`;
+
+/* ========================== DIRECTION A ================================== */
+function sessionChip(compact){
+  return `<span class="anno">1</span>
+  <div class="sess">
+    <span class="seg env"><span class="dot" style="background:#e6b73e"></span>Stage</span>
+    <span class="seg"><span class="v">template.dev.swivlconnect.com</span></span>
+    <span class="seg ok"><span class="k">bearer</span><span class="v">valid · 41m left</span></span>
+    ${compact?"":'<span class="seg"><span class="k">x-api-version</span><span class="v">5.0.0</span></span>'}
+    <span class="caret">▾</span>
+  </div>`;
+}
+el("a-top").innerHTML = `
+  <div class="m-brand"><div class="m-logo">A</div>API Test Studio</div>
+  ${sessionChip().replace('<span class="anno">1</span>','')}
+  <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+    <span class="m-btn">Add case</span>
+    <span class="m-btn">Import</span>
+    <span class="m-btn primary">▶ Run all (102)</span>
+    <span class="m-btn">Re-run 12 failures</span>
+    <span class="m-btn">Export CSV</span>
+  </div>`;
+
+const TAGS = [];
+CASES.forEach(c=>{
+  let t = TAGS.find(x=>x.name===c.t);
+  if(!t){ t={name:c.t,total:0,pass:0,fail:0,other:0}; TAGS.push(t); }
+  t.total++;
+  if(c.status==="pass") t.pass++; else if(c.status==="fail") t.fail++; else t.other++;
+});
+el("a-tags").innerHTML = `<div class="a-tag on"><span class="nm">all cases</span>
+    <span class="ct">${N.total}</span>
+    <span class="a-bars"><i style="flex:${N.pass};background:#10b981"></i><i style="flex:${N.fail};background:#ef4444"></i><i style="flex:${N.total-N.pass-N.fail};background:#3b4655"></i></span></div>`
+  + TAGS.map(t=>`<div class="a-tag"><span class="nm">${t.name}</span>
+      <span class="ct">${t.fail?'<span style="color:#ef4444">'+t.fail+' ✕</span> / ':''}${t.total}</span>
+      <span class="a-bars"><i style="flex:${t.pass};background:#10b981"></i><i style="flex:${t.fail};background:#ef4444"></i><i style="flex:${t.other};background:#3b4655"></i></span></div>`).join("");
+
+const GROUPS = [
+  { key:"auth", title:"Expired / invalid token is being accepted",
+    note:"Auth middleware never re-checks <span class='mono'>exp</span> — the request is served as if signed in." },
+  { key:"405", title:"405 is never returned — the router falls through to 404",
+    note:"One missing method guard on <span class='mono'>/templates/types</span> explains all four." },
+  { key:"500", title:"Malformed input throws instead of validating",
+    note:"Unhandled exception surfaces as 500; expected a 4xx in every case." },
+  { key:"validation", title:"Write paths accept invalid payloads",
+    note:"Body validation is not enforced — bad data is persisted and 2xx returned." }
+];
+
+const ticks = CASES.map(c=>`<i class="${c.status}" style="height:${c.status==='fail'?100:c.status==='pass'?58:38}%"></i>`).join("");
+
+function failRow(c, open){
+  return `<div class="a-row">
+    <span class="dot fail"></span>
+    <span class="method ${c.m}">${c.m}</span>
+    <span class="id">${c.i}</span>
+    <span class="sc">${esc(c.s)}</span>
+    <span class="exp"><s>expected ${c.e}</s> → <b>${c.got}</b></span>
+    <span class="ms">${c.ms} ms</span>
+  </div>` + (open ? openBlock(c) : "");
+}
+function openBlock(c){
+  return `<div class="a-open"><div class="a-open-grid">
+    <div class="a-open-col">
+      <h5><span class="anno">5</span> &nbsp;Request sent</h5>
+      <div class="code">curl -X ${c.m} \\
+  '\u200bhttps://template.dev.swivlconnect.com${c.p}' \\
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6…' \\
+  -H 'x-api-version: 5.0.0'</div>
+      <h5 style="margin-top:13px">Assertions</h5>
+      <div class="assert">
+        <div><span class="mark no">✕</span> status is <span class="mono">401</span> — got <span class="mono" style="color:#ef4444">200</span></div>
+        <div><span class="mark no">✕</span> <span class="mono">body.error</span> is not null — got <span class="mono">null</span></div>
+        <div><span class="mark ok">✓</span> responded under 2000 ms — <span class="mono">${c.ms} ms</span></div>
+      </div>
+      <div style="margin-top:13px;font-size:11.5px;color:var(--text-muted);line-height:1.5">
+        Token minted <span class="mono">2026-08-10 09:14Z</span>, <span class="mono">exp</span> 24 h earlier
+        than this run. Same token also passes <span class="mono">TC_009</span> and <span class="mono">TC_012</span>.</div>
+    </div>
+    <div class="a-open-col res">
+      <div class="a-resh"><span class="resp-status ok">200 OK</span>
+        <span class="mono" style="color:var(--text-dim);font-size:10.5px">${c.ms} ms · 186 B · application/json</span>
+        <span class="pill fail" style="margin-left:auto">✕ fail</span></div>
+      ${jsonBlock(TYPES_200,"flex:1")}
+      <div class="a-actions">
+        <span class="m-btn primary">Re-run case</span>
+        <span class="m-btn">Open request</span>
+        <span class="m-btn">Mark blocked</span>
+        <span class="m-btn">Copy failure for ticket</span>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+el("a-main").innerHTML = `
+  <div class="a-runhead">
+    <div>
+      <div class="a-runsel"><span class="anno">1</span>Run #47 <span style="color:var(--text-dim)">▾</span>
+        <span class="cv">Stage · 14:22 · ${fmtDur(RUN_MS)}</span></div>
+      <div class="a-delta">vs run #46 — <b class="up">2 fixed</b> · <b class="dn">1 newly broken (TC_008)</b> · 11 still failing</div>
+    </div>
+    <div class="a-stats">
+      <div class="a-stat pass"><div class="v">${N.pass}</div><div class="k">passed</div></div>
+      <div class="a-stat fail"><div class="v">${N.fail}</div><div class="k">failed</div></div>
+      <div class="a-stat skip"><div class="v">${N.skip}</div><div class="k">skipped</div></div>
+      <div class="a-stat blocked"><div class="v">${N.blocked}</div><div class="k">blocked</div></div>
+      <div class="a-stat pending"><div class="v">${N.pending}</div><div class="k">not run</div></div>
+    </div>
+  </div>
+
+  <div class="a-timeline">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+      <span class="anno">3</span><span class="lbl">Execution order — one tick per case</span>
+      <span class="mono" style="margin-left:auto;font-size:10px;color:var(--text-dim)">avg ${Math.round(RUN_MS/(N.total-N.skip-N.blocked-N.pending))} ms</span>
+    </div>
+    <div class="a-ticks">${ticks}</div>
+    <div class="a-axis"><span>TC_001 · 14:20:09</span><span>TC_051</span><span>TC_102 · 14:22:03</span></div>
+  </div>
+
+  <div class="a-sec">
+    <div class="a-sec-h"><span class="anno">4</span><h4>${N.fail} failures, 4 causes</h4>
+      <span class="why">grouped by what has to be fixed, not by endpoint</span>
+      <span class="m-btn" style="margin-left:auto">Re-run these</span></div>
+    ${GROUPS.map((g,gi)=>{
+      const rows = CASES.filter(c=>c.cause===g.key);
+      return `<div class="a-group">
+        <div class="a-group-h"><span class="dot fail"></span><span class="cause">${g.title}</span>
+          <span style="color:var(--text-dim)">${g.note}</span>
+          <span class="n">${rows.length} case${rows.length>1?"s":""}</span></div>
+        ${rows.map((c,i)=>failRow(c, gi===0 && i===0)).join("")}
+      </div>`;
+    }).join("")}
+  </div>
+
+  <div class="a-sec">
+    <div class="a-sec-h"><h4>Everything else</h4></div>
+    <div class="a-collapsed"><span class="dot pass"></span><b>${N.pass} passed</b> · slowest
+      <span class="mono">${SLOWEST.i} ${esc(SLOWEST.s)} · ${SLOWEST.ms} ms</span><span class="caret">▾</span></div>
+    <div class="a-collapsed"><span class="dot blocked"></span><b>${N.blocked} blocked</b> ·
+      TC_095–TC_098 uploads — multipart needs curl or Postman<span class="caret">▾</span></div>
+    <div class="a-collapsed"><span class="dot pending"></span><b>${N.pending} not run</b> ·
+      waiting on a <span class="mono">{id}</span> path variable<span class="caret">▾</span></div>
+    <div class="a-collapsed"><span class="dot skip"></span><b>${N.skip} skipped</b> ·
+      load, tenancy and downstream-failure cases marked skip by QA<span class="caret">▾</span></div>
+  </div>`;
+
+/* ========================== DIRECTION B ================================== */
+const RAN = 63;
+const bStat = c => (+c.i.slice(3) <= RAN) ? c.status : "pending";
+const bPass = CASES.filter(c=>bStat(c)==="pass").length;
+const bFail = CASES.filter(c=>bStat(c)==="fail").length;
+const bSkip = CASES.filter(c=>bStat(c)==="skip").length;
+
+el("b-top").innerHTML = `
+  <div class="m-brand"><div class="m-logo">A</div>API Test Studio</div>
+  ${sessionChip()}
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <span class="b-kbd">⌘K commands</span>
+    <span class="m-btn ghost">◐</span>
+  </div>`;
+
+el("b-listh").innerHTML = `
+  <div class="b-search"><span>Search scenario or path…</span><span class="mono" style="color:var(--text-dim)">/</span></div>
+  <div class="b-chips"><span class="b-chip">All 102</span><span class="b-chip on">Failed ${bFail}</span>
+    <span class="b-chip">Passed ${bPass}</span><span class="b-chip">Skip ${bSkip}</span>
+    <span class="b-chip">Not run ${CASES.length-RAN+CASES.filter(c=>+c.i.slice(3)<=RAN&&c.status==="pending").length}</span></div>`;
+
+let lastTag = null, bHtml = "";
+CASES.forEach(c=>{
+  if(c.t!==lastTag){ lastTag=c.t; bHtml += `<div class="b-tag">${c.t}</div>`; }
+  const st = bStat(c);
+  bHtml += `<div class="b-item${c.i==="TC_059"?" on":""}">
+    <span class="dot ${st}"></span><span class="method ${c.m}">${c.m}</span>
+    <span class="sc">${esc(c.s)}</span><span class="id">${c.i}</span></div>`;
+});
+el("b-scroll").innerHTML = bHtml;
+
+el("b-main").innerHTML = `
+  <div class="b-h1"><span class="method POST">POST</span><h3>AI-generate template from prompt</h3>
+    <span class="pill pass">✓ pass</span>
+    <span class="mono" style="margin-left:auto;color:var(--text-dim);font-size:11px">TC_059 · ai-generate</span></div>
+  <div class="b-url">https://template.dev.swivlconnect.com<b>/templates/ai-generate</b></div>
+
+  <div class="b-card">
+    <div class="b-card-h"><span class="anno" style="margin-right:2px">2</span>
+      <div class="b-tabs">
+        <span class="b-tabx">Params<span class="b">0</span></span>
+        <span class="b-tabx">Headers<span class="b">3</span></span>
+        <span class="b-tabx on">Body<span class="b">json</span></span>
+        <span class="b-tabx">Expected<span class="b">200/201</span></span>
+      </div>
+      <div class="right"><span class="m-btn">Beautify</span><span class="m-btn">Copy as cURL</span></div></div>
+    ${jsonBlock(`{
+  "prompt": "Electrician post-job completion report",
+  "templateCategory": "Post Job",
+  "templateTitle": "Electrician Post-Job"
+}`)}
+  </div>
+
+  <div class="b-send"><span class="m-btn primary">Send request</span>
+    <span class="hint">⌘↵</span>
+    <span class="hint" style="margin-left:auto">last sent 14:21:48 · run #47</span></div>
+
+  <div class="b-card" style="margin-bottom:0">
+    <div class="b-verdict">
+      <span class="resp-status ok">201 Created</span>
+      <span class="mono">642 ms · 1.4 KB · application/json</span>
+      <span class="mono" style="color:var(--text-muted)">expected <b style="color:#10b981">200/201</b> · got 201</span>
+      <span class="pill pass" style="margin-left:auto">✓ pass · 3 of 3 assertions</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-dim)" class="mono">
+      <span>Response headers (9)</span><span>▾</span>
+      <span style="margin-left:auto">x-request-id: 9f3c1d0a-77b2</span></div>
+    ${jsonBlock(AI_201,"max-height:216px")}
+  </div>`;
+
+el("b-dock").innerHTML = `
+  <div class="b-dock-bar"><span class="anno">4</span>
+    <span style="font-weight:600">Run all</span>
+    <span class="now">${RAN} / 102 · TC_064 Get template detail by id</span>
+    <span class="b-prog">
+      <i class="p" style="width:${bPass/102*100}%"></i>
+      <i class="f" style="width:${bFail/102*100}%"></i>
+      <i class="s" style="width:${bSkip/102*100}%"></i></span>
+    <span class="mono" style="font-size:10.5px"><b style="color:#10b981">${bPass}</b> pass ·
+      <b style="color:#ef4444">${bFail}</b> fail · <b style="color:#f59e0b">${bSkip}</b> skip</span>
+    <span class="mono" style="font-size:10.5px;color:var(--text-dim)">~28 s left</span>
+    <span class="m-btn">Pause</span><span class="m-btn">Expand ▴</span></div>
+  <div class="b-fails">${CASES.filter(c=>bStat(c)==="fail").slice(-5).reverse().map(c=>
+    `<span class="b-failchip"><span class="dot fail"></span><span class="id">${c.i}</span>
+      ${esc(c.s.length>34?c.s.slice(0,34)+"…":c.s)}
+      <span class="cd">${c.e} → ${c.got}</span></span>`).join("")}
+    <span class="b-failchip" style="border-left-color:var(--text-dim);color:var(--text-dim)">+${bFail-5} earlier</span></div>`;
+
+el("b-pal").innerHTML = `
+  <div class="b-pal-in"><span class="anno">3</span><span class="q">run f</span><span class="car"></span></div>
+  <div class="b-pal-sec">Run</div>
+  <div class="b-pal-i on"><span class="ic">▶</span>Run only the failures <span class="mono" style="color:#ef4444">(${bFail} so far)</span><span class="k">↵</span></div>
+  <div class="b-pal-i"><span class="ic">▶</span>Run all 102 cases<span class="k">⌘R</span></div>
+  <div class="b-pal-i"><span class="ic">▶</span>Re-run TC_059 · AI-generate template from prompt<span class="k">⌘↵</span></div>
+  <div class="b-pal-sec">Session</div>
+  <div class="b-pal-i"><span class="ic">◆</span>Switch environment → Local (localhost:3000)</div>
+  <div class="b-pal-i"><span class="ic">◆</span>Paste bearer token…</div>
+  <div class="b-pal-sec">Go to</div>
+  <div class="b-pal-i"><span class="ic">›</span>TC_057 · Create template - name too long
+    <span class="pill fail" style="margin-left:8px">400 → 201</span></div>
+  <div class="b-pal-f"><span>↑↓ move</span><span>↵ run</span><span>⌘↵ run and open</span><span>esc close</span></div>`;
+
+el("b-pop").innerHTML = `
+  <div class="b-pop-h"><span class="dot" style="background:#e6b73e"></span><b>Stage</b>
+    <span class="mono" style="margin-left:auto;font-size:10.5px;color:var(--success)">reachable · 118 ms</span></div>
+  <div class="b-pop-b">
+    <div class="b-fld"><span class="k">Environment</span>
+      <div class="b-envs"><span class="b-env on">Stage</span><span class="b-env">Local</span><span class="b-env">Custom</span></div></div>
+    <div class="b-fld"><span class="k">Base URL</span>
+      <div class="b-inp"><span>template.dev.swivlconnect.com</span></div></div>
+    <div class="b-fld"><span class="k">Bearer token</span>
+      <div class="b-inp"><span>eyJhbGciOiJIUzI1NiIsInR5…</span><b>41m left</b></div></div>
+    <div class="b-fld"><span class="k">x-api-version</span><div class="b-inp"><span>5.0.0</span></div></div>
+    <div style="display:flex;gap:6px"><span class="m-btn">Test connection</span>
+      <span class="m-btn">CORS proxy…</span></div>
+  </div>`;
+
+/* ========================== DIRECTION C ================================== */
+const NEW_FAIL = ["TC_008"], FIXED = ["TC_030","TC_047"];
+function trend(c){
+  const out=[];
+  for(let k=0;k<10;k++){
+    let cls="";
+    if(c.status==="fail"){
+      if(FLAKY.includes(c.i)) cls = (k%2===0)?"f":"";
+      else if(NEW_FAIL.includes(c.i)) cls = (k===9)?"f":"";
+      else if(c.cause==="405") cls="f";
+      else cls = (k>=7)?"f":"";
+    } else if(c.status==="skip"){ cls = FLAKY.includes(c.i)&&k%3===0 ? "f":"s"; }
+    else if(c.status==="blocked"){ cls="b"; }
+    else if(c.status==="pending"){ cls="x"; }
+    else if(FLAKY.includes(c.i)){ cls = (k===2||k===5)?"f":""; }
+    else if(FIXED.includes(c.i)){ cls = (k<9)?"f":""; }
+    out.push(`<i class="${cls}${k===9?" last":""}"></i>`);
+  }
+  return `<span class="spark">${out.join("")}</span>`;
+}
+el("c-top").innerHTML = `
+  <div class="m-brand"><div class="m-logo">A</div>API Test Studio</div>
+  <nav class="c-nav">
+    <span class="c-navi on">Cases<span class="b">102</span></span>
+    <span class="c-navi">Runs<span class="b">47</span><span class="anno" style="margin-left:6px">1</span></span>
+    <span class="c-navi">Environments<span class="b">3</span></span>
+  </nav>
+  <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+    ${sessionChip(true).replace('<span class="anno">1</span>','')}
+    <span class="m-btn primary">▶ Run all</span><span class="m-btn">Export CSV</span></div>`;
+
+el("c-sub").innerHTML = `
+  <span class="anno">2</span>
+  <span class="c-runsel"><span class="dot pass"></span><span class="rn">Run #47</span>
+    <span style="color:var(--text-dim)">2 min ago · ${fmtDur(RUN_MS)}</span><span style="color:var(--text-dim)">▾</span></span>
+  <span class="c-diff"><span>vs #46</span><span><b class="up">2 fixed</b></span>
+    <span><b class="dn">1 newly broken</b></span><span style="color:var(--text-dim)">11 still failing · 88 unchanged</span></span>
+  <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+    <span class="m-btn">Columns</span><span class="m-btn">Sort: last result ▾</span>
+    <span class="m-btn">Group by tag</span></span>`;
+
+el("c-bulk").innerHTML = `<b>12</b> selected (all failures)
+  <span class="m-btn">Re-run selected</span><span class="m-btn">Mark blocked</span>
+  <span class="m-btn">Copy TC ids</span><span class="m-btn">Export selection</span>
+  <span style="margin-left:auto;color:var(--text-dim)">Clear</span>`;
+
+const order = {fail:0, blocked:1, pending:2, skip:3, pass:4};
+const rows = CASES.slice().sort((a,b)=> order[a.status]-order[b.status] || a.i.localeCompare(b.i));
+el("c-facets").innerHTML = `
+  <div class="c-fgroup"><span class="lbl"><span class="anno">3</span> Status</span>
+    ${[["All cases",N.total,""],["Passed",N.pass,"pass"],["Failed",N.fail,"fail"],
+       ["Skipped",N.skip,"skip"],["Blocked",N.blocked,"blocked"],["Not run",N.pending,"pending"]]
+      .map(([l,n,s],i)=>`<div class="c-f${l==="Failed"?" on":""}">
+        ${s?`<span class="dot ${s}"></span>`:'<span class="dot" style="background:transparent"></span>'}
+        ${l}<span class="n">${n}</span></div>`).join("")}
+  </div>
+  <div class="c-fgroup"><span class="lbl"><span class="anno">4</span> Signal</span>
+    <div class="c-f flaky">Flaky (≥2 flips)<span class="n">3</span></div>
+    <div class="c-f">Newly broken<span class="n">1</span></div>
+    <div class="c-f">Fixed since #46<span class="n">2</span></div>
+    <div class="c-f">Slower than 500 ms<span class="n">${CASES.filter(c=>c.ms>500).length}</span></div>
+  </div>
+  <div class="c-fgroup"><span class="lbl">Tag</span>
+    ${TAGS.map(t=>`<div class="c-f">${t.name}<span class="n">${t.total}</span></div>`).join("")}
+  </div>
+  <div class="c-fgroup"><span class="lbl">Method</span>
+    ${["GET","POST","PUT","PATCH","DELETE","HEAD","OPTIONS"].map(m=>{
+      const n=CASES.filter(c=>c.m===m).length;
+      return n?`<div class="c-f"><span class="method ${m}" style="min-width:44px">${m}</span><span class="n">${n}</span></div>`:"";
+    }).join("")}
+  </div>`;
+
+el("c-tablewrap").innerHTML = `<table class="c-table">
+  <thead><tr>
+    <th style="width:26px"><input type="checkbox" checked disabled style="accent-color:#8b5cf6"></th>
+    <th>TC</th><th>Method</th><th>Scenario</th><th>Expected</th>
+    <th>Last result</th><th style="text-align:right">Time</th><th>Trend</th>
+  </tr></thead><tbody>
+  ${rows.map(c=>{
+    const isFail = c.status==="fail";
+    return `<tr class="${c.i==="TC_013"?"on":""}">
+      <td><input type="checkbox" ${isFail?"checked":""} disabled style="accent-color:#8b5cf6"></td>
+      <td class="id">${c.i}</td>
+      <td><span class="method ${c.m}">${c.m}</span></td>
+      <td class="sc"><span class="scw">${esc(c.s)} <span class="pth">${esc(c.p)}</span></span></td>
+      <td class="exp">${c.e}</td>
+      <td>${isFail
+          ? `<span class="pill fail">✕ ${c.got}</span>`
+          : `<span class="pill ${c.status}">${c.status==="pass"?"✓ "+ (c.e.split("/")[0]) : c.status==="pending"?"not run":c.status}</span>`}</td>
+      <td class="ms">${c.ms?c.ms+" ms":"—"}</td>
+      <td>${trend(c)}</td>
+    </tr>`;
+  }).join("")}
+  </tbody></table>`;
+
+const tc13 = CASES.find(c=>c.i==="TC_013");
+el("c-sheet").innerHTML = `
+  <div class="c-sheet-h">
+    <div class="row1"><span class="anno">5</span><span class="method POST">POST</span>
+      <h4>POST not allowed on /templates/types</h4></div>
+    <div class="row1"><span class="mono" style="font-size:10.5px;color:var(--text-dim)">TC_013 · templates/types</span>
+      <span class="pill fail" style="margin-left:auto">expected 405 · got 404</span></div>
+  </div>
+  <div class="c-sheet-b">
+    <div class="c-sec"><span class="lbl">Assertions</span>
+      <div class="assert">
+        <div><span class="mark no">✕</span> status is <span class="mono">405</span> — got <span class="mono" style="color:#ef4444">404</span></div>
+        <div><span class="mark ok">✓</span> <span class="mono">Content-Type</span> is application/json</div>
+        <div><span class="mark ok">✓</span> responded under 2000 ms — <span class="mono">${tc13.ms} ms</span></div>
+      </div></div>
+    <div class="c-sec" style="padding:0">
+      <div class="a-resh"><span class="resp-status err">404 Not Found</span>
+        <span class="mono" style="font-size:10.5px;color:var(--text-dim)">${tc13.ms} ms · 172 B</span>
+        <span class="pill fail" style="margin-left:auto">✕ fail</span></div>
+      ${jsonBlock(NOT_FOUND_404,"max-height:190px")}
+    </div>
+    <div class="c-sec"><span class="lbl">History — last 10 runs</span>
+      <div class="c-hist">${["38","39","40","41","42","43","44","45","46","47"].map(r=>
+        `<span><i class="f"></i>#${r}</span>`).join("")}</div>
+      <div style="font-size:11.5px;color:var(--text-muted);margin-top:9px;line-height:1.5">
+        Failing the same way in all 10 recorded runs, together with TC_014, TC_015 and TC_016 —
+        one missing method guard, not four bugs.</div></div>
+    <div class="c-sec" style="border-bottom:0"><span class="lbl">Request</span>
+      <div class="code">curl -X POST \\
+  '\u200bhttps://template.dev.swivlconnect.com/templates/types' \\
+  -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6…' \\
+  -H 'x-api-version: 5.0.0' \\
+  -d '{}'</div></div>
+  </div>
+  <div class="c-foot"><span class="m-btn primary">Re-run case</span><span class="m-btn">Edit request</span>
+    <span class="m-btn">Mark blocked</span><span class="m-btn">Copy as cURL</span>
+    <span class="m-btn ghost" style="margin-left:auto">✕</span></div>`;
+
+/* ========================== page behaviour ================================ */
+const tabs = [...document.querySelectorAll(".tab")];
+tabs.forEach(t=>t.addEventListener("click",()=>{
+  tabs.forEach(o=>{
+    const on = o===t;
+    o.setAttribute("aria-selected", on?"true":"false");
+    document.getElementById(o.getAttribute("aria-controls")).hidden = !on;
+  });
+  window.scrollTo({top: document.querySelector(".tabs").offsetTop - 1, behavior:"smooth"});
+}));
+tabs.forEach((t,i)=>t.addEventListener("keydown",e=>{
+  if(e.key!=="ArrowRight"&&e.key!=="ArrowLeft") return;
+  const n = tabs[(i + (e.key==="ArrowRight"?1:tabs.length-1)) % tabs.length];
+  n.focus(); n.click();
+}));
+const tBtn = el("themeBtn");
+const startDark = matchMedia("(prefers-color-scheme: dark)").matches;
+document.documentElement.dataset.theme = startDark ? "dark" : "light";
+const syncBtn = ()=> tBtn.textContent = document.documentElement.dataset.theme==="dark" ? "light page" : "dark page";
+syncBtn();
+tBtn.addEventListener("click",()=>{
+  document.documentElement.dataset.theme = document.documentElement.dataset.theme==="dark" ? "light" : "dark";
+  syncBtn();
+});
+</script>

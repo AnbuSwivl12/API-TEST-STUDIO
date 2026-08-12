@@ -50,6 +50,90 @@
   .env-dot.stage{background:#e6b73e}
   .env-dot.local{background:var(--accent)}
   .env-dot.custom{background:var(--text-muted)}
+  /* ---------- view switch (Cases | Run Report) ---------- */
+  .viewsw{display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:var(--bg-elev-2);flex-shrink:0}
+  .viewsw button{padding:5px 11px;font-size:12px;font-weight:500;color:var(--text-muted);border-right:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
+  .viewsw button:last-child{border-right:0}
+  .viewsw button.on{background:var(--accent);color:#fff}
+  .viewsw .badge{font-family:var(--mono);font-size:9.5px;padding:1px 5px;border-radius:8px;background:var(--danger-soft);color:var(--danger)}
+  .viewsw button.on .badge{background:rgba(255,255,255,.22);color:#fff}
+
+  /* ---------- Run Report (design direction A) ---------- */
+  .rp-rail{width:216px;flex:none;background:var(--bg-elev);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+  .rp-rail-h{padding:11px 13px 8px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+  .rp-tags{overflow-y:auto;padding:6px 0 14px}
+  .rp-tag{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:8px 13px;cursor:pointer;border-left:2px solid transparent}
+  .rp-tag:hover{background:var(--bg-elev-2)}
+  .rp-tag.on{background:var(--accent-soft);border-left-color:var(--accent)}
+  .rp-tag .nm{font-family:var(--mono);font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rp-tag .ct{font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+  .rp-bars{grid-column:1/-1;display:flex;height:3px;border-radius:2px;overflow:hidden;background:var(--bg-elev-2);margin-top:3px}
+  .rp-body{flex:1;overflow-y:auto;padding:18px 22px 48px;min-width:0}
+  .rp-runhead{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
+  .rp-runsel{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:16px;font-weight:600}
+  .rp-runsel select{width:auto;height:28px;font-family:var(--mono);font-size:13px;font-weight:600;padding:2px 8px}
+  .rp-runsel .cv{color:var(--text-dim);font-size:11px;font-weight:400}
+  .rp-delta{font-size:11.5px;color:var(--text-muted);margin-top:4px;font-family:var(--mono)}
+  .rp-delta b.up{color:var(--success)} .rp-delta b.dn{color:var(--danger)}
+  .rp-stats{margin-left:auto;display:flex;gap:16px;align-items:flex-end}
+  .rp-stat .v{font-family:var(--mono);font-size:19px;font-weight:700;line-height:1}
+  .rp-stat .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-dim);margin-top:4px}
+  .rp-stat.pass .v{color:var(--success)} .rp-stat.fail .v{color:var(--danger)}
+  .rp-stat.skip .v{color:var(--warning)} .rp-stat.blocked .v{color:var(--info)}
+  .rp-stat.pending .v{color:var(--text-muted)}
+  .rp-timeline{margin:16px 0 6px}
+  .rp-ticks{display:flex;gap:1.5px;align-items:flex-end;height:34px}
+  .rp-ticks i{flex:1;min-width:2px;border-radius:1px;display:block;background:var(--success);height:58%;cursor:pointer}
+  .rp-ticks i:hover{outline:1px solid var(--text-muted)}
+  .rp-ticks i.fail{background:var(--danger);height:100%}
+  .rp-ticks i.skip{background:var(--warning);height:38%}
+  .rp-ticks i.blocked{background:var(--info);height:38%}
+  .rp-ticks i.pending{background:var(--border-strong);height:38%}
+  .rp-axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--text-dim);margin-top:6px}
+  .rp-sec{margin-top:22px}
+  .rp-sec-h{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+  .rp-sec-h h4{margin:0;font-size:12.5px;font-weight:600}
+  .rp-sec-h .why{font-size:11.5px;color:var(--text-muted)}
+  .rp-group{border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:10px;background:var(--bg-elev)}
+  .rp-group-h{display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--bg-elev-2);border-bottom:1px solid var(--border);font-size:12px}
+  .rp-group-h .cause{color:var(--text);font-weight:600}
+  .rp-group-h .note{color:var(--text-dim);font-size:11.5px}
+  .rp-group-h .n{font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-left:auto;white-space:nowrap}
+  .rp-row{display:grid;grid-template-columns:10px 46px 62px 1fr auto auto;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer}
+  .rp-row:last-child{border-bottom:0}
+  .rp-row:hover{background:var(--bg-elev-2)}
+  .rp-row .id{font-family:var(--mono);font-size:10.5px;color:var(--text-dim)}
+  .rp-row .sc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rp-row .exp{font-family:var(--mono);font-size:10.5px;color:var(--text-muted);white-space:nowrap}
+  .rp-row .exp s{color:var(--text-dim);text-decoration:none}
+  .rp-row .exp b{color:var(--danger)}
+  .rp-row .ms{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);text-align:right;min-width:52px}
+  .rp-dot{width:7px;height:7px;border-radius:50%;background:var(--text-dim)}
+  .rp-dot.pass{background:var(--success)} .rp-dot.fail{background:var(--danger)}
+  .rp-dot.skip{background:var(--warning)} .rp-dot.blocked{background:var(--info)}
+  .rp-open{border-bottom:1px solid var(--border)}
+  .rp-open-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:1px;background:var(--border)}
+  .rp-open-col{background:var(--bg-elev);padding:11px 13px;min-width:0}
+  .rp-open-col.res{padding:0;background:var(--bg);display:flex;flex-direction:column}
+  .rp-open-col h5{margin:0 0 8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:600}
+  .rp-code{font-family:var(--mono);font-size:10.5px;line-height:1.6;color:var(--text-muted);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;white-space:pre-wrap;word-break:break-all;max-height:190px;overflow:auto}
+  .rp-assert{font-size:11.5px;line-height:1.9;color:var(--text-muted)}
+  .rp-assert .mark{display:inline-block;width:14px;font-weight:700}
+  .rp-assert .mark.ok{color:var(--success)} .rp-assert .mark.no{color:var(--danger)}
+  .rp-resh{display:flex;align-items:center;gap:9px;padding:7px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .rp-resbody{flex:1;font-family:var(--mono);font-size:10.5px;line-height:1.6;padding:10px 12px;white-space:pre-wrap;word-break:break-word;overflow:auto;max-height:260px;color:var(--text-muted)}
+  .rp-actions{display:flex;gap:6px;padding:9px 13px;background:var(--bg-elev);border-top:1px solid var(--border);flex-wrap:wrap}
+  .rp-collapsed{display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:9px;background:var(--bg-elev);font-size:12px;color:var(--text-muted);margin-bottom:8px;cursor:pointer}
+  .rp-collapsed b{color:var(--text)}
+  .rp-collapsed .caret{margin-left:auto;color:var(--text-dim)}
+  .rp-sub{border:1px solid var(--border);border-top:0;border-radius:0 0 9px 9px;margin:-9px 0 8px;background:var(--bg-elev);max-height:280px;overflow:auto}
+  .rp-empty{max-width:560px;margin:64px auto;text-align:center;color:var(--text-muted);line-height:1.7}
+  .rp-empty h3{color:var(--text);font-size:16px;margin:0 0 8px}
+  @media (max-width:1100px){
+    .rp-open-grid{grid-template-columns:1fr}
+    .rp-rail{width:150px}
+  }
+
   /* first-run welcome strip */
   .welcome{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 16px;background:linear-gradient(90deg,rgba(99,102,241,.14),rgba(236,72,153,.08));border-bottom:1px solid var(--border);font-size:12px;color:var(--text-dim);flex-shrink:0}
   .welcome b{color:var(--text)}
@@ -327,6 +411,10 @@
       <input id="authToken" placeholder="paste token / key / user:pass" style="min-width:160px;max-width:240px;flex:1 1 160px" />
     </div>
     <button class="btn ghost small" onclick="openModal('settings')" title="CORS proxy, defaults"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    <div class="viewsw" id="viewSwitch" title="Cases = browse and edit. Run Report = triage the last run.">
+      <button data-v="cases" onclick="setView('cases')">Cases</button>
+      <button data-v="report" onclick="setView('report')">Run Report<span class="badge" id="viewFailBadge" style="display:none">0</span></button>
+    </div>
     <div class="tb-actions">
       <button class="btn small" onclick="openModal('swagger')" title="Link an OpenAPI/Swagger spec for response examples"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Swagger<span id="swaggerChip" style="margin-left:4px;font-size:9px;color:var(--success);display:none">●</span></button>
       <button class="btn small" onclick="openModal('addEndpoint')" title="Create a new test case from scratch"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Case</button>
@@ -389,7 +477,7 @@
     </section>
 
     <!-- try panel -->
-    <aside class="try-panel" id="tryPanel">
+    <aside class="try-panel" id="tryPanel" data-pane="cases">
       <div class="tp-header">
         <div class="tp-title">
           <span class="tp-title-label">Try it</span>
@@ -419,6 +507,15 @@
         <div class="resp-body empty" id="respBody">Send a request to see the response here.</div>
       </div>
     </aside>
+  </div>
+
+  <!-- run report (design direction A) -->
+  <div class="main" id="reportMain" style="display:none">
+    <aside class="rp-rail">
+      <div class="rp-rail-h">Coverage by tag</div>
+      <div class="rp-tags" id="rpTags"></div>
+    </aside>
+    <main class="rp-body" id="rpBody"></main>
   </div>
 </div>
 
@@ -964,6 +1061,13 @@ const state = (() => {
     collapsedTags: {},
     selection: [],
     welcomeSeen: false,
+    // Run Report
+    view: "cases",
+    runs: [],
+    rpRun: null,        // which run # the report is showing (null = newest)
+    rpTag: null,        // tag rail filter
+    rpOpen: null,       // expanded failure row
+    rpBuckets: {},      // which "everything else" buckets are open
   };
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
@@ -973,6 +1077,8 @@ const state = (() => {
       // hosted build would see every request fail. Move them onto Stage.
       if (!IS_LOCAL_PAGE && st.baseUrl === LEGACY_LOCAL_BASE) st.baseUrl = ENVS.stage.base;
       st.env = envForBase(st.baseUrl);
+      if (!Array.isArray(st.runs)) st.runs = [];
+      if (!st.rpBuckets || typeof st.rpBuckets !== "object") st.rpBuckets = {};
       return st;
     }
   } catch (e) {}
@@ -980,7 +1086,17 @@ const state = (() => {
 })();
 
 function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch (e) {
+    // Almost always the 5 MB quota, and run history is the only thing here
+    // that grows without bound — drop the oldest runs and try again.
+    let dropped = 0;
+    while (state.runs && state.runs.length > 1) {
+      state.runs.shift(); dropped++;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); break; } catch (e2) {}
+    }
+    if (dropped) toast(`Storage full — dropped the ${dropped} oldest run(s) from history`, "");
+  }
   if (state.syncAuto && state.syncUrl && state.syncToken) {
     // debounced auto-push
     clearTimeout(window.__syncDebounce);
@@ -2375,16 +2491,41 @@ async function runAll() {
   const bar = $("#progressBar"), fill = $("#progressFill");
   bar.classList.add("active");
   const delay = state.bulkDelayMs || 120;
+
+  // Record the run as we go, in execution order — this is what the Run Report reads.
+  const startedAt = Date.now();
+  const run = {
+    n: (state.runs.length ? state.runs[state.runs.length - 1].n : 0) + 1,
+    at: startedAt,
+    base: state.baseUrl,
+    envLabel: ENVS[state.env] ? ENVS[state.env].label : "Custom",
+    partial: !!state.selection.length,
+    results: [],
+    counts: { pass: 0, fail: 0, skip: 0, blocked: 0, pending: 0 },
+    durationMs: 0,
+  };
+
   for (let i = 0; i < targets.length; i++) {
     fill.style.width = Math.round((i / targets.length) * 100) + "%";
     await sendRequest(targets[i]);
+    run.results.push(snapshotResult(targets[i]));
     renderSidebar();
     if (delay) await new Promise(r => setTimeout(r, delay));
   }
   fill.style.width = "100%";
   setTimeout(() => { bar.classList.remove("active"); fill.style.width = "0"; }, 600);
-  renderDoc(); renderResp();
-  toast("Run complete", "success");
+
+  run.durationMs = Date.now() - startedAt;
+  recountRun(run);
+  state.runs.push(run);
+  while (state.runs.length > MAX_RUNS) state.runs.shift();
+  state.rpRun = run.n; state.rpOpen = null;
+  save();
+
+  renderDoc(); renderResp(); renderViewBadge();
+  toast(`Run #${run.n} complete — ${run.counts.pass} passed, ${run.counts.fail} failed`,
+        run.counts.fail ? "error" : "success");
+  setView("report");   // land in the report, which is the point of the run
 }
 
 function csvEscape(v) {
@@ -3353,6 +3494,443 @@ function copyTextToBtn(btn, text) {
 }
 
 /* =========================================================================
+   Run Report — "the run is the document"
+   -------------------------------------------------------------------------
+   Run All records a run into state.runs (capped, bodies kept for failures
+   only — 102 full responses would blow localStorage's ~5 MB). The report
+   sorts failures first, groups them by shared cause, and expands them in
+   place, which is why there is no third column over here.
+   ========================================================================= */
+const MAX_RUNS = 10;            // keep the last N runs
+const RUN_BODY_CAP = 2000;      // chars of response body stored, failures only
+
+/* One row per executed case, in execution order. */
+function snapshotResult(c) {
+  const last = c.lastRun || {};
+  const qaStatus = (c.status === "skip" || c.status === "blocked") ? c.status : null;
+  const r = {
+    id: c.id, method: c.method, path: c.path, scenario: c.scenario,
+    tag: normalizeTag(c.tag, c.path),
+    expected: statusList(c.expected),
+    code: last.status || 0,
+    ms: last.durationMs || 0,
+    verdict: last.verdict || "fail",
+    error: last.error || null,
+    status: qaStatus || last.verdict || "fail",
+    at: last.at || Date.now(),
+  };
+  if (r.verdict === "fail") {
+    r.body = (last.body || "").slice(0, RUN_BODY_CAP);
+    r.ctype = (last.headers || {})["content-type"] || "";
+  }
+  r.cause = classifyFailure(r);
+  return r;
+}
+
+/* Why did this fail? The answer is the grouping key — four cases that all
+   expected 405 and got 404 are one bug, not four. */
+function classifyFailure(r) {
+  const exp = r.expected || [], got = r.code;
+  if (r.error && /timed out/i.test(r.error))
+    return { key: "timeout", title: "Request timed out", note: `No response within ${state.timeoutMs || 30000} ms.` };
+  if (r.error && /Network\/CORS/i.test(r.error))
+    return { key: "network", title: "Request never reached the API", note: "The browser blocked it — CORS, DNS, or the host is down." };
+  if (r.error && /proxy/i.test(r.error))
+    return { key: "proxy", title: "The CORS proxy rejected the request", note: "Clear the proxy in Settings ⚙, or use one that forwards every method." };
+  if (r.error)
+    return { key: "err:" + r.error.slice(0, 40), title: r.error.slice(0, 90), note: "" };
+  if (!got)
+    return { key: "nostatus", title: "No response status", note: "" };
+  if (exp.includes(405) && got === 404)
+    return { key: "405-404", title: "405 is never returned — the router falls through to 404", note: "One missing method guard explains every case in this group." };
+  if ((got === 401 || got === 403) && !exp.includes(got))
+    return { key: "auth-" + got, title: got === 401 ? "Unauthorized — the token was rejected" : "Forbidden — the token lacks this scope",
+             note: "Paste a fresh bearer token in the top bar, then re-run this group." };
+  if (got >= 500)
+    return { key: "5xx", title: "Server error instead of a validated response", note: "An unhandled exception surfaces as 5xx where a 4xx was expected." };
+  if (got >= 200 && got < 300 && exp.length && exp.every(e => e >= 400))
+    return { key: "accepted", title: "Invalid input was accepted", note: "Body validation is not enforced — a 2xx came back where a 4xx was expected." };
+  if (got === 404)
+    return { key: "404", title: "Endpoint not found (404)", note: "Path or base URL mismatch for this environment." };
+  return { key: `${exp.join("|")}->${got}`, title: `Expected ${exp.join(" or ") || "—"}, got ${got}`, note: "" };
+}
+
+function currentRun() {
+  if (!state.runs || !state.runs.length) return null;
+  const byN = state.runs.find(r => r.n === state.rpRun);
+  return byN || state.runs[state.runs.length - 1];
+}
+function prevRunOf(run) {
+  if (!run) return null;
+  const i = state.runs.findIndex(r => r.n === run.n);
+  return i > 0 ? state.runs[i - 1] : null;
+}
+
+function setView(v) {
+  state.view = v === "report" ? "report" : "cases";
+  save();
+  document.querySelectorAll("#viewSwitch button").forEach(b => b.classList.toggle("on", b.dataset.v === state.view));
+  $(".main").style.display = state.view === "cases" ? "flex" : "none";
+  $("#reportMain").style.display = state.view === "report" ? "flex" : "none";
+  if (state.view === "report") renderReport();
+}
+
+/* Badge on the switch = failures in the newest run, so you can see there is
+   something to triage without leaving the Cases view. */
+function renderViewBadge() {
+  const b = $("#viewFailBadge"); if (!b) return;
+  const run = state.runs && state.runs.length ? state.runs[state.runs.length - 1] : null;
+  const n = run ? run.counts.fail : 0;
+  b.textContent = n;
+  b.style.display = n ? "inline-block" : "none";
+}
+
+function fmtDur(ms) {
+  if (ms < 1000) return ms + " ms";
+  const s = ms / 1000;
+  return s < 60 ? s.toFixed(1) + "s" : Math.floor(s / 60) + "m " + Math.round(s % 60) + "s";
+}
+function fmtClock(ts) {
+  return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function renderReport() {
+  const run = currentRun();
+  renderViewBadge();
+  if (!run) {
+    $("#rpTags").innerHTML = "";
+    $("#rpBody").innerHTML = `<div class="rp-empty">
+      <h3>No run yet</h3>
+      <p>Hit <b>Run All</b> and this becomes the report: every case in execution order,
+      failures sorted to the top and grouped by what actually has to be fixed.</p>
+      <div style="margin-top:16px;display:flex;gap:8px;justify-content:center">
+        <button class="btn primary small" onclick="runAll()">▶ Run All</button>
+        <button class="btn small" onclick="setView('cases')">Back to cases</button>
+      </div></div>`;
+    return;
+  }
+  renderRpRail(run);
+
+  const tagFilter = state.rpTag;
+  const inScope = r => !tagFilter || r.tag === tagFilter;
+  const rows = run.results.filter(inScope);
+  const fails   = rows.filter(r => r.status === "fail");
+  const passes  = rows.filter(r => r.status === "pass");
+  const skips   = rows.filter(r => r.status === "skip");
+  const blocked = rows.filter(r => r.status === "blocked");
+  const notRun  = state.cases.filter(c => !run.results.some(r => r.id === c.id) &&
+                                          (!tagFilter || normalizeTag(c.tag, c.path) === tagFilter));
+
+  // Group failures by cause, biggest group first.
+  const groups = [];
+  fails.forEach(r => {
+    let g = groups.find(x => x.key === r.cause.key);
+    if (!g) { g = { key: r.cause.key, title: r.cause.title, note: r.cause.note, rows: [] }; groups.push(g); }
+    g.rows.push(r);
+  });
+  groups.sort((a, b) => b.rows.length - a.rows.length);
+
+  const prev = prevRunOf(run);
+  let delta = `<span class="dim">first recorded run</span>`;
+  if (prev) {
+    const wasFail = new Set(prev.results.filter(r => r.status === "fail").map(r => r.id));
+    const isFail  = new Set(fails.map(r => r.id));
+    const fixed = [...wasFail].filter(id => !isFail.has(id) && run.results.some(r => r.id === id));
+    const broke = [...isFail].filter(id => !wasFail.has(id) && prev.results.some(r => r.id === id));
+    const still = [...isFail].filter(id => wasFail.has(id));
+    delta = `vs run #${prev.n} — <b class="up">${fixed.length} fixed</b> · ` +
+            `<b class="dn">${broke.length} newly broken${broke.length && broke.length <= 3 ? " (" + broke.join(", ") + ")" : ""}</b> · ` +
+            `${still.length} still failing`;
+  }
+
+  const ran = run.results.length;
+  const avg = ran ? Math.round(run.results.reduce((s, r) => s + (r.ms || 0), 0) / ran) : 0;
+  const ticks = run.results.map((r, i) =>
+    `<i class="${r.status}" title="${esc(r.id + " " + r.method + " " + r.path + " — " + (r.code || "no status") + " · " + r.ms + " ms")}" onclick="rpTick(${i})"></i>`
+  ).join("");
+
+  $("#rpBody").innerHTML = `
+    <div class="rp-runhead">
+      <div>
+        <div class="rp-runsel">
+          <select onchange="state.rpRun=+this.value;state.rpOpen=null;save();renderReport()">
+            ${state.runs.slice().reverse().map(r => `<option value="${r.n}"${r.n === run.n ? " selected" : ""}>Run #${r.n}</option>`).join("")}
+          </select>
+          <span class="cv">${esc(run.envLabel)} · ${fmtClock(run.at)} · ${fmtDur(run.durationMs)}${run.partial ? " · selection only" : ""}</span>
+        </div>
+        <div class="rp-delta">${delta}</div>
+      </div>
+      <div class="rp-stats">
+        <div class="rp-stat pass"><div class="v">${passes.length}</div><div class="k">passed</div></div>
+        <div class="rp-stat fail"><div class="v">${fails.length}</div><div class="k">failed</div></div>
+        <div class="rp-stat skip"><div class="v">${skips.length}</div><div class="k">skipped</div></div>
+        <div class="rp-stat blocked"><div class="v">${blocked.length}</div><div class="k">blocked</div></div>
+        <div class="rp-stat pending"><div class="v">${notRun.length}</div><div class="k">not run</div></div>
+      </div>
+    </div>
+
+    <div class="rp-timeline">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+        <span class="muted" style="font-size:11px">Execution order — one tick per case${tagFilter ? " (all tags)" : ""}</span>
+        <span class="mono" style="margin-left:auto;font-size:10px;color:var(--text-dim)">avg ${avg} ms</span>
+      </div>
+      <div class="rp-ticks">${ticks}</div>
+      <div class="rp-axis">
+        <span>${esc(run.results[0] ? run.results[0].id : "")} · ${fmtClock(run.at)}</span>
+        <span>${ran} cases</span>
+        <span>${esc(run.results[ran - 1] ? run.results[ran - 1].id : "")} · ${fmtClock(run.at + run.durationMs)}</span>
+      </div>
+    </div>
+
+    ${fails.length ? `
+    <div class="rp-sec">
+      <div class="rp-sec-h">
+        <h4>${fails.length} failure${fails.length > 1 ? "s" : ""}, ${groups.length} cause${groups.length > 1 ? "s" : ""}</h4>
+        <span class="why">grouped by what has to be fixed, not by endpoint</span>
+        <button class="btn small" style="margin-left:auto" onclick="rerunFailures()">Re-run these</button>
+      </div>
+      ${groups.map(g => `
+        <div class="rp-group">
+          <div class="rp-group-h">
+            <span class="rp-dot fail"></span>
+            <span class="cause">${esc(g.title)}</span>
+            <span class="note">${esc(g.note)}</span>
+            <span class="n">${g.rows.length} case${g.rows.length > 1 ? "s" : ""}</span>
+          </div>
+          ${g.rows.map(r => failRowHtml(r)).join("")}
+        </div>`).join("")}
+    </div>` : `
+    <div class="rp-sec">
+      <div class="rp-sec-h"><h4>No failures${tagFilter ? " in " + esc(tagFilter) : ""}</h4>
+        <span class="why">${passes.length} passed in this run</span></div>
+    </div>`}
+
+    <div class="rp-sec">
+      <div class="rp-sec-h"><h4>Everything else</h4></div>
+      ${bucketHtml("pass", passes, `slowest ${slowestLabel(passes)}`)}
+      ${bucketHtml("blocked", blocked, "marked blocked by QA — needs curl or Postman")}
+      ${bucketHtml("skip", skips, "marked skip by QA")}
+      ${notRunHtml(notRun)}
+    </div>`;
+}
+
+function slowestLabel(rows) {
+  if (!rows.length) return "—";
+  const s = rows.slice().sort((a, b) => b.ms - a.ms)[0];
+  return `${s.id} · ${s.ms} ms`;
+}
+function bucketHtml(kind, rows, note) {
+  if (!rows.length) return "";
+  const open = !!state.rpBuckets[kind];
+  const label = { pass: "passed", blocked: "blocked", skip: "skipped" }[kind];
+  return `<div class="rp-collapsed" onclick="rpToggleBucket('${kind}')">
+      <span class="rp-dot ${kind}"></span><b>${rows.length} ${label}</b> · ${esc(note)}
+      <span class="caret">${open ? "▾" : "▸"}</span>
+    </div>` +
+    (open ? `<div class="rp-sub">${rows.map(r => plainRowHtml(r)).join("")}</div>` : "");
+}
+function notRunHtml(cases) {
+  if (!cases.length) return "";
+  const open = !!state.rpBuckets.pending;
+  return `<div class="rp-collapsed" onclick="rpToggleBucket('pending')">
+      <span class="rp-dot"></span><b>${cases.length} not run</b> · not part of this run
+      <span class="caret">${open ? "▾" : "▸"}</span>
+    </div>` +
+    (open ? `<div class="rp-sub">${cases.map(c => `
+      <div class="rp-row" onclick="rpOpenRequest('${c.id}')">
+        <span class="rp-dot"></span>
+        <span class="method ${c.method}">${c.method}</span>
+        <span class="id">${c.id}</span>
+        <span class="sc">${esc(c.scenario || "")}</span>
+        <span class="exp">expected ${statusList(c.expected).join(" or ") || "—"}</span>
+        <span class="ms">—</span>
+      </div>`).join("")}</div>` : "");
+}
+function plainRowHtml(r) {
+  return `<div class="rp-row" onclick="rpOpenRequest('${r.id}')">
+    <span class="rp-dot ${r.status}"></span>
+    <span class="method ${r.method}">${r.method}</span>
+    <span class="id">${r.id}</span>
+    <span class="sc">${esc(r.scenario || "")}</span>
+    <span class="exp">${r.code || "—"}</span>
+    <span class="ms">${r.ms} ms</span>
+  </div>`;
+}
+function failRowHtml(r) {
+  const open = state.rpOpen === r.id;
+  const got = r.error ? "error" : r.code;
+  return `<div class="rp-row" id="rprow_${r.id}" onclick="rpToggle('${r.id}')">
+      <span class="rp-dot fail"></span>
+      <span class="method ${r.method}">${r.method}</span>
+      <span class="id">${r.id}</span>
+      <span class="sc">${esc(r.scenario || "")}</span>
+      <span class="exp"><s>expected ${r.expected.join(" or ") || "—"}</s> → <b>${esc(String(got))}</b></span>
+      <span class="ms">${r.ms} ms</span>
+    </div>` + (open ? failOpenHtml(r) : "");
+}
+
+/* The inline expansion — request, assertions, actual response. This is the
+   block that replaces the old Try It column for triage. */
+function failOpenHtml(r) {
+  const c = state.cases.find(x => x.id === r.id);
+  const curl = c ? buildCurl(c) : `curl -X ${r.method} '${(state.baseUrl || "") + r.path}'`;
+  const expected = r.expected.join(" or ") || "—";
+  const asserts = [];
+  if (r.error) {
+    asserts.push(`<div><span class="mark no">✕</span> request completed — <span class="mono" style="color:var(--danger)">${esc(r.error.slice(0, 160))}</span></div>`);
+  } else {
+    asserts.push(`<div><span class="mark no">✕</span> status is <span class="mono">${esc(expected)}</span> — got <span class="mono" style="color:var(--danger)">${r.code}</span></div>`);
+  }
+  asserts.push(`<div><span class="mark ${r.ms < 2000 ? "ok" : "no"}">${r.ms < 2000 ? "✓" : "✕"}</span> responded under 2000 ms — <span class="mono">${r.ms} ms</span></div>`);
+  let body = r.body || "";
+  try { body = JSON.stringify(JSON.parse(body), null, 2); } catch (e) {}
+  const truncated = (r.body || "").length >= RUN_BODY_CAP;
+
+  return `<div class="rp-open" onclick="event.stopPropagation()"><div class="rp-open-grid">
+    <div class="rp-open-col">
+      <h5>Request sent</h5>
+      <div class="rp-code">${esc(curl)}</div>
+      <h5 style="margin-top:13px">Assertions</h5>
+      <div class="rp-assert">${asserts.join("")}</div>
+      ${r.cause.note ? `<div style="margin-top:12px;font-size:11.5px;color:var(--text-muted);line-height:1.5">${r.cause.note}</div>` : ""}
+    </div>
+    <div class="rp-open-col res">
+      <div class="rp-resh">
+        <span class="mono" style="font-weight:700;color:${r.error ? "var(--danger)" : r.code < 400 ? "var(--success)" : "var(--danger)"}">${r.error ? "no response" : r.code}</span>
+        <span class="mono" style="color:var(--text-dim);font-size:10.5px">${r.ms} ms${r.ctype ? " · " + esc(r.ctype.split(";")[0]) : ""}</span>
+      </div>
+      <div class="rp-resbody">${body ? esc(body) + (truncated ? "\n\n… truncated — open the case for the full response" : "") : esc(r.error || "No body captured.")}</div>
+      <div class="rp-actions">
+        <button class="btn primary small" onclick="rpRerun('${r.id}')">Re-run case</button>
+        <button class="btn small" onclick="rpOpenRequest('${r.id}')">Open request</button>
+        <button class="btn small" onclick="rpMark('${r.id}','blocked')">Mark blocked</button>
+        <button class="btn small" onclick="rpCopyFailure('${r.id}')">Copy failure for ticket</button>
+      </div>
+    </div>
+  </div></div>`;
+}
+
+function renderRpRail(run) {
+  const tags = [];
+  run.results.forEach(r => {
+    let t = tags.find(x => x.name === r.tag);
+    if (!t) { t = { name: r.tag, total: 0, pass: 0, fail: 0, other: 0 }; tags.push(t); }
+    t.total++;
+    if (r.status === "pass") t.pass++; else if (r.status === "fail") t.fail++; else t.other++;
+  });
+  tags.sort((a, b) => b.fail - a.fail || a.name.localeCompare(b.name));
+  const all = run.counts;
+  const bar = (p, f, o) => `<span class="rp-bars"><i style="flex:${p};background:var(--success)"></i><i style="flex:${f};background:var(--danger)"></i><i style="flex:${o};background:var(--border-strong)"></i></span>`;
+  $("#rpTags").innerHTML =
+    `<div class="rp-tag${state.rpTag ? "" : " on"}" onclick="rpFilterTag(null)">
+       <span class="nm">all cases</span><span class="ct">${run.results.length}</span>
+       ${bar(all.pass, all.fail, run.results.length - all.pass - all.fail)}
+     </div>` +
+    tags.map(t => `<div class="rp-tag${state.rpTag === t.name ? " on" : ""}" onclick="rpFilterTag(${JSON.stringify(t.name).replace(/"/g, "&quot;")})">
+       <span class="nm">${esc(t.name)}</span>
+       <span class="ct">${t.fail ? `<span style="color:var(--danger)">${t.fail} ✕</span> / ` : ""}${t.total}</span>
+       ${bar(t.pass, t.fail, t.other)}
+     </div>`).join("");
+}
+
+/* --- report interactions --- */
+function rpFilterTag(tag) { state.rpTag = tag; state.rpOpen = null; save(); renderReport(); }
+function rpToggleBucket(kind) { state.rpBuckets[kind] = !state.rpBuckets[kind]; save(); renderReport(); }
+function rpToggle(id) { state.rpOpen = state.rpOpen === id ? null : id; save(); renderReport(); scrollToRpRow(id); }
+function scrollToRpRow(id) {
+  const el = document.getElementById("rprow_" + id);
+  if (el) el.scrollIntoView({ block: "nearest" });
+}
+function rpTick(i) {
+  const run = currentRun(); if (!run) return;
+  const r = run.results[i]; if (!r) return;
+  if (r.status === "fail") {
+    if (state.rpTag && r.tag !== state.rpTag) state.rpTag = null;
+    state.rpOpen = r.id; save(); renderReport(); scrollToRpRow(r.id);
+  } else {
+    rpOpenRequest(r.id);
+  }
+}
+function rpOpenRequest(id) {
+  state.selectedId = id; save();
+  setView("cases");
+  renderSidebar(); renderDoc(); renderTry(); renderResp();
+}
+function rpMark(id, status) {
+  const c = state.cases.find(x => x.id === id); if (!c) return;
+  c.status = status;
+  const run = currentRun();
+  const r = run && run.results.find(x => x.id === id);
+  if (r) r.status = status;
+  save(); renderReport(); renderSidebar();
+  toast(`Marked ${id} as ${status}`, "");
+}
+async function rpRerun(id) {
+  const c = state.cases.find(x => x.id === id); if (!c) return;
+  toast(`Re-running ${id}…`, "");
+  await sendRequest(c);
+  const run = currentRun();
+  if (run) {
+    const i = run.results.findIndex(x => x.id === id);
+    const fresh = snapshotResult(c);
+    if (i >= 0) run.results[i] = fresh; else run.results.push(fresh);
+    recountRun(run);
+  }
+  save(); renderReport(); renderSidebar();
+  toast(`${id} — ${c.lastRun && c.lastRun.verdict === "pass" ? "now passing" : "still failing"}`,
+        c.lastRun && c.lastRun.verdict === "pass" ? "success" : "error");
+}
+async function rerunFailures() {
+  const run = currentRun(); if (!run) return;
+  const ids = run.results.filter(r => r.status === "fail" && (!state.rpTag || r.tag === state.rpTag)).map(r => r.id);
+  if (!ids.length) { toast("No failures to re-run", ""); return; }
+  if (!confirm(`Re-run ${ids.length} failing case(s) against ${state.baseUrl}?`)) return;
+  const bar = $("#progressBar"), fill = $("#progressFill");
+  bar.classList.add("active");
+  for (let i = 0; i < ids.length; i++) {
+    fill.style.width = Math.round((i / ids.length) * 100) + "%";
+    const c = state.cases.find(x => x.id === ids[i]);
+    if (!c) continue;
+    await sendRequest(c);
+    const j = run.results.findIndex(x => x.id === c.id);
+    if (j >= 0) run.results[j] = snapshotResult(c);
+    if (state.bulkDelayMs) await new Promise(r => setTimeout(r, state.bulkDelayMs));
+  }
+  fill.style.width = "100%";
+  setTimeout(() => { bar.classList.remove("active"); fill.style.width = "0"; }, 600);
+  recountRun(run); save(); renderReport(); renderSidebar();
+  toast(`Re-ran ${ids.length} case(s) — ${run.counts.fail} still failing`, run.counts.fail ? "error" : "success");
+}
+function rpCopyFailure(id) {
+  const run = currentRun(); if (!run) return;
+  const r = run.results.find(x => x.id === id); if (!r) return;
+  const c = state.cases.find(x => x.id === id);
+  const text = [
+    `${r.id} — ${r.scenario}`,
+    `${r.method} ${(run.base || "")}${r.path}`,
+    `Environment: ${run.envLabel}`,
+    `Expected: ${r.expected.join(" or ") || "—"}    Actual: ${r.error ? "no response" : r.code}`,
+    `Duration: ${r.ms} ms    Run #${run.n} at ${new Date(run.at).toISOString()}`,
+    `Cause: ${r.cause.title}`,
+    r.error ? `Error: ${r.error}` : "",
+    "",
+    "Request:",
+    c ? buildCurl(c) : "",
+    "",
+    "Response body:",
+    (r.body || "(not captured)"),
+  ].filter(Boolean).join("\n");
+  navigator.clipboard.writeText(text)
+    .then(() => toast("Failure copied — paste it into the ticket", "success"))
+    .catch(() => toast("Clipboard blocked by the browser", "error"));
+}
+function recountRun(run) {
+  const c = { pass: 0, fail: 0, skip: 0, blocked: 0, pending: 0 };
+  run.results.forEach(r => { c[r.status] = (c[r.status] || 0) + 1; });
+  run.counts = c;
+}
+
+/* =========================================================================
    Environments (Stage / Local / Custom)
    ========================================================================= */
 function switchEnv(env) {
@@ -3435,6 +4013,8 @@ function boot() {
   if ($("#swaggerChip")) $("#swaggerChip").style.display = state.swaggerSpec ? "inline" : "none";
   if (!currentCase() && state.cases.length) state.selectedId = state.cases[0].id;
   renderSidebar(); renderDoc(); renderTry(); renderResp();
+  renderViewBadge();
+  setView(state.view === "report" && state.runs.length ? "report" : "cases");
 
   // keyboard shortcut: ctrl/cmd + enter = send
   document.addEventListener("keydown", e => {
