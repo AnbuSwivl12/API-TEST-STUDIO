@@ -894,6 +894,14 @@
       </div>
 
       <hr style="border:none;border-top:1px solid var(--border);margin:14px 0" />
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">Start over</div>
+      <small class="muted" style="display:block;font-size:11px;line-height:1.6;margin-bottom:8px">
+        Wipes everything this browser has stored — modules, cases, run history, captured values, token and
+        settings — and shows the welcome screen again. Nothing on any server is touched.
+      </small>
+      <button class="btn small" onclick="resetEverything()">Reset this browser</button>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0" />
       <div style="font-size:13px;font-weight:600;margin-bottom:6px">☁ Cloud sync (cross-device)</div>
       <small class="muted" style="display:block;font-size:11px;line-height:1.5;margin-bottom:8px">
         Sync your test cases, runs, and history across devices. Deploy the bundled <code class="mono">worker.js</code> on Cloudflare Workers (free), paste its URL below, and pick a private user token. Same URL + token on every device → same data.
@@ -1546,6 +1554,42 @@ function ensureModules(st) {
   // drop the seeded modules nobody filled in, and the untouched sample suite.
   // Anything with real work in it — cases you edited, or any run history — is
   // left alone and can be deleted from the module picker by hand.
+  // A saved module keeps its own copy of whatever spec was attached, so a spec
+  // bundled by an older build can survive an update and keep showing endpoints
+  // nobody asked for. Drop those — and only those: anything the user imported
+  // by URL or pasted in stays. The hosts to clean up are read off the specs
+  // being dropped, so no hostname needs to be hardcoded here.
+  if (!st.despecified) {
+    const staleHosts = new Set();
+    const isBundled = m => /^built-in/i.test(m.specSource || "");
+    const isCurrentDemo = m => m.spec && m.spec.info && m.spec.info.title === DEMO_SPEC.info.title;
+    const hostOf = u => { try { return new URL(u).host.toLowerCase(); } catch (e) { return ""; } };
+
+    (st.modules || []).forEach(m => {
+      if (m.spec && isBundled(m) && !isCurrentDemo(m)) {
+        (m.spec.servers || []).forEach(sv => { const h = hostOf(sv && sv.url); if (h) staleHosts.add(h); });
+        m.spec = null; m.specSource = "";
+      }
+    });
+    if (st.swaggerSpec && /^built-in/i.test(st.swaggerSource || "") &&
+        !(st.swaggerSpec.info && st.swaggerSpec.info.title === DEMO_SPEC.info.title)) {
+      (st.swaggerSpec.servers || []).forEach(sv => { const h = hostOf(sv && sv.url); if (h) staleHosts.add(h); });
+      st.swaggerSpec = null; st.swaggerSource = "";
+    }
+
+    if (staleHosts.size) {
+      const stale = u => staleHosts.has(hostOf(u));
+      (st.modules || []).forEach(m => {
+        m.runs = (m.runs || []).filter(r => !stale((r && r.base) || ""));
+        Object.keys(m.baseUrls || {}).forEach(k => { if (stale(m.baseUrls[k])) delete m.baseUrls[k]; });
+      });
+      st.history = (st.history || []).filter(h => !stale(h && h.url));
+      if (stale(st.baseUrl)) st.baseUrl = "";
+    }
+    // Modules left with nothing at all have no reason to exist.
+    st.modules = (st.modules || []).filter(m => (m.cases || []).length || (m.runs || []).length || m.spec);
+    st.despecified = true;
+  }
   if (!st.degeneralised) {
     const LEGACY = ["templates", "job-detail", "billing", "customer-availability",
                     "building-unit", "recurring-sla", "job-detail-exclusion"];
@@ -5849,6 +5893,14 @@ function needsOnboarding() {
 }
 function finishOnboarding() { state.onboarded = true; save(); closeModal("welcome"); }
 function skipOnboarding() { finishOnboarding(); }
+
+/* Clear local data entirely. Deliberately blunt — there is no partial state
+   to reason about afterwards. */
+function resetEverything() {
+  if (!confirm("Erase everything stored in this browser — modules, cases, runs, history, token and settings?\n\nThis cannot be undone.")) return;
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  location.href = location.origin + location.pathname;
+}
 
 function obConnect() {
   const url = ($("#ob_url").value || "").trim();
