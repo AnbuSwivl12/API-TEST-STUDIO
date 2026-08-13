@@ -13,7 +13,8 @@
     "worker:install": "cd worker && npm install",
     "worker:deploy": "cd worker && npx wrangler deploy",
     "worker:kv": "cd worker && npx wrangler kv:namespace create STATE",
-    "deploy": "bash deploy.sh"
+    "deploy": "bash deploy.sh",
+    "worker:relay": "cd worker && npx wrangler secret put RELAY_TOKEN"
   },
   "homepage": "https://anbuswivl12.github.io/API-TEST-STUDIO/"
 }

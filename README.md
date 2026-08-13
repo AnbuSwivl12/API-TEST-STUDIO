@@ -15,11 +15,14 @@ No install, no local server, nothing to configure. A fresh browser is asked what
 it wants: connect your own API, start with a single request, or explore the
 bundled demo.
 
-Using it against the Swivl Template API:
+To see it working in ten seconds:
 
 1. Open the link above and choose **Explore the demo**.
-2. Paste your **bearer token** in the top bar.
-3. Hit **Run All**, or pick a case and **Send**.
+2. Hit **Run All**.
+
+That runs eight example cases against
+[JSONPlaceholder](https://jsonplaceholder.typicode.com), a free public API —
+reads are real, writes are accepted and echoed but never saved.
 
 Everything you edit is saved in that browser's `localStorage`. Want the same
 cases on your laptop *and* your phone? Set up [cross-device sync](#part-2--cross-device-sync-via-cloudflare-worker).
@@ -30,16 +33,16 @@ The **Env** dropdown in the top bar switches where every request goes:
 
 | Env | Base URL | Notes |
 |-----|----------|-------|
-| **Stage** | `https://template.dev.swivlconnect.com` | Default on the hosted page. CORS-open, works everywhere. |
-| **Local** | `http://localhost:3000` | Default when you open the app from localhost. Needs your API running. |
-| **Custom…** | anything you type in **Base URL** | The dropdown flips to *Custom* automatically. |
+| **Stage** | whatever the module sets | Per module, in Settings → Host |
+| **Local** | `http://localhost:3000` by default | Also per module |
+| **Custom…** | anything you type | The dropdown flips to *Custom* automatically |
 
-- Switching to a named env clears any leftover CORS proxy — none is needed.
-- **Test connection** (in the welcome strip) fires one request at the current
-  base URL and tells you whether it's reachable. A `401` means reachable but
-  unauthenticated → paste a token.
-- Deep links work: `…/API-TEST-STUDIO/?env=stage` or `?base=https://my-api.example.com`
-  open the app pre-pointed at that environment. Handy for sharing with the team.
+Each module carries its own host for each environment, so one switch moves every
+request without retyping a URL.
+
+- **Test connection** (⋯ menu) fires one request at the current host and says
+  whether it is reachable. A `401` means reachable but unauthenticated → add a token.
+- Deep links work: `…/API-TEST-STUDIO/?env=local` or `?base=https://my-api.example.com`.
 
 ```
 API test studio/
@@ -86,8 +89,8 @@ Same thing (uses `npx serve` on port 5173).
 
 ## Using it with *your* API
 
-The app is API-agnostic — nothing about Swivl is baked into the workflow. On a
-fresh browser it asks what you want:
+The app is API-agnostic — no vendor, host or spec is baked into the workflow. On
+a fresh browser it asks what you want:
 
 - **Connect my API** — paste an OpenAPI/Swagger URL (JSON or YAML)
 - **Start with a single request** — no spec needed
@@ -284,7 +287,7 @@ If you outgrow KV, swap the worker for one backed by D1/Durable Objects without 
 ## Troubleshooting
 
 **"Cannot POST /?url=..." in Send response**
-You have a public CORS proxy set in Settings. Those proxies only forward GET. The app v1.7+ auto-skips them for write methods, but clear the proxy field if your API allows CORS — Swivl dev does.
+You have a public CORS proxy set in Settings. Those proxies only forward GET. The app auto-skips them for write methods, but clear the proxy field if your API already allows CORS. For APIs that don't, deploy the relay instead — it forwards every method.
 
 **Push returns 401**
 Token must be 16-128 chars `[A-Za-z0-9_-]`. Use the **Generate** button.
