@@ -4473,6 +4473,18 @@ function parseSpecText(text) {
 
 /* What the spec says about itself, shown after an import so you know what
    you actually connected to. */
+/* Turn a spec's `servers[].url` into something a request can actually use. */
+function resolveServerUrl(server, source) {
+  const u = String(server || "").trim();
+  if (!u) return "";
+  if (/^https?:\/\//i.test(u)) return u.replace(/\/+$/, "");
+  // Relative (or protocol-relative) — anchor it to the spec's own location.
+  if (/^https?:/i.test(source || "") || /^\/\//.test(u)) {
+    try { return new URL(u, source).toString().replace(/\/+$/, ""); } catch (e) {}
+  }
+  return "";   // can't resolve — leave the host alone rather than guess wrong
+}
+
 function specSummary(spec) {
   const paths = Object.keys(spec.paths || {});
   const METHODS = ["get","post","put","patch","delete","options","head"];
@@ -4536,12 +4548,18 @@ function adoptSpec(spec, source, format) {
   state.swaggerSpec = spec;
   state.swaggerSource = source;
   const summary = specSummary(spec);
-  // A module with no host of its own inherits the spec's server.
+  // A module with no host of its own inherits the spec's server. Specs often
+  // declare that server relatively ("/api/v3"), which is meaningless on its
+  // own — resolve it against wherever the spec was fetched from, or the
+  // request would be sent to this app's own origin.
   const m = activeModule();
   if (m && summary.servers.length && !baseUrlFor(m, state.env)) {
-    m.baseUrls = m.baseUrls || {};
-    m.baseUrls[state.env] = summary.servers[0].replace(/\/+$/, "");
-    state.baseUrl = m.baseUrls[state.env];
+    const host = resolveServerUrl(summary.servers[0], source);
+    if (host) {
+      m.baseUrls = m.baseUrls || {};
+      m.baseUrls[state.env] = host;
+      state.baseUrl = host;
+    }
   }
   const picked = applySpecAuth(summary);
   save();
