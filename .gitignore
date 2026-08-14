@@ -2,3 +2,7 @@ node_modules/
 .wrangler/
 .dev.vars
 .DS_Store
+
+# Local test-case workbooks. These hold internal API data and this repo is
+# public — keep them on disk, out of git.
+*.xlsx
