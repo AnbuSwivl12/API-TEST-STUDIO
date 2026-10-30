@@ -90,6 +90,81 @@
   .guide-note{font-size:13px;color:var(--text-muted);margin-left:auto}
   @media (max-width:1000px){ .guide-note{display:none} }
 
+  /* ---------- Easy mode ---------- */
+  .modesw{display:inline-flex;border:1px solid var(--border-strong);border-radius:var(--radius-pill);overflow:hidden;flex-shrink:0}
+  .modesw button{padding:6px 14px;font-size:13px;font-weight:700;color:var(--text-muted)}
+  .modesw button.on{background:var(--accent-strong);color:var(--on-accent)}
+  body.is-easy #viewSwitch, body.is-easy #guide{display:none}
+  .easy{flex:1;overflow-y:auto;background:var(--bg)}
+  .easy[hidden]{display:none}
+  .ez-wrap{max-width:860px;margin:0 auto;padding:24px 20px 64px}
+  .ez-tabs{display:flex;gap:8px;margin-bottom:24px}
+  .ez-tab{flex:1;min-height:56px;border:2px solid var(--border-strong);border-radius:var(--radius-lg);background:var(--bg-elev);font-size:17px;font-weight:700;color:var(--text-muted)}
+  .ez-tab.on{border-color:var(--accent-strong);background:var(--accent-soft);color:var(--accent)}
+  .ez-steps{display:flex;gap:8px;list-style:none;margin:0 0 20px;padding:0;font-size:14px;color:var(--text-muted);flex-wrap:wrap}
+  .ez-steps li{display:flex;align-items:center;gap:8px}
+  .ez-steps li+li::before{content:"";width:24px;height:2px;background:var(--border-strong)}
+  .ez-steps b{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--border-strong);font-size:13px}
+  .ez-steps .on{color:var(--accent);font-weight:700}
+  .ez-steps .on b{background:var(--accent-strong);border-color:var(--accent-strong);color:var(--on-accent)}
+  .ez-steps .done b{background:var(--success-soft);border-color:var(--success);color:var(--success)}
+  .ez-h{font-size:28px;line-height:34px;font-weight:700;margin:0 0 6px}
+  .ez-lead{font-size:16px;line-height:1.55;color:var(--text-muted);margin:0 0 20px}
+  .ez-search{height:52px;font-size:17px;padding:0 16px;margin-bottom:20px;border-width:2px}
+  .ez-group{font-size:15px;font-weight:700;color:var(--text-muted);margin:20px 0 10px}
+  .ez-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+  .ez-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;padding:16px;min-height:112px;
+    border:2px solid var(--border);border-radius:var(--radius-lg);background:var(--bg-elev);box-shadow:var(--shadow-raised);cursor:pointer}
+  .ez-card:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .ez-card .t{font-size:17px;font-weight:700;line-height:1.3;color:var(--text)}
+  .ez-card .p{font-family:var(--mono);font-size:12px;color:var(--text-dim);word-break:break-all}
+  .ez-verb{display:inline-block;padding:3px 10px;border-radius:var(--radius-pill);font-size:13px;font-weight:700}
+  .ez-verb.GET{background:var(--success-soft);color:var(--success)}
+  .ez-verb.POST{background:var(--warning-soft);color:var(--warning)}
+  .ez-verb.PUT{background:var(--info-soft);color:var(--info)}
+  .ez-verb.PATCH{background:var(--accent-soft);color:var(--accent)}
+  .ez-verb.DELETE{background:var(--danger-soft);color:var(--danger)}
+  .ez-verb.HEAD,.ez-verb.OPTIONS{background:var(--bg-elev-2);color:var(--text-muted)}
+  .ez-panel{background:var(--bg-elev);border:2px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px}
+  .ez-field{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+  .ez-field label{font-size:16px;font-weight:700}
+  .ez-field small{font-size:14px;color:var(--text-muted)}
+  .ez-field input,.ez-field select,.ez-field textarea{min-height:48px;font-size:16px;border-width:2px}
+  .ez-addr{font-family:var(--mono);font-size:14px;color:var(--text-muted);word-break:break-all;padding:10px 12px;background:var(--bg-elev-2);border-radius:var(--radius-md)}
+  .ez-more{margin-top:8px}
+  .ez-more summary{cursor:pointer;font-size:15px;font-weight:700;color:var(--accent);padding:6px 0}
+  .ez-big{width:100%;min-height:64px;font-size:20px;border-radius:var(--radius-lg)}
+  .ez-row{display:flex;gap:10px;flex-wrap:wrap}
+  .ez-row .btn{min-height:48px;font-size:16px;padding:0 20px}
+  .ez-back{font-size:15px;font-weight:700;color:var(--accent);margin-bottom:12px;padding:4px 0}
+  .ez-verdict{display:flex;gap:16px;align-items:center;padding:20px;border-radius:var(--radius-lg);margin-bottom:16px;border:2px solid}
+  .ez-verdict .icon{flex:none;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:32px;font-weight:700}
+  .ez-verdict .big{font-size:26px;font-weight:700;line-height:1.2}
+  .ez-verdict .why{font-size:16px;line-height:1.5;margin-top:4px;color:var(--text)}
+  .ez-verdict .meta{font-size:14px;color:var(--text-muted);margin-top:4px}
+  .ez-verdict.ok{background:var(--success-soft);border-color:var(--success)} .ez-verdict.ok .icon{background:var(--success);color:var(--bg-elev)}
+  .ez-verdict.warn{background:var(--warning-soft);border-color:var(--warning)} .ez-verdict.warn .icon{background:var(--warning);color:var(--bg-elev)}
+  .ez-verdict.bad{background:var(--danger-soft);border-color:var(--danger)} .ez-verdict.bad .icon{background:var(--danger);color:var(--bg-elev)}
+  .ez-table{width:100%;border-collapse:collapse;font-size:14px}
+  .ez-table th{text-align:left;padding:8px 10px;background:var(--bg-elev-2);font-weight:700;border-bottom:1px solid var(--border)}
+  .ez-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ez-kv{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:8px 16px;font-size:15px}
+  .ez-kv dt{font-weight:700;color:var(--text-muted)} .ez-kv dd{margin:0;word-break:break-word}
+  .ez-check{display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.4;padding:10px 0;cursor:pointer}
+  .ez-check input{width:22px;height:22px;flex:none;margin-top:1px;accent-color:var(--accent-strong)}
+  .ez-score{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .ez-score .n{font-size:44px;font-weight:700;line-height:1}
+  .ez-bar{flex:1;min-width:200px;height:16px;border-radius:var(--radius-pill);background:var(--danger-soft);overflow:hidden}
+  .ez-bar i{display:block;height:100%;background:var(--success)}
+  .ez-test{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:14px 16px;border:2px solid var(--border);border-radius:var(--radius-lg);background:var(--bg-elev);margin-bottom:10px}
+  .ez-dot{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:20px;font-weight:700;background:var(--bg-elev-2);color:var(--text-muted)}
+  .ez-dot.pass{background:var(--success);color:var(--bg-elev)} .ez-dot.fail{background:var(--danger);color:var(--bg-elev)}
+  .ez-dot.blocked,.ez-dot.skip{background:var(--warning);color:var(--bg-elev)}
+  .ez-test .name{font-size:17px;font-weight:700}
+  .ez-test .sub{font-size:14px;color:var(--text-muted);margin-top:2px}
+  .ez-test .sub.bad{color:var(--danger)}
+  @media (max-width:640px){ .ez-h{font-size:24px} .ez-verdict{flex-direction:column;align-items:flex-start} .ez-test{grid-template-columns:44px 1fr} .ez-test .btn{grid-column:1/-1} }
+
   /* ---------- connection chip + popover ---------- */
   .connchip{display:inline-flex;align-items:center;gap:8px;min-height:var(--control-sm);padding:4px 12px;border-radius:var(--radius-pill);
     border:1px solid var(--border-strong);background:var(--bg-elev);font-size:14px;cursor:pointer;flex-shrink:1;min-width:0;max-width:440px}
@@ -646,6 +721,10 @@
       <button data-v="cases" onclick="setView('cases')">Explore</button>
       <button data-v="report" onclick="setView('report')">Results<span class="badge" id="viewFailBadge" style="display:none">0</span></button>
     </div>
+    <div class="modesw" id="modeSwitch" role="tablist" aria-label="How much to show">
+      <button data-m="easy" onclick="setMode('easy')" title="Step by step, one thing at a time">Easy</button>
+      <button data-m="full" onclick="setMode('full')" title="Every tool, all on one screen">Full</button>
+    </div>
     <div class="tb-actions">
       <button class="btn small" id="moreBtn" onclick="toggleMoreMenu()" title="Connect an API, import or export tests, settings">
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>Menu<span id="swaggerChip" style="display:none" aria-hidden="true"></span>
@@ -753,6 +832,9 @@
     </aside>
     <main class="rp-body" id="rpBody"></main>
   </div>
+
+  <!-- Easy mode: one step at a time, in plain words -->
+  <div class="easy" id="easyMain" hidden></div>
 </div>
 
 <!-- module picker -->
@@ -1341,6 +1423,9 @@ const state = (() => {
     relayTrusted: false,// send credentials through it? an explicit decision
     onboarded: false,
     guideDone: false,   // the four-step guide strip under the top bar, until dismissed
+    mode: "easy",       // "easy" = step-by-step screens; "full" = the whole workspace
+    easyTab: "try",     // easy mode: "try" something, or "tests"
+    easyStep: "pick",   // easy "try": pick → fill → result
     timeoutMs: 30000,     // ceiling, used by timing/load cases
     caseTimeoutMs: 10000, // fail-fast default for everything else
     lanes: 6,             // parallel requests during a run
@@ -2033,6 +2118,7 @@ function newRequest(seed) {
   state.draft = newDraft(seed);
   state.selectedId = null;
   state.activeTab = "params";
+  state.easyTab = "try"; state.easyStep = "fill";
   save();
   setView("cases");
   renderSidebar(); renderDoc(); renderTry(); renderResp();
@@ -2048,7 +2134,7 @@ function beginSaveDraft() {
   if (el) { el.focus(); el.select(); }
 }
 function cancelSaveDraft() { state.savingDraft = false; renderTry(); renderDoc(); }
-function saveDraftAsCase(nameArg) {
+function saveDraftAsCase(nameArg, quiet) {
   const d = ensureDraft();
   const fallback = d.scenario && d.scenario !== "Untitled request" ? d.scenario : `${d.method} ${d.path}`;
   const name = String(nameArg != null ? nameArg : (($("#draftName") && $("#draftName").value) || fallback)).trim();
@@ -2068,7 +2154,7 @@ function saveDraftAsCase(nameArg) {
   state.draft = newDraft();
   save();
   renderSidebar(); renderDoc(); renderTry(); renderResp();
-  toast(`Saved as ${id} — add assertions or run it with the suite`, "success");
+  if (!quiet) toast(`Saved as ${id} — add assertions or run it with the suite`, "success");
 }
 function statusList(expected) {
   if (!expected) return [];
@@ -3897,6 +3983,7 @@ async function sendRequest(caseOverride) {
 }
 
 function renderResp() {
+  renderEasy();
   const c = currentCase();
   const last = c?.lastRun;
   // Cases the browser can't run get an explanation and a way out, not a red
@@ -4100,14 +4187,14 @@ function specExamplePreviewHtml(c) {
 /* =========================================================================
    Run-all + export
    ========================================================================= */
-async function runAll() {
+async function runAll(opts) {
   let targets = state.selection.length ? state.cases.filter(c => state.selection.includes(c.id)) : state.cases.slice();
   const scope = state.selection.length ? `${targets.length} selected` : `all ${targets.length}`;
   const nSerial = targets.filter(isSerialCase).length;
   const laneNote = (state.lanes || 6) > 1
     ? `${state.lanes || 6} at a time${nSerial ? `, plus ${nSerial} timing/load case(s) run alone at the end` : ""}`
     : "one at a time";
-  if (!confirm(`Run ${scope} test case(s) against ${state.baseUrl} — ${laneNote}?\nThis hits the live API.`)) return;
+  if (!(opts && opts.confirmed) && !confirm(`Run ${scope} test case(s) against ${state.baseUrl} — ${laneNote}?\nThis hits the live API.`)) return;
   const bar = $("#progressBar"), fill = $("#progressFill");
   bar.classList.add("active");
   const delay = state.bulkDelayMs || 120;
@@ -5482,10 +5569,12 @@ function setView(v) {
   state.view = v === "report" ? "report" : "cases";
   save();
   document.querySelectorAll("#viewSwitch button").forEach(b => b.classList.toggle("on", b.dataset.v === state.view));
-  $(".main").style.display = state.view === "cases" ? "flex" : "none";
-  $("#reportMain").style.display = state.view === "report" ? "flex" : "none";
+  const full = state.mode === "full";
+  $(".main").style.display = full && state.view === "cases" ? "flex" : "none";
+  $("#reportMain").style.display = full && state.view === "report" ? "flex" : "none";
   if (state.view === "report") renderReport();
   renderGuide();
+  renderEasy();
 }
 
 /* Badge on the switch = failures in the newest run, so you can see there is
@@ -6163,6 +6252,387 @@ function installKeyboard() {
 /* =========================================================================
    Boot
    ========================================================================= */
+/* =========================================================================
+   EASY MODE
+   -------------------------------------------------------------------------
+   The same app, one step at a time and in plain words, for someone who has
+   never tested an API: pick something to try → fill in the blanks → Try it!
+   → read what happened → keep it as a test. "My tests" runs them all and
+   keeps score. Everything here drives the same state, send and run code as
+   the full workspace; switching modes loses nothing.
+   ========================================================================= */
+const EZ_VERBS = { GET: "Get", POST: "Add", PUT: "Replace", PATCH: "Change", DELETE: "Delete", HEAD: "Check", OPTIONS: "Ask" };
+
+function setMode(m) {
+  state.mode = m === "full" ? "full" : "easy";
+  save();
+  setView(state.view);
+  if (state.mode === "full") renderAll();
+}
+
+function renderEasy() {
+  const host = $("#easyMain"); if (!host) return;
+  const easy = state.mode !== "full";
+  document.body.classList.toggle("is-easy", easy);
+  document.querySelectorAll("#modeSwitch button").forEach(b => b.classList.toggle("on", b.dataset.m === (easy ? "easy" : "full")));
+  host.hidden = !easy;
+  if (!easy) return;
+  const nTests = state.cases.length;
+  const tab = state.easyTab === "tests" ? "tests" : "try";
+  host.innerHTML = `<div class="ez-wrap">
+    <div class="ez-tabs" role="tablist">
+      <button class="ez-tab ${tab === "try" ? "on" : ""}" role="tab" aria-selected="${tab === "try"}" onclick="ezGo('try')">Try something</button>
+      <button class="ez-tab ${tab === "tests" ? "on" : ""}" role="tab" aria-selected="${tab === "tests"}" onclick="ezGo('tests')">My tests${nTests ? ` (${nTests})` : ""}</button>
+    </div>
+    ${tab === "tests" ? ezTestsHtml() : ezTryHtml()}
+  </div>`;
+  if (tab === "try" && (state.easyStep || "pick") === "pick") ezRenderCards();
+}
+
+function ezGo(tab, step) {
+  state.easyTab = tab;
+  if (step) state.easyStep = step;
+  if (tab === "try" && !step && state.easyStep === "result" && !currentCase().lastRun) state.easyStep = "pick";
+  state.ezSaving = false;
+  save(); renderEasy();
+  const m = $("#easyMain"); if (m) m.scrollTop = 0;
+}
+
+function ezStepsHtml(step) {
+  const steps = [["pick", "Pick what to try"], ["fill", "Fill in the blanks"], ["result", "See what happened"]];
+  const at = steps.findIndex(s => s[0] === step);
+  return `<ol class="ez-steps">${steps.map(([k, label], i) =>
+    `<li class="${i < at ? "done" : i === at ? "on" : ""}"${i === at ? ' aria-current="step"' : ""}><b>${i < at ? "✓" : i + 1}</b>${label}</li>`).join("")}</ol>`;
+}
+
+function ezTryHtml() {
+  const step = state.easyStep || "pick";
+  if (step === "fill") return ezStepsHtml("fill") + ezFillHtml();
+  if (step === "result" && currentCase().lastRun) return ezStepsHtml("result") + ezResultHtml();
+  return ezStepsHtml("pick") + ezPickHtml();
+}
+
+/* ---- step 1: pick ------------------------------------------------------ */
+function ezPickHtml() {
+  if (!state.swaggerSpec) {
+    return `<h1 class="ez-h">Let's get started</h1>
+      <p class="ez-lead">To test an API, the app needs to know what it can do. Try the practice API first — it's free and safe.</p>
+      <div class="ez-panel">
+        <div class="ez-field" style="margin:0">
+          <label>Practice with the demo API</label>
+          <small>A pretend website with posts, comments and users. Nothing you do here changes anything real.</small>
+        </div>
+        <button class="btn primary ez-big" style="margin-top:14px" onclick="obDemo();ezGo('try','pick')">Use the practice API</button>
+      </div>
+      <div class="ez-panel">
+        <div class="ez-field">
+          <label for="ez_spec">Or connect your own API</label>
+          <small>Paste the link to its description file (it often ends in <span class="mono">openapi.json</span> or <span class="mono">swagger.json</span>).</small>
+          <input id="ez_spec" class="mono" placeholder="https://api.example.com/openapi.json" onkeydown="if(event.key==='Enter')ezConnect()" />
+        </div>
+        <div class="ez-row"><button class="btn" onclick="ezConnect()">Connect</button>
+          <button class="btn ghost" onclick="newRequest({method:'GET',path:''})">I just have a web address</button></div>
+      </div>`;
+  }
+  return `<h1 class="ez-h">What do you want to try?</h1>
+    <p class="ez-lead">Each card is one thing this API can do. Pick one — you can't break anything by trying.</p>
+    <input class="ez-search" id="ezSearch" placeholder="Search, e.g. “posts” or “users”" aria-label="Search" value="${esc(state.ezSearch || "")}"
+           oninput="state.ezSearch=this.value;ezRenderCards()" />
+    <div id="ezCards"></div>
+    <p style="margin-top:24px"><button class="ez-back" onclick="newRequest({method:'GET',path:''})">Or type a web address yourself →</button></p>`;
+}
+
+function ezRenderCards() {
+  const host = $("#ezCards"); if (!host) return;
+  const q = (state.ezSearch || "").toLowerCase().trim();
+  const eps = specEndpoints().filter(e => !q || e.path.toLowerCase().includes(q) ||
+    e.summary.toLowerCase().includes(q) || e.tag.toLowerCase().includes(q));
+  const groups = {};
+  eps.forEach(e => { (groups[e.tag] = groups[e.tag] || []).push(e); });
+  host.innerHTML = Object.keys(groups).sort().map(tag => `
+    <div class="ez-group">${esc(tag)}</div>
+    <div class="ez-grid">${groups[tag].map(e => `
+      <button class="ez-card" onclick="ezPick('${esc(e.path)}','${e.method}')">
+        <span class="ez-verb ${e.method}">${EZ_VERBS[e.method] || e.method}</span>
+        <span class="t">${esc(e.summary || `${EZ_VERBS[e.method] || e.method} ${e.path}`)}</span>
+        <span class="p">${esc(e.path)}</span>
+      </button>`).join("")}</div>`).join("")
+    || `<p class="ez-lead">Nothing matches “${esc(q)}”. Try a different word.</p>`;
+}
+
+function ezPick(path, method) {
+  openEndpoint(path, method);   // same draft the full workspace would open
+  ezGo("try", "fill");
+}
+
+function ezConnect() {
+  const url = ($("#ez_spec").value || "").trim();
+  if (!url) { toast("Paste the link first", "error"); return; }
+  finishOnboarding();
+  loadModuleIntoState(ensureUserModule());
+  renderAll();
+  openModal("swagger");
+  $("#sw_url").value = url;
+  connectSwagger();
+}
+
+/* ---- step 2: fill in ---------------------------------------------------- */
+function ezOp(c) {
+  const hit = state.swaggerSpec && findOperation(state.swaggerSpec, c.method, c.path);
+  return hit ? { ...hit, params: collectParams(state.swaggerSpec, hit.path, hit.op) } : null;
+}
+function ezTitle(c) {
+  const op = ezOp(c);
+  return (op && op.op.summary) || (c.scenario && c.scenario !== "Untitled request" ? c.scenario : "") ||
+    `${EZ_VERBS[c.method] || c.method} ${c.path || "something"}`;
+}
+
+function ezFillHtml() {
+  const c = currentCase();
+  const op = ezOp(c);
+  const params = op ? op.params : [];
+  const desc = op && op.op.description && op.op.description !== op.op.summary ? op.op.description : "";
+  const vars = (String(c.path || "").match(/\{([^}]+)\}/g) || []).map(v => v.slice(1, -1));
+  const query = c.query || [];
+  const qInfo = k => params.find(p => p.in === "query" && p.name === k) || {};
+  const needed = query.map((q, i) => ({ q, i, info: qInfo(q.key) })).filter(x => x.info.required);
+  const optional = query.map((q, i) => ({ q, i, info: qInfo(q.key) })).filter(x => !x.info.required);
+  const hasBody = !["GET", "HEAD", "DELETE"].includes(c.method);
+  let bodyObj = null;
+  try { bodyObj = c.body ? JSON.parse(c.body) : null; } catch (e) {}
+  const flat = bodyObj && typeof bodyObj === "object" && !Array.isArray(bodyObj)
+    ? Object.keys(bodyObj).filter(k => bodyObj[k] === null || typeof bodyObj[k] !== "object") : [];
+  const needsSignIn = op && (op.op.security || (state.swaggerSpec.security && op.op.security !== undefined)) &&
+    (state.authType || "bearer") !== "none" && !(state.authToken || "").trim();
+
+  const field = (id, label, help, value, oninput, mono) => `
+    <div class="ez-field"><label for="${id}">${label}</label>${help ? `<small>${help}</small>` : ""}
+      <input id="${id}" class="${mono ? "mono" : ""}" value="${esc(value == null ? "" : String(value))}" oninput="${oninput}" /></div>`;
+
+  return `<button class="ez-back" onclick="ezGo('try','pick')">← Pick something else</button>
+    <h1 class="ez-h"><span class="ez-verb ${c.method}" style="font-size:16px;vertical-align:6px">${EZ_VERBS[c.method] || c.method}</span> ${esc(ezTitle(c))}</h1>
+    ${desc ? `<p class="ez-lead">${esc(desc)}</p>` : `<p class="ez-lead">Fill in anything below, then press <b>Try it!</b></p>`}
+
+    <div class="ez-panel">
+      ${op ? `<div class="ez-field" style="margin-bottom:${vars.length || needed.length || flat.length ? 16 : 0}px"><label>Where it goes</label><div class="ez-addr" id="ezAddr">${esc(ezAddress(c))}</div></div>`
+        : `<div class="ez-field"><label for="ez_m">What to do</label>
+            <select id="ez_m" onchange="ezSetMethod(this.value)">${Object.keys(EZ_VERBS).map(m => `<option value="${m}" ${c.method === m ? "selected" : ""}>${EZ_VERBS[m]} (${m})</option>`).join("")}</select></div>
+          ${field("ez_url", "Web address", "The full address, like https://jsonplaceholder.typicode.com/posts", c.path, "ezSetPath(this.value)", true)}`}
+      ${vars.map(v => {
+        const info = params.find(p => p.in === "path" && p.name === v) || {};
+        return field("ez_v_" + v, `Which ${esc(v)}?`, esc(info.description || "Type a value, for example 1."), (c.pathVars || {})[v], `setPathVar('${esc(v)}', this.value);ezAddrRefresh()`, true);
+      }).join("")}
+      ${needed.map(({ q, i, info }) => field("ez_q" + i, esc(q.key), esc(info.description || "Needed."), q.value, `ezSetQuery(${i}, this.value)`)).join("")}
+      ${flat.map(k => field("ez_b_" + k, esc(k), typeof bodyObj[k] === "number" ? "A number." : typeof bodyObj[k] === "boolean" ? "true or false." : "", bodyObj[k], `ezSetBodyKey('${esc(k)}', this.value)`)).join("")}
+      ${(optional.length || (hasBody && c.body)) ? `<details class="ez-more"><summary>More options</summary>
+        ${optional.map(({ q, i, info }) => field("ez_q" + i, esc(q.key), esc(info.description || "Optional — leave empty to skip."), q.value, `ezSetQuery(${i}, this.value)`)).join("")}
+        ${hasBody && c.body ? `<div class="ez-field"><label for="ez_body">Everything it sends, as text</label>
+          <small>For grown-up edits. The boxes above change this too.</small>
+          <textarea id="ez_body" style="height:160px" oninput="setBody(this.value)">${esc(c.body)}</textarea></div>` : ""}
+      </details>` : ""}
+    </div>
+
+    ${needsSignIn ? `<div class="tip" style="margin:0 0 16px">This one may need you to sign in first.
+      <a onclick="toggleAuthPop()">Add a sign-in</a></div>` : ""}
+
+    <button class="btn primary ez-big" id="ezTry" onclick="ezSend()">Try it!</button>`;
+}
+
+function ezAddress(c) { try { return `${EZ_VERBS[c.method] || c.method} → ${buildUrl(c)}`; } catch (e) { return c.path; } }
+function ezAddrRefresh() { const el = $("#ezAddr"); if (el) el.textContent = ezAddress(currentCase()); }
+function ezSetQuery(i, v) {
+  const c = currentCase(); if (!c.query || !c.query[i]) return;
+  c.query[i].value = v; c.query[i].enabled = v !== "" || c.query[i].enabled; save(); ezAddrRefresh();
+}
+function ezSetBodyKey(k, v) {
+  const c = currentCase();
+  let o; try { o = JSON.parse(c.body); } catch (e) { return; }
+  const was = o[k];
+  o[k] = typeof was === "number" && v.trim() !== "" && !isNaN(Number(v)) ? Number(v)
+       : typeof was === "boolean" && /^(true|false)$/i.test(v.trim()) ? v.trim().toLowerCase() === "true" : v;
+  c.body = JSON.stringify(o, null, 2); save();
+  const t = $("#ez_body"); if (t) t.value = c.body;
+}
+function ezSetMethod(m) { const c = currentCase(); c.method = m; save(); }
+function ezSetPath(v) { const c = currentCase(); c.path = v.trim(); save(); }
+
+async function ezSend() {
+  const b = $("#ezTry");
+  if (b) { b.disabled = true; b.textContent = "Trying…"; }
+  try { await sendRequest(); } finally { state.easyStep = "result"; state.ezSaving = false; save(); renderEasy(); }
+}
+
+/* ---- step 3: what happened --------------------------------------------- */
+function ezVerdict(run) {
+  if (!run) return null;
+  if (run.error || !run.status) return { cls: "bad", icon: "✕", big: "Couldn't reach it",
+    why: run.browserBlocked ? run.error : "The server didn't answer. It may be switched off, or it doesn't let web pages talk to it (that's called CORS — Settings → Relay can fix it)." };
+  const s = run.status;
+  if (s >= 200 && s < 300) return { cls: "ok", icon: "✓", big: "It worked!",
+    why: s === 201 ? "The server made the new thing you asked for." : s === 204 ? "The server did it. It had nothing to show back." : "The server answered and gave you what you asked for." };
+  if (s === 401 || s === 403) return { cls: "warn", icon: "!", big: "You need to sign in", why: httpStatusHint(s), signIn: true };
+  if (s >= 300 && s < 500) return { cls: "warn", icon: "!", big: "The server said no", why: httpStatusHint(s) };
+  return { cls: "bad", icon: "✕", big: "The server had a problem", why: httpStatusHint(s) };
+}
+
+function ezResultHtml() {
+  const c = currentCase();
+  const run = c.lastRun;
+  const v = ezVerdict(run);
+  const draft = isDraft(c);
+  const secs = (run.durationMs / 1000).toFixed(run.durationMs < 1000 ? 2 : 1);
+  const checks = run.assertions || [];
+  return `<button class="ez-back" onclick="ezGo('try','fill')">← Change and try again</button>
+    <h1 class="ez-h" style="font-size:22px">${esc(ezTitle(c))}</h1>
+    <div class="ez-verdict ${v.cls}" role="status">
+      <div class="icon" aria-hidden="true">${v.icon}</div>
+      <div><div class="big">${v.big}</div><div class="why">${esc(v.why || "")}</div>
+        <div class="meta">${run.status ? `Answer code ${run.status} · ` : ""}took ${secs} seconds</div></div>
+    </div>
+    ${!draft && run.verdict ? `<div class="ez-panel"><div style="font-size:18px;font-weight:700;color:var(${run.verdict === "pass" ? "--success" : "--danger"})">
+        ${run.verdict === "pass" ? "✓ This test passed" : "✕ This test failed"}</div>
+      ${checks.map(a => `<div style="font-size:15px;margin-top:6px">${a.ok ? "✓" : "✕"} ${esc(ezCheckWords(a))}${a.ok ? "" : ` — got ${esc(String(a.actual))}`}</div>`).join("")}</div>` : ""}
+    ${v.signIn ? `<div class="ez-row" style="margin-bottom:16px"><button class="btn primary" onclick="toggleAuthPop()">Add a sign-in</button></div>` : ""}
+    ${run.body ? `<div class="ez-panel"><div class="ez-field" style="margin-bottom:10px"><label>What came back</label></div>${ezDataHtml(run.body)}
+      <details class="ez-more"><summary>Show exactly what came back</summary><div class="code-block" style="max-height:320px;overflow:auto;margin-top:8px">${esc(ezPretty(run.body))}</div></details></div>` : ""}
+    ${state.ezSaving ? ezSaveHtml(c) : `<div class="ez-row">
+      ${draft ? `<button class="btn ${v.cls === "ok" ? "primary" : ""}" onclick="state.ezSaving=true;renderEasy()">Save as a test</button>` : ""}
+      <button class="btn" onclick="ezSend()">Try again</button>
+      <button class="btn ${draft && v.cls === "ok" ? "" : "primary"}" onclick="ezGo('try','pick')">Try something else</button>
+    </div>`}`;
+}
+
+function ezPretty(t) { try { return JSON.stringify(JSON.parse(t), null, 2); } catch (e) { return t; } }
+function ezShort(v) {
+  if (v === null) return "empty";
+  if (Array.isArray(v)) return `a list of ${v.length}`;
+  if (typeof v === "object") return `${Object.keys(v).length} details`;
+  const s = String(v); return s.length > 80 ? s.slice(0, 80) + "…" : s;
+}
+/* A list becomes a table and an object becomes a list of facts, so nobody
+   has to read JSON to see what came back. */
+function ezDataHtml(text) {
+  let d; try { d = JSON.parse(text); } catch (e) { return `<div class="code-block" style="max-height:220px;overflow:auto">${esc(text.slice(0, 2000))}</div>`; }
+  if (Array.isArray(d)) {
+    if (!d.length) return `<p class="ez-lead" style="margin:0">An empty list — nothing found.</p>`;
+    const rows = d.slice(0, 10);
+    const cols = typeof rows[0] === "object" && rows[0] ? Object.keys(rows[0]).filter(k => rows[0][k] === null || typeof rows[0][k] !== "object").slice(0, 5) : null;
+    return `<p style="font-size:16px;margin:0 0 10px"><b>Found ${d.length} item${d.length === 1 ? "" : "s"}.</b>${d.length > 10 ? " Here are the first 10." : ""}</p>
+      ${cols && cols.length ? `<div style="overflow-x:auto"><table class="ez-table"><thead><tr>${cols.map(k => `<th>${esc(k)}</th>`).join("")}</tr></thead>
+        <tbody>${rows.map(r => `<tr>${cols.map(k => `<td title="${esc(String(r[k]))}">${esc(ezShort(r[k]))}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`
+        : `<ul style="margin:0;padding-left:20px">${rows.map(r => `<li>${esc(ezShort(r))}</li>`).join("")}</ul>`}`;
+  }
+  if (d && typeof d === "object") {
+    const keys = Object.keys(d);
+    if (!keys.length) return `<p class="ez-lead" style="margin:0">Nothing in it — that's normal for some actions.</p>`;
+    return `<dl class="ez-kv">${keys.slice(0, 20).map(k => `<dt>${esc(k)}</dt><dd>${esc(ezShort(d[k]))}</dd>`).join("")}</dl>`;
+  }
+  return `<p style="font-size:16px;margin:0">${esc(String(d))}</p>`;
+}
+
+/* ---- keep it as a test --------------------------------------------------- */
+function ezSaveHtml(c) {
+  const run = c.lastRun;
+  let fields = [];
+  try { const d = JSON.parse(run.body || ""); const o = Array.isArray(d) ? d[0] : d;
+    if (o && typeof o === "object") fields = Object.keys(o).slice(0, 12); } catch (e) {}
+  let isList = false; try { isList = Array.isArray(JSON.parse(run.body || "")); } catch (e) {}
+  const limit = Math.max(1000, Math.ceil((run.durationMs * 3) / 500) * 500);
+  return `<div class="ez-panel">
+    <div class="ez-field"><label for="ezName">Give your test a name</label>
+      <input id="ezName" value="${esc(ezTitle(c))}" onkeydown="if(event.key==='Enter')ezSave()" /></div>
+    <div class="ez-field" style="margin-bottom:4px"><label>It passes when…</label></div>
+    ${run.status ? `<label class="ez-check"><input type="checkbox" id="ezc_status" checked> the answer code is ${run.status} again ${run.status < 300 ? "(it works)" : ""}</label>` : ""}
+    <label class="ez-check"><input type="checkbox" id="ezc_time" ${run.durationMs < limit ? "checked" : ""}> it answers in under ${limit / 1000} second${limit === 1000 ? "" : "s"}</label>
+    ${isList ? `<label class="ez-check"><input type="checkbox" id="ezc_list" checked> the list is not empty</label>` : ""}
+    ${fields.length ? `<div class="ez-check" style="align-items:center;flex-wrap:wrap;cursor:default">
+      <input type="checkbox" id="ezc_field"><label for="ezc_field" style="cursor:pointer">${isList ? "the first item" : "the answer"} has</label>
+      <select id="ezc_fieldname" aria-label="Which detail" style="width:auto;min-height:36px" onchange="$('#ezc_field').checked=true">${fields.map(f => `<option>${esc(f)}</option>`).join("")}</select>
+      <label for="ezc_field" style="cursor:pointer">filled in</label></div>` : ""}
+    <div class="ez-row" style="margin-top:12px"><button class="btn primary" onclick="ezSave()">Save test</button>
+      <button class="btn ghost" onclick="state.ezSaving=false;renderEasy()">Cancel</button></div>
+  </div>`;
+}
+
+function ezSave() {
+  const c = currentCase(); const run = c.lastRun;
+  const name = ($("#ezName").value || "").trim();
+  if (!name) { toast("Give your test a name", "error"); return; }
+  const checks = [];
+  const on = id => $(id) && $(id).checked;
+  let isList = false; try { isList = Array.isArray(JSON.parse(run.body || "")); } catch (e) {}
+  if (on("#ezc_status")) checks.push({ ...newAssertion("status"), value: String(run.status) });
+  if (on("#ezc_time")) { const lim = Math.max(1000, Math.ceil((run.durationMs * 3) / 500) * 500); checks.push({ ...newAssertion("time"), value: String(lim) }); }
+  if (on("#ezc_list")) checks.push({ ...newAssertion("json"), path: "[0]", op: "exists", value: "" });
+  if (on("#ezc_field")) checks.push({ ...newAssertion("json"), path: (isList ? "[0]." : "") + $("#ezc_fieldname").value, op: "is not empty", value: "" });
+  c.assertions = checks;
+  c.expected = { status: run.status || 200 };
+  state.ezSaving = false;
+  saveDraftAsCase(name, true);
+  toast(`Saved “${name}”. Find it in My tests.`, "success");
+  ezGo("tests");
+}
+function ezCheckWords(a) {
+  if (a.type === "status") return `Answer code is ${a.value}`;
+  if (a.type === "time") return `Answers in under ${(Number(a.value) / 1000)} s`;
+  if (a.type === "json" && a.path === "[0]") return "The list is not empty";
+  if (a.type === "json") return `“${String(a.path).replace(/^\[0\]\./, "")}” is filled in`;
+  return a.label || assertionLabel(a);
+}
+
+/* ---- my tests ------------------------------------------------------------ */
+function ezTestsHtml() {
+  const cases = state.cases;
+  if (!cases.length) return `<h1 class="ez-h">My tests</h1>
+    <p class="ez-lead">A test is something you tried and saved, so you can check it still works later.
+    Try something, then press <b>Save as a test</b>.</p>
+    <button class="btn primary ez-big" onclick="ezGo('try','pick')">Try something</button>`;
+  const run = currentRun();
+  const passed = cases.filter(c => c.status === "pass").length;
+  const failed = cases.filter(c => c.status === "fail").length;
+  const ran = cases.filter(c => c.status && c.status !== "pending").length;
+  const order = { fail: 0, blocked: 1, skip: 2, pending: 3, pass: 4 };
+  const sorted = cases.slice().sort((a, b) => (order[a.status || "pending"] - order[b.status || "pending"]));
+  return `<h1 class="ez-h">My tests</h1>
+    <p class="ez-lead">Press the big button to check every test at once.</p>
+    <button class="btn primary ez-big" id="ezRunAll" onclick="ezRunAll()">Check all ${cases.length} test${cases.length === 1 ? "" : "s"}</button>
+    ${ran ? `<div class="ez-panel" style="margin-top:16px"><div class="ez-score">
+        <div class="n">${passed} <span style="font-size:20px;color:var(--text-muted)">of ${cases.length} passed</span></div>
+        <div class="ez-bar" role="img" aria-label="${passed} of ${cases.length} passed"><i style="width:${(passed / cases.length) * 100}%"></i></div>
+      </div>
+      <div style="font-size:16px;margin-top:10px">${failed ? `<b style="color:var(--danger)">${failed} need${failed === 1 ? "s" : ""} a look</b> — they're at the top.` : passed === cases.length ? "<b style=\"color:var(--success)\">Everything works!</b>" : ""}
+        ${run ? `<span class="muted"> Last checked ${fmtClock(run.at)}.</span>` : ""}</div></div>` : ""}
+    <div style="margin-top:16px">${sorted.map(c => {
+      const st = c.status || "pending";
+      const why = ezWhy(c);
+      return `<div class="ez-test">
+        <div class="ez-dot ${st}" aria-hidden="true">${{ pass: "✓", fail: "✕", blocked: "!", skip: "–" }[st] || "?"}</div>
+        <div><div class="name">${esc(c.scenario || c.path)}</div>
+          <div class="sub ${st === "fail" ? "bad" : ""}">${{ pass: "Passed", fail: "Failed", blocked: "Can't run in a browser", skip: "Skipped" }[st] || "Not checked yet"}${why ? " — " + esc(why) : ""}</div></div>
+        <button class="btn" onclick="ezOpenTest('${esc(c.id)}')">Open</button>
+      </div>`;
+    }).join("")}</div>`;
+}
+function ezWhy(c) {
+  const r = c.lastRun; if (!r || c.status !== "fail") return "";
+  const bad = (r.assertions || []).find(a => !a.ok);
+  if (bad) return `${ezCheckWords(bad)}, but got ${bad.actual}`;
+  if (r.error) return "couldn't reach the server";
+  const want = statusList(c.expected);
+  return want.length ? `wanted answer code ${want.join(" or ")}, got ${r.status}` : `got answer code ${r.status}`;
+}
+function ezOpenTest(id) {
+  state.selectedId = id;
+  const c = selectedCase();
+  ezGo("try", c && c.lastRun ? "result" : "fill");
+  renderSidebar(); renderDoc(); renderTry();
+}
+async function ezRunAll() {
+  const b = $("#ezRunAll");
+  if (b) { b.disabled = true; b.textContent = "Checking…"; }
+  try { await runAll({ confirmed: true }); } finally { state.easyTab = "tests"; save(); renderEasy(); }
+}
+
 function boot() {
   document.documentElement.dataset.theme = state.theme;
   ensureModules(state);
