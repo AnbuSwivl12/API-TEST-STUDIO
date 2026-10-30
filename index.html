@@ -720,6 +720,7 @@
     <div class="viewsw" id="viewSwitch" role="tablist" aria-label="Workspace view" title="Explore = send requests. Results = what happened in the last test run.">
       <button data-v="cases" onclick="setView('cases')">Explore</button>
       <button data-v="report" onclick="setView('report')">Results<span class="badge" id="viewFailBadge" style="display:none">0</span></button>
+      <button data-v="db" onclick="setView('db')">Database</button>
     </div>
     <div class="modesw" id="modeSwitch" role="tablist" aria-label="How much to show">
       <button data-m="easy" onclick="setMode('easy')" title="Step by step, one thing at a time">Easy</button>
@@ -833,6 +834,9 @@
     <main class="rp-body" id="rpBody"></main>
   </div>
 
+  <!-- database: look inside, read-only -->
+  <div class="main" id="dbMain" style="display:none"><div class="easy"><div class="ez-wrap" id="dbBody"></div></div></div>
+
   <!-- Easy mode: one step at a time, in plain words -->
   <div class="easy" id="easyMain" hidden></div>
 </div>
@@ -882,6 +886,7 @@
   <button onclick="closeAllPops();openModal('addEndpoint')">Add a test by hand…</button>
   <button onclick="closeAllPops();openModal('import')">Import tests (CSV / JSON / Sheet)…</button>
   <button onclick="closeAllPops();exportReport()">Export results as CSV</button>
+  <button onclick="closeAllPops();state.mode === 'full' ? setView('db') : ezGo('db')">Look inside a database…</button>
   <div class="sep"></div>
   <button onclick="closeAllPops();openModal('settings')">Settings…</button>
   <button onclick="closeAllPops();checkEnvHealth(true)">Test connection</button>
@@ -1426,6 +1431,9 @@ const state = (() => {
     mode: "easy",       // "easy" = step-by-step screens; "full" = the whole workspace
     easyTab: "try",     // easy mode: "try" something, or "tests"
     easyStep: "pick",   // easy "try": pick → fill → result
+    dbConns: [],        // databases to look inside; connection strings only if "remember" was ticked
+    dbActive: null,
+    dbLocal: { url: "http://127.0.0.1:7071", key: "" },   // the helper on this computer
     timeoutMs: 30000,     // ceiling, used by timing/load cases
     caseTimeoutMs: 10000, // fail-fast default for everything else
     lanes: 6,             // parallel requests during a run
@@ -4124,7 +4132,7 @@ function highlightJsonLine(line) {
    selected request's own state. Stays until the user hides it. */
 function renderGuide() {
   const g = $("#guide"); if (!g) return;
-  g.hidden = !!state.guideDone || state.view === "report";
+  g.hidden = !!state.guideDone || state.view !== "cases";
   if (g.hidden) return;
   const c = currentCase();
   const last = c && c.lastRun;
@@ -5566,13 +5574,15 @@ function prevRunOf(run) {
 }
 
 function setView(v) {
-  state.view = v === "report" ? "report" : "cases";
+  state.view = v === "report" || v === "db" ? v : "cases";
   save();
   document.querySelectorAll("#viewSwitch button").forEach(b => b.classList.toggle("on", b.dataset.v === state.view));
   const full = state.mode === "full";
   $(".main").style.display = full && state.view === "cases" ? "flex" : "none";
   $("#reportMain").style.display = full && state.view === "report" ? "flex" : "none";
+  $("#dbMain").style.display = full && state.view === "db" ? "flex" : "none";
   if (state.view === "report") renderReport();
+  if (full && state.view === "db") renderDb();
   renderGuide();
   renderEasy();
 }
@@ -6278,14 +6288,16 @@ function renderEasy() {
   host.hidden = !easy;
   if (!easy) return;
   const nTests = state.cases.length;
-  const tab = state.easyTab === "tests" ? "tests" : "try";
+  const tab = state.easyTab === "tests" || state.easyTab === "db" ? state.easyTab : "try";
   host.innerHTML = `<div class="ez-wrap">
     <div class="ez-tabs" role="tablist">
       <button class="ez-tab ${tab === "try" ? "on" : ""}" role="tab" aria-selected="${tab === "try"}" onclick="ezGo('try')">Try something</button>
       <button class="ez-tab ${tab === "tests" ? "on" : ""}" role="tab" aria-selected="${tab === "tests"}" onclick="ezGo('tests')">My tests${nTests ? ` (${nTests})` : ""}</button>
+      <button class="ez-tab ${tab === "db" ? "on" : ""}" role="tab" aria-selected="${tab === "db"}" onclick="ezGo('db')">Database</button>
     </div>
-    ${tab === "tests" ? ezTestsHtml() : ezTryHtml()}
+    ${tab === "tests" ? ezTestsHtml() : tab === "db" ? `<div id="ezDb"></div>` : ezTryHtml()}
   </div>`;
+  if (tab === "db") renderDb();
   if (tab === "try" && (state.easyStep || "pick") === "pick") ezRenderCards();
 }
 
@@ -6633,6 +6645,321 @@ async function ezRunAll() {
   try { await runAll({ confirmed: true }); } finally { state.easyTab = "tests"; save(); renderEasy(); }
 }
 
+/* =========================================================================
+   DATABASE
+   -------------------------------------------------------------------------
+   Look inside a database while testing — read-only. A browser can't open a
+   database connection, so every call goes through a small gateway
+   (db-gateway/): the helper on the user's own computer for private or VPN
+   databases, or the Cloudflare worker for databases on the internet. Either
+   way the connection string travels with each request and is never kept by
+   the gateway; the app keeps it only in memory unless the user ticks
+   "Remember on this device". Database settings are never part of cloud sync
+   or share links.
+   ========================================================================= */
+const DB_KINDS = {
+  postgres: { label: "PostgreSQL", port: 5432, example: "postgres://user:password@host:5432/database?sslmode=require" },
+  mysql:    { label: "MySQL / MariaDB", port: 3306, example: "mysql://user:password@host:3306/database" },
+  mongodb:  { label: "MongoDB", port: 27017, example: "mongodb+srv://user:password@cluster.example.net/database" },
+  mssql:    { label: "SQL Server", port: 1433, example: "mssql://user:password@host:1433/database?encrypt=true" },
+};
+const DB_HELPER_CMD = "npx --yes github:AnbuSwivl12/API-TEST-STUDIO";
+const dbView = { schema: {}, table: null, rows: null, query: null, busy: false, msg: null, form: null, find: "" };
+const dbSecrets = {};   // connection id -> connection string, this tab only
+
+function dbConns() { return state.dbConns || (state.dbConns = []); }
+function dbActive() { return dbConns().find(c => c.id === state.dbActive) || dbConns()[0] || null; }
+function dbSecret(c) { return c && (dbSecrets[c.id] || (c.remember ? c.url : "")); }
+function dbRedact(url) { return String(url || "").replace(/(\/\/[^:/@]+:)[^@]*@/, "$1••••@").replace(/(Password|Pwd)=[^;]*/ig, "$1=••••"); }
+
+/* Opened from the helper itself (http://127.0.0.1:7071)? Then the helper is
+   this page's own origin: no address, no key, no browser permission prompt. */
+let dbHelperHere = false;
+async function dbDetectHelper() {
+  if (location.protocol !== "http:" || !/^(127\.0\.0\.1|localhost)$/.test(location.hostname)) return;
+  try {
+    const j = await (await fetch("/v1/db/health")).json();
+    dbHelperHere = j && j.name === "api-test-studio-db-gateway";
+  } catch (e) {}
+}
+
+async function dbCall(conn, op, payload) {
+  const local = conn.via === "local";
+  const base = (local ? (dbHelperHere ? location.origin : (state.dbLocal && state.dbLocal.url) || "http://127.0.0.1:7071") : state.relayUrl || "").trim().replace(/\/+$/, "");
+  if (!base) throw new Error("The Cloudflare gateway isn't set up yet. Add its address and token in Settings → Relay, or choose “On my computer”.");
+  const secret = dbSecret(conn);
+  if (!secret) throw new Error("Type the connection string again — it isn't saved on this device.");
+  const headers = { "Content-Type": "application/json" };
+  if (local && !dbHelperHere) headers["X-Gateway-Key"] = ((state.dbLocal && state.dbLocal.key) || "").trim();
+  else if ((state.relayToken || "").trim()) headers["X-Relay-Token"] = state.relayToken.trim();
+  let r;
+  try {
+    r = await fetch(base + "/v1/db/" + op, { method: "POST", headers, body: JSON.stringify({ connection: { type: conn.type, url: secret }, ...payload }) });
+  } catch (e) {
+    throw new Error(local
+      ? `The helper on your computer isn't answering at ${base}. Start it with:  ${DB_HELPER_CMD}` +
+        ` — if it's already running, your browser may have blocked this site from reaching it: allow “access to devices on your network” when asked, or open the app from the helper at ${base}.`
+      : `Couldn't reach the gateway at ${base}.`);
+  }
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error((j && j.error) || `The gateway answered ${r.status}.`);
+  return j;
+}
+
+/* One screen, two homes: the Database tab in Easy mode and the Database view
+   in Full mode both render this. */
+function renderDb() {
+  const host = state.mode === "full" ? $("#dbBody") : $("#ezDb");
+  if (host) host.innerHTML = dbHtml();
+}
+function dbBusy(on, msg) { dbView.busy = on; if (msg !== undefined) dbView.msg = msg; renderDb(); }
+
+function dbHtml() {
+  const c = dbActive();
+  if (!c || dbView.form) return dbFormHtml();
+  const ver = dbView.schema[c.id] && dbView.schema[c.id].version;
+  const head = `<div class="ez-panel" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px"><div style="font-size:18px;font-weight:700">${esc(c.name)}</div>
+        <div class="muted" style="font-size:14px">${esc(DB_KINDS[c.type].label)} · ${c.via === "local" ? "through the helper on your computer" : "through Cloudflare"} · read-only${ver ? " · " + esc(ver) : ""}</div></div>
+      ${dbConns().length > 1 ? `<select style="width:auto" aria-label="Switch database" onchange="dbSwitch(this.value)">${dbConns().map(x => `<option value="${x.id}" ${x.id === c.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select>` : ""}
+      <button class="btn small" onclick="dbEdit('${c.id}')">Edit</button>
+      <button class="btn small" onclick="dbEdit()">+ Add another</button>
+    </div>`;
+  if (!dbSecret(c)) {
+    return head + `<div class="ez-panel"><div class="ez-field"><label for="db_again">Connection string</label>
+        <small>It isn't saved on this device, so paste it again to keep going.</small>
+        <input id="db_again" type="password" class="mono" placeholder="${esc(DB_KINDS[c.type].example)}" onkeydown="if(event.key==='Enter')dbUnlock()" /></div>
+      <button class="btn primary" onclick="dbUnlock()">Open</button></div>`;
+  }
+  const msg = dbView.msg ? `<div class="tip" style="margin:0 0 16px;${dbView.msg.ok ? "background:var(--success-soft);border-color:var(--success)" : "background:var(--danger-soft);border-color:var(--danger)"}">${esc(dbView.msg.text)}</div>` : "";
+  const sch = dbView.schema[c.id];
+  if (!sch) {
+    setTimeout(dbLoadSchema, 0);
+    return head + msg + `<p class="ez-lead">Looking at what's inside…</p>`;
+  }
+  if (dbView.table) return head + msg + dbTableHtml(c, sch);
+  const q = (dbView.find || "").toLowerCase();
+  const tables = sch.tables.filter(t => !q || t.name.toLowerCase().includes(q));
+  const many = new Set(sch.tables.map(t => t.schema)).size > 1;
+  return head + msg + `
+    <h2 class="ez-h" style="font-size:22px">What's inside</h2>
+    <p class="ez-lead">${sch.tables.length} ${c.type === "mongodb" ? "collection" : "table"}${sch.tables.length === 1 ? "" : "s"}. Pick one to see what's in it.</p>
+    ${sch.tables.length > 8 ? `<input class="ez-search" placeholder="Search tables…" aria-label="Search tables" value="${esc(dbView.find)}" oninput="dbView.find=this.value;renderDb();const i=document.querySelector('.ez-search');i&&(i.focus(),i.setSelectionRange(i.value.length,i.value.length))" />` : ""}
+    <div class="ez-grid">${tables.map(t => `<button class="ez-card" onclick="dbOpenTable(${JSON.stringify(t.schema).replace(/"/g, "&quot;")},${JSON.stringify(t.name).replace(/"/g, "&quot;")})">
+        <span class="t">${esc(t.name)}</span>
+        <span class="p">${many ? esc(t.schema) + " · " : ""}${t.columns.length} ${c.type === "mongodb" ? "field" : "column"}${t.columns.length === 1 ? "" : "s"}</span></button>`).join("")
+      || `<p class="ez-lead">Nothing matches.</p>`}</div>
+    ${dbQueryHtml(c)}`;
+}
+
+function dbTableHtml(c, sch) {
+  const t = sch.tables.find(x => x.name === dbView.table.name && x.schema === dbView.table.schema) || { columns: [] };
+  const w = dbView.table.where || {};
+  return `<button class="ez-back" onclick="dbView.table=null;dbView.rows=null;dbView.msg=null;renderDb()">← All ${c.type === "mongodb" ? "collections" : "tables"}</button>
+    <h2 class="ez-h" style="font-size:22px">${esc(t.name || dbView.table.name)}</h2>
+    <div class="ez-panel">
+      <div class="ez-field" style="margin-bottom:8px"><label>Find rows where</label></div>
+      <div class="ez-row" style="align-items:center">
+        <select id="db_col" style="width:auto;min-height:44px" aria-label="Column">${t.columns.map(col => `<option ${w.column === col.name ? "selected" : ""}>${esc(col.name)}</option>`).join("")}</select>
+        <span style="font-size:16px">is</span>
+        <input id="db_val" style="flex:1;min-width:140px;min-height:44px" placeholder="a value" value="${esc(w.value || "")}" aria-label="Value" onkeydown="if(event.key==='Enter')dbFind()" />
+        <button class="btn primary" onclick="dbFind()" ${dbView.busy ? "disabled" : ""}>Find</button>
+        ${w.column ? `<button class="btn ghost" onclick="dbOpenTable(dbView.table.schema, dbView.table.name)">Show all</button>` : ""}
+      </div>
+    </div>
+    <div class="ez-panel">${dbView.busy ? `<p class="ez-lead" style="margin:0">Looking…</p>` : dbRowsHtml(dbView.rows)}</div>`;
+}
+
+function dbRowsHtml(res) {
+  if (!res) return "";
+  if (!res.rows.length) return `<p class="ez-lead" style="margin:0">No rows found.</p>`;
+  const cols = res.columns.slice(0, 12);
+  return `<p style="font-size:16px;margin:0 0 10px"><b>${res.rowCount} row${res.rowCount === 1 ? "" : "s"}</b>${res.truncated ? " (there are more — showing the first " + res.rowCount + ")" : ""}
+      <span class="muted" style="font-size:13px"> · ${res.ms} ms</span></p>
+    <div style="overflow-x:auto"><table class="ez-table"><thead><tr>${cols.map(k => `<th>${esc(k)}</th>`).join("")}</tr></thead>
+      <tbody>${res.rows.map(r => `<tr>${cols.map(k => { const v = r[k]; const s = v === null || v === undefined ? "" : typeof v === "object" ? JSON.stringify(v) : String(v);
+        return `<td title="${esc(s.slice(0, 500))}">${v === null ? `<span class="dim">empty</span>` : esc(s.length > 80 ? s.slice(0, 80) + "…" : s)}</td>`; }).join("")}</tr>`).join("")}</tbody></table></div>
+    ${res.columns.length > 12 ? `<p class="muted" style="font-size:13px;margin:8px 0 0">${res.columns.length - 12} more columns not shown — write your own query to pick them.</p>` : ""}`;
+}
+
+function dbQueryHtml(c) {
+  const mongo = c.type === "mongodb";
+  const q = dbView.query || {};
+  return `<details class="ez-more" style="margin-top:24px" ${q.text ? "open" : ""}><summary>Write your own query</summary>
+    <div class="ez-panel" style="margin-top:8px">
+      <div class="ez-field"><label for="db_q">${mongo ? "Query (JSON)" : "SQL query"}</label>
+        <small>${mongo ? 'Like {"collection":"users","filter":{"name":"Ana"}}. Only reading is allowed.' : "SELECT only — anything that changes data is refused."}</small>
+        <textarea id="db_q" class="mono" style="height:110px" placeholder="${mongo ? '{"collection":"users","filter":{}}' : "SELECT * FROM users LIMIT 10"}"
+          onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter')dbRunQuery()">${esc(q.text || "")}</textarea></div>
+      <button class="btn primary" onclick="dbRunQuery()" ${dbView.busy ? "disabled" : ""}>Run query</button>
+      ${q.error ? `<div class="tip" style="margin:12px 0 0;background:var(--danger-soft);border-color:var(--danger)">${esc(q.error)}</div>` : ""}
+      ${q.result ? `<div style="margin-top:14px">${dbRowsHtml(q.result)}</div>` : ""}
+    </div></details>`;
+}
+
+/* ---- connect form ------------------------------------------------------ */
+function dbFormHtml() {
+  const f = dbView.form || (dbView.form = { type: "postgres", via: "cloud", name: "", url: "", remember: false, parts: false });
+  const k = DB_KINDS[f.type];
+  const cloudOk = f.type === "postgres" || f.type === "mysql";
+  const relaySet = !!(state.relayUrl || "").trim();
+  const radio = (name, val, label, sub) => `<label class="ez-check" style="border:2px solid ${f[name] === val ? "var(--accent-strong)" : "var(--border)"};border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px;background:var(--bg-elev)">
+      <input type="radio" name="db_${name}" ${f[name] === val ? "checked" : ""} onchange="dbForm('${name}','${val}')"><span><b>${label}</b>${sub ? `<br><span class="muted" style="font-size:14px">${sub}</span>` : ""}</span></label>`;
+  return `${dbConns().length ? `<button class="ez-back" onclick="dbView.form=null;renderDb()">← Back</button>` : ""}
+    <h1 class="ez-h">${f.id ? "Edit database" : "Connect a database"}</h1>
+    <p class="ez-lead">Look at the data behind your API while you test — for example, check that a new order really landed.
+      This only ever <b>reads</b>; it can't change anything.</p>
+
+    <div class="ez-panel">
+      <div class="ez-field" style="margin-bottom:8px"><label>1. What kind of database?</label></div>
+      ${Object.keys(DB_KINDS).map(t => radio("type", t, DB_KINDS[t].label)).join("")}
+    </div>
+
+    <div class="ez-panel">
+      <div class="ez-field" style="margin-bottom:8px"><label>2. Where is it?</label></div>
+      ${radio("via", "cloud", "On the internet", "Cloud databases like Neon, Supabase, RDS or PlanetScale. Goes through your Cloudflare gateway.")}
+      ${radio("via", "local", "On my computer, office network or VPN", "A small helper runs on your computer and reaches the database from there.")}
+      ${f.via === "cloud" && !cloudOk ? `<div class="tip" style="margin:8px 0 0">${k.label} can't go through Cloudflare. Choose “On my computer, office network or VPN”.</div>` : ""}
+      ${f.via === "cloud" && cloudOk && !relaySet ? `<div class="tip" style="margin:8px 0 0">First set up the Cloudflare gateway: add its address and token in <a onclick="openModal('settings')">Settings → Relay</a>.</div>` : ""}
+      ${f.via === "local" && dbHelperHere ? `<div class="tip" style="margin:8px 0 0;background:var(--success-soft);border-color:var(--success)">
+          You opened the app from the helper, so it's connected already — nothing else to fill in here.</div>` : ""}
+      ${f.via === "local" && !dbHelperHere ? `<div style="margin-top:8px">
+          <div class="ez-field"><label>Start the helper</label><small>Open Terminal (Mac) or Command Prompt (Windows), paste this and press Enter. Needs Node.js.</small>
+            <div class="code-block" style="padding-right:80px">${esc(DB_HELPER_CMD)}<button class="copy-btn" onclick="copyText('${DB_HELPER_CMD}')">Copy</button></div></div>
+          <div class="ez-field"><label for="db_lurl">Helper address</label><input id="db_lurl" class="mono" value="${esc((state.dbLocal && state.dbLocal.url) || "http://127.0.0.1:7071")}" onchange="dbSetLocal('url',this.value)" /></div>
+          <div class="ez-field" style="margin:0"><label for="db_lkey">Helper key</label><small>The helper prints it when it starts.</small>
+            <input id="db_lkey" class="mono" value="${esc((state.dbLocal && state.dbLocal.key) || "")}" onchange="dbSetLocal('key',this.value)" /></div>
+          <p class="muted" style="font-size:14px;margin:12px 0 0">Your browser may ask to let this site reach “devices on your network” — choose <b>Allow</b>.
+            Or skip the address and key: open the app straight from the helper at <span class="mono">http://127.0.0.1:7071</span>.</p>
+        </div>` : ""}
+    </div>
+
+    <div class="ez-panel">
+      <div class="ez-field"><label for="db_url">3. Connection string</label>
+        <small>Ask whoever runs the database. It looks like <span class="mono">${esc(k.example)}</span></small>
+        <input id="db_url" type="password" class="mono" autocomplete="off" value="${esc(f.url)}" placeholder="${esc(k.example)}" oninput="dbView.form.url=this.value" />
+        <label class="ez-check" style="padding:4px 0;font-size:14px"><input type="checkbox" onchange="document.getElementById('db_url').type=this.checked?'text':'password'"> Show it</label></div>
+      <details class="ez-more"${f.parts ? " open" : ""} ontoggle="dbView.form.parts=this.open"><summary>Or fill in each part</summary>
+        <div class="ez-row" style="margin-top:8px">
+          <div class="ez-field" style="flex:2;min-width:180px"><label for="db_h">Server</label><input id="db_h" placeholder="db.example.com" /></div>
+          <div class="ez-field" style="flex:1;min-width:90px"><label for="db_p">Port</label><input id="db_p" placeholder="${k.port}" /></div></div>
+        <div class="ez-field"><label for="db_d">Database name</label><input id="db_d" /></div>
+        <div class="ez-row">
+          <div class="ez-field" style="flex:1;min-width:160px"><label for="db_u">Username</label><input id="db_u" autocomplete="off" /></div>
+          <div class="ez-field" style="flex:1;min-width:160px"><label for="db_pw">Password</label><input id="db_pw" type="password" autocomplete="off" /></div></div>
+        <label class="ez-check" style="padding:0 0 10px"><input type="checkbox" id="db_ssl" checked> Use a secure (SSL) connection</label>
+        <button class="btn" onclick="dbBuildUrl()">Make the connection string</button>
+      </details>
+    </div>
+
+    <div class="ez-panel">
+      <div class="ez-field"><label for="db_name">4. Give it a name</label><input id="db_name" value="${esc(f.name)}" placeholder="e.g. Staging database" oninput="dbView.form.name=this.value" /></div>
+      <label class="ez-check"><input type="checkbox" ${f.remember ? "checked" : ""} onchange="dbView.form.remember=this.checked">
+        <span>Remember the connection string on this device<br><span class="muted" style="font-size:14px">Leave this off on shared computers — you'll paste it again next time. It's never synced or shared.</span></span></label>
+      <div class="tip" style="margin:4px 0 16px">Tip: ask for a <b>read-only</b> (view-only) database user. This app only reads, but a read-only user makes sure of it.</div>
+      ${dbView.msg && !dbView.msg.ok ? `<div class="tip" style="margin:0 0 16px;background:var(--danger-soft);border-color:var(--danger)">${esc(dbView.msg.text)}</div>` : ""}
+      <div class="ez-row">
+        <button class="btn primary ez-big" style="flex:1" onclick="dbConnect()" ${dbView.busy ? "disabled" : ""}>${dbView.busy ? "Connecting…" : "Test and connect"}</button>
+        ${f.id ? `<button class="btn ghost" onclick="dbRemove('${f.id}')">Remove</button>` : ""}
+      </div>
+    </div>`;
+}
+
+function dbForm(k, v) { dbView.form[k] = v; dbView.msg = null; renderDb(); }
+function dbSetLocal(k, v) { state.dbLocal = { ...(state.dbLocal || {}), [k]: v.trim() }; save(); }
+function dbBuildUrl() {
+  const f = dbView.form, k = DB_KINDS[f.type];
+  const val = id => ($(id).value || "").trim();
+  const host = val("#db_h"); if (!host) { toast("Type the server address", "error"); return; }
+  const auth = val("#db_u") ? encodeURIComponent(val("#db_u")) + (val("#db_pw") ? ":" + encodeURIComponent($("#db_pw").value) : "") + "@" : "";
+  const port = val("#db_p") || k.port, db = encodeURIComponent(val("#db_d")), ssl = $("#db_ssl").checked;
+  const scheme = { postgres: "postgres", mysql: "mysql", mongodb: "mongodb", mssql: "mssql" }[f.type];
+  const tail = ssl ? { postgres: "?sslmode=require", mysql: "", mongodb: "?tls=true", mssql: "?encrypt=true" }[f.type]
+                   : { postgres: "", mysql: "", mongodb: "", mssql: "?encrypt=false" }[f.type];
+  f.url = `${scheme}://${auth}${host}:${port}/${db}${tail}`;
+  renderDb();
+  toast("Connection string filled in", "success");
+}
+function dbEdit(id) {
+  const c = id && dbConns().find(x => x.id === id);
+  dbView.form = c ? { id: c.id, type: c.type, via: c.via, name: c.name, url: dbSecret(c) || "", remember: !!c.remember }
+                  : { type: "postgres", via: "cloud", name: "", url: "", remember: false };
+  dbView.msg = null; renderDb();
+}
+function dbRemove(id) {
+  if (!confirm("Remove this database from the app? Nothing in the database is touched.")) return;
+  state.dbConns = dbConns().filter(c => c.id !== id); delete dbSecrets[id]; delete dbView.schema[id];
+  if (state.dbActive === id) state.dbActive = dbConns()[0] ? dbConns()[0].id : null;
+  dbView.form = null; save(); renderDb();
+}
+function dbSwitch(id) { state.dbActive = id; dbView.table = null; dbView.rows = null; dbView.query = null; dbView.msg = null; save(); renderDb(); }
+
+async function dbConnect() {
+  const f = dbView.form;
+  const url = (($("#db_url") && $("#db_url").value) || f.url || "").trim();
+  if (!url) { dbView.msg = { ok: false, text: "Paste the connection string, or fill in each part and press “Make the connection string”." }; renderDb(); return; }
+  f.url = url;
+  const id = f.id || "db" + Date.now().toString(36);
+  const conn = { id, type: f.type, via: f.via, name: (f.name || "").trim() || DB_KINDS[f.type].label, remember: !!f.remember };
+  dbSecrets[id] = url;
+  dbBusy(true, null);
+  try {
+    const t = await dbCall(conn, "test", {});
+    if (conn.remember) conn.url = url;
+    state.dbConns = dbConns().filter(c => c.id !== id).concat([conn]);
+    state.dbActive = id;
+    delete dbView.schema[id];
+    dbView.form = null; dbView.table = null; dbView.rows = null;
+    save();
+    dbView.msg = { ok: true, text: `Connected to ${t.version || DB_KINDS[conn.type].label}. You can look, but not change anything.` };
+    dbView.busy = false; renderDb();
+  } catch (e) {
+    if (!f.id) delete dbSecrets[id];
+    dbBusy(false, { ok: false, text: e.message });
+  }
+}
+function dbUnlock() {
+  const c = dbActive(); const v = ($("#db_again").value || "").trim();
+  if (!v) return;
+  dbSecrets[c.id] = v; dbView.msg = null; renderDb();
+}
+
+async function dbLoadSchema() {
+  const c = dbActive(); if (!c || dbView.schema[c.id] || dbView.busy) return;
+  dbView.busy = true;
+  try {
+    const s = await dbCall(c, "schema", {});
+    let version = "";
+    try { version = (await dbCall(c, "test", {})).version; } catch (e) {}
+    dbView.schema[c.id] = { tables: s.tables || [], version };
+  } catch (e) {
+    dbView.schema[c.id] = { tables: [], version: "" };
+    dbView.msg = { ok: false, text: e.message };
+  }
+  dbView.busy = false; renderDb();
+}
+async function dbOpenTable(schema, name, where) {
+  const c = dbActive();
+  dbView.table = { schema, name, where: where || null }; dbView.rows = null; dbView.msg = null;
+  dbBusy(true);
+  try { dbView.rows = await dbCall(c, "preview", { schema, table: name, where: where || undefined, limit: 50 }); }
+  catch (e) { dbView.msg = { ok: false, text: e.message }; }
+  dbBusy(false);
+}
+function dbFind() {
+  const col = $("#db_col").value, val = $("#db_val").value;
+  if (val === "") { dbOpenTable(dbView.table.schema, dbView.table.name); return; }
+  dbOpenTable(dbView.table.schema, dbView.table.name, { column: col, value: val });
+}
+async function dbRunQuery() {
+  const c = dbActive(); const text = $("#db_q").value;
+  dbView.query = { text };
+  dbBusy(true);
+  try { dbView.query.result = await dbCall(c, "query", { query: text, limit: 200 }); }
+  catch (e) { dbView.query.error = e.message; }
+  dbBusy(false);
+}
+
 function boot() {
   document.documentElement.dataset.theme = state.theme;
   ensureModules(state);
@@ -6666,6 +6993,7 @@ function boot() {
   if (!shared && needsOnboarding()) openModal("welcome");
 
   installKeyboard();
+  dbDetectHelper().then(() => { if (dbHelperHere) renderEasy(); });
 }
 boot();
 </script>

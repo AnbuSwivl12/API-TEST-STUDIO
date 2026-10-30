@@ -9,6 +9,11 @@
  *                     -> forwards the request to that URL and returns the
  *                        response with permissive CORS, so a browser can test
  *                        an API that doesn't send CORS headers of its own.
+ *   POST /v1/db/{test|schema|preview|query}
+ *                     -> read-only database access for PostgreSQL and MySQL
+ *                        (see ../db-gateway/core.mjs). Same RELAY_TOKEN /
+ *                        DB_ALLOW gate as the relay. MongoDB and SQL Server
+ *                        need the helper on the user's computer instead.
  *   GET  /            -> tiny health/info page
  *   OPTIONS *         -> CORS preflight
  *
@@ -22,6 +27,10 @@
  *   - Per-user payload max ~100 KB (set MAX_BYTES below).
  *   - Token must be 16-128 chars, [a-zA-Z0-9_-].
  */
+
+import pg from "pg";
+import mysql from "mysql2/promise";
+import { createGateway, handleDbOp, GatewayError } from "../db-gateway/core.mjs";
 
 const MAX_BYTES = 100 * 1024;          // 100 KB cap per user
 const TOKEN_RE = /^[A-Za-z0-9_-]{16,128}$/;
@@ -114,6 +123,66 @@ async function handleRelay(request, env, url) {
   return new Response(upstream.body, { status: upstream.status, statusText: upstream.statusText, headers: out });
 }
 
+/* ---------------------------------------------------------------------------
+ * Database
+ * ---------------------------------------------------------------------------
+ * The browser sends a connection string it holds; this runs one read-only
+ * operation and answers. Like the relay, it must not become an open proxy
+ * into anyone's network, so it is closed unless configured:
+ *
+ *   RELAY_TOKEN  (secret)  required in X-Relay-Token if set
+ *   DB_ALLOW     (var)     comma-separated database host suffixes,
+ *                          e.g. "neon.tech,.supabase.co,db.acme.com"
+ *
+ * Needs `compatibility_flags = ["nodejs_compat"]` (set in wrangler.toml) for
+ * the pg and mysql2 drivers' TCP sockets.
+ * ------------------------------------------------------------------------- */
+const DB_CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, X-Relay-Token",
+  "Access-Control-Max-Age": "86400",
+};
+const dbGateway = createGateway({ pg, mysql });
+
+function dbJson(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...DB_CORS },
+  });
+}
+
+async function handleDb(request, env, url) {
+  if (request.method === "GET" && url.pathname === "/v1/db/health") {
+    return dbJson({ ok: true, name: "api-test-studio-db-gateway", where: "cloudflare", types: dbGateway.types() });
+  }
+  const m = url.pathname.match(/^\/v1\/db\/(test|schema|preview|query)$/);
+  if (!m || request.method !== "POST") return dbJson({ error: "Not found." }, 404);
+
+  const wantToken = (env.RELAY_TOKEN || "").trim();
+  const allow = (env.DB_ALLOW || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+  if (!wantToken && !allow.length) {
+    return dbJson({ error: "This gateway has neither RELAY_TOKEN nor DB_ALLOW set, so database access stays closed." }, 403);
+  }
+  if (wantToken && request.headers.get("X-Relay-Token") !== wantToken) {
+    return dbJson({ error: "Missing or wrong gateway token (Settings → Relay → token)." }, 401);
+  }
+
+  let body;
+  try { body = await request.json(); } catch (e) { return dbJson({ error: "The request wasn't valid JSON." }, 400); }
+  if (allow.length) {
+    let host = "";
+    try { host = new URL(body.connection.url).hostname.toLowerCase(); } catch (e) {}
+    const okHost = host && allow.some(a => host === a || host.endsWith(a.startsWith(".") ? a : "." + a));
+    if (!okHost) return dbJson({ error: `${host || "That database host"} isn't in this gateway's DB_ALLOW list.` }, 403);
+  }
+  try {
+    return dbJson(await handleDbOp(dbGateway, m[1], body));
+  } catch (e) {
+    const err = e instanceof GatewayError ? e : new GatewayError("Something went wrong in the gateway.", 500);
+    return dbJson({ error: err.message }, err.status || 400);
+  }
+}
+
 function json(body, status = 200, extra = {}) {
   return new Response(JSON.stringify(body), {
     status,
@@ -134,6 +203,11 @@ export default {
       return handleRelay(request, env, url);
     }
 
+    if (url.pathname.startsWith("/v1/db/")) {
+      if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: DB_CORS });
+      return handleDb(request, env, url);
+    }
+
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: CORS });
     }
@@ -142,7 +216,8 @@ export default {
       return new Response(
         "API Test Studio worker\n" +
         "  /v1/state  GET/PUT with X-User-Token  — cross-device sync\n" +
-        "  /v1/relay?url=...  any method         — CORS relay (needs RELAY_TOKEN or RELAY_ALLOW)\n",
+        "  /v1/relay?url=...  any method         — CORS relay (needs RELAY_TOKEN or RELAY_ALLOW)\n" +
+        "  /v1/db/*   POST                       — read-only PostgreSQL / MySQL (needs RELAY_TOKEN or DB_ALLOW)\n",
         { headers: { "Content-Type": "text/plain", ...CORS } }
       );
     }

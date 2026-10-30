@@ -53,6 +53,7 @@ API test studio/
 ├── .nojekyll          ← tells GitHub Pages to serve files as-is
 ├── .gitignore
 ├── README.md          ← this file
+├── db-gateway/         ← read-only database gateway (local helper + shared core)
 └── worker/
     ├── worker.js          ← Cloudflare Worker: CORS relay + cross-device sync
     ├── wrangler.toml      ← worker config
@@ -152,6 +153,57 @@ team token keeps everyone's suite in step.
 | `http://localhost` API from the HTTPS page | run the app locally over http instead |
 
 ---
+
+## Look inside a database (read-only)
+
+Anyone using the app can connect the database behind their API, as long as they
+have its connection details, and look inside while they test. **View-only access
+is enough**: the app only ever reads.
+
+A web page can't open a database connection itself, so a small **gateway** does
+it. Pick the one that can reach your database:
+
+| Your database is… | Use | Supports |
+|---|---|---|
+| On the internet (Neon, Supabase, RDS, PlanetScale…) | The Cloudflare worker (Part 2 below), at `/v1/db/*` | PostgreSQL, MySQL/MariaDB |
+| On your computer, office network or VPN | The helper on your own computer | PostgreSQL, MySQL/MariaDB, MongoDB, SQL Server |
+
+**The helper on your computer** needs [Node.js](https://nodejs.org) 18+. Run:
+
+```bash
+npx --yes github:AnbuSwivl12/API-TEST-STUDIO
+```
+
+Then open **http://127.0.0.1:7071**: the helper serves the app itself, so it
+can reach your databases with nothing else to paste. From a clone you can run
+`npm install` then `npm run db` instead. Set `PORT` or `DB_GATEWAY_KEY` to change
+the port or the key.
+
+Prefer the website (GitHub Pages / Vercel)? It works too: paste the address and
+key the helper prints. Your browser may ask to let the site reach "devices on your
+network"; choose **Allow**.
+
+**In the app:** go to **Database** (a tab in Easy mode; in Full mode, the view
+switch or Menu → *Look inside a database*):
+
+1. Choose the database type and where it is.
+2. Paste the connection string, or fill in server, port, name, user and password.
+3. Press **Test and connect**, then pick a table to see its rows, use **Find
+   rows where … is …**, or write your own query.
+
+**Safety**
+- Only look-up queries run: one `SELECT`/`WITH`/`SHOW`/`EXPLAIN` statement, with
+  no data-changing keyword. PostgreSQL and MySQL also run it in a `READ ONLY`
+  transaction; SQL Server's transaction is always rolled back; MongoDB allows
+  `find`/`aggregate` without `$out`/`$merge`. A read-only database user is still
+  the strongest guarantee.
+- The connection string goes with each request and is never stored or logged by
+  either gateway. The app keeps it in memory unless you tick *Remember on this
+  device*. It is never part of cloud sync or share links.
+- The local helper listens on `127.0.0.1` only. Requests from the app it serves
+  are trusted; any other site must send the key it prints.
+  The Cloudflare route stays closed unless the worker has `RELAY_TOKEN` (sent
+  from Settings → Relay) or a `DB_ALLOW` list of database hosts.
 
 ## Ship a change to the live site
 

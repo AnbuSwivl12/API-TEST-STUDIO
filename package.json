@@ -3,6 +3,9 @@
   "version": "2.0.0",
   "private": true,
   "description": "A single-file API testing workspace: connect any OpenAPI/Swagger spec, explore endpoints, send requests, and add optional test cases and assertions.",
+  "bin": {
+    "api-test-studio-db": "db-gateway/server.mjs"
+  },
   "scripts": {
     "start": "bash start.sh",
     "dev": "bash start.sh",
@@ -14,7 +17,17 @@
     "worker:deploy": "cd worker && npx wrangler deploy",
     "worker:kv": "cd worker && npx wrangler kv:namespace create STATE",
     "deploy": "bash deploy.sh",
-    "worker:relay": "cd worker && npx wrangler secret put RELAY_TOKEN"
+    "worker:relay": "cd worker && npx wrangler secret put RELAY_TOKEN",
+    "db": "node db-gateway/server.mjs"
   },
-  "homepage": "https://anbuswivl12.github.io/API-TEST-STUDIO/"
+  "homepage": "https://anbuswivl12.github.io/API-TEST-STUDIO/",
+  "dependencies": {
+    "mongodb": "^6.10.0",
+    "mssql": "^11.0.1",
+    "mysql2": "^3.11.5",
+    "pg": "^8.13.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
 }

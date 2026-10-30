@@ -1,6 +1,12 @@
 name = "api-test-studio-sync"
 main = "worker.js"
 compatibility_date = "2025-01-01"
+# The pg and mysql2 drivers behind /v1/db need Node APIs and TCP sockets.
+compatibility_flags = ["nodejs_compat"]
+
+# Optional: database hosts the /v1/db gateway may reach (RELAY_TOKEN also opens it).
+# [vars]
+# DB_ALLOW = "neon.tech,.supabase.co"
 
 # After running `wrangler kv:namespace create STATE`, paste the returned id here.
 # Example:
