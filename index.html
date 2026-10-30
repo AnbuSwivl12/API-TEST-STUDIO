@@ -1,46 +1,62 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>API Test Studio</title>
+<!-- Atkinson Hyperlegible for interface text, JetBrains Mono for code. Offline,
+     the --sans / --mono stacks fall back to the system faces. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600;700&display=swap" />
 <style>
-  :root {
-    --bg:#0a0e14; --bg-elev:#10161f; --bg-elev-2:#1a2330; --bg-hover:#1f2937;
-    --border:#1f2937; --border-strong:#334155;
-    --text:#e5e7eb; --text-muted:#94a3b8; --text-dim:#8b98ad;
-    --accent:#8b5cf6; --accent-hover:#7c3aed; --accent-soft:rgba(139,92,246,.12);
-    --accent-strong:#6d33e0; --focus:#a78bfa;
-    --success:#10b981; --warning:#f59e0b; --danger:#ef4444; --info:#3b82f6;
-    --success-soft:rgba(16,185,129,.12); --danger-soft:rgba(239,68,68,.12);
-    --warning-soft:rgba(245,158,11,.12); --info-soft:rgba(59,130,246,.12);
-    --shadow:0 4px 24px rgba(0,0,0,.4);
+  /* Tokens follow the API Test Studio design system. Light is the default for
+     new browsers; every text pair clears WCAG AA in both themes.
+     --accent is for text and icons; anything behind white text uses
+     --accent-strong (with --on-accent). --border divides; --border-strong is
+     the visible 3:1 edge of a control. */
+  :root, [data-theme="light"] {
+    --bg:#f8fafc; --bg-elev:#ffffff; --bg-elev-2:#f1f5f9; --bg-hover:#e2e8f0; --bg-deep:#f1f5f9;
+    --border:#e2e8f0; --border-strong:#7b8698;
+    --text:#0f172a; --text-muted:#475569; --text-dim:#5b6678;
+    --accent:#6d28d9; --accent-strong:#6d28d9; --accent-hover:#5b21b6; --on-accent:#ffffff;
+    --accent-soft:rgba(109,40,217,.10); --focus:#6d28d9;
+    --success:#047857; --warning:#b45309; --danger:#b91c1c; --info:#1d4ed8;
+    --success-soft:rgba(4,120,87,.10); --danger-soft:rgba(185,28,28,.10);
+    --warning-soft:rgba(180,83,9,.10); --info-soft:rgba(29,78,216,.08);
+    --env-stage:#a16207; --env-local:#6d28d9;
+    --scrim:rgba(15,23,42,.45);
+    --shadow:0 12px 32px rgba(15,23,42,.16);
+    --shadow-raised:0 1px 2px rgba(15,23,42,.06),0 1px 3px rgba(15,23,42,.08);
     /* Aliases that were referenced ~24 times but never defined, so every
        declaration using them was dropped as invalid. */
-    --panel:#111827; --line:#1f2937; --warn:#f59e0b; --warn-soft:rgba(245,158,11,.12);
-    --mono:"SF Mono","JetBrains Mono","Menlo","Monaco","Consolas",monospace;
-    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    --panel:#f1f5f9; --line:#e2e8f0; --warn:#b45309; --warn-soft:rgba(180,83,9,.10);
+    --radius-sm:4px; --radius-md:8px; --radius-lg:12px; --radius-pill:999px;
+    --control-sm:32px; --control-md:40px; --control-lg:48px;
+    --mono:"JetBrains Mono","SF Mono","Menlo","Monaco","Consolas",monospace;
+    --sans:"Atkinson Hyperlegible",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   }
-  [data-theme="light"] {
-    --bg:#f8fafc; --bg-elev:#ffffff; --bg-elev-2:#f1f5f9; --bg-hover:#e2e8f0;
-    --border:#e2e8f0; --border-strong:#cbd5e1;
-    --text:#0f172a; --text-muted:#475569; --text-dim:#94a3b8;
-    --accent:#7c3aed; --accent-hover:#6d28d9; --accent-soft:rgba(124,58,237,.10);
-    --accent-strong:#5b21b6; --focus:#6d28d9;
-    --success:#059669; --warning:#d97706; --danger:#dc2626; --info:#2563eb;
-    --success-soft:rgba(5,150,105,.12); --danger-soft:rgba(220,38,38,.12);
-    --warning-soft:rgba(217,119,6,.12); --info-soft:rgba(37,99,235,.12);
-    --shadow:0 4px 24px rgba(15,23,42,.08);
-    --panel:#f8fafc; --line:#e2e8f0; --warn:#b45309; --warn-soft:rgba(180,83,9,.12);
-    /* AA: dim text clears 4.5:1 on every surface it lands on, both themes. */
-    --text-dim:#556274;
+  [data-theme="dark"] {
+    --bg:#0a0e14; --bg-elev:#10161f; --bg-elev-2:#1a2330; --bg-hover:#1f2937; --bg-deep:#0d1117;
+    --border:#1f2937; --border-strong:#5f6e84;
+    --text:#e5e7eb; --text-muted:#94a3b8; --text-dim:#8b98ad;
+    --accent:#b49cfb; --accent-strong:#7c3aed; --accent-hover:#6d28d9; --on-accent:#ffffff;
+    --accent-soft:rgba(167,139,250,.14); --focus:#a78bfa;
+    --success:#34d399; --warning:#fbbf24; --danger:#f87171; --info:#60a5fa;
+    --success-soft:rgba(52,211,153,.12); --danger-soft:rgba(248,113,113,.12);
+    --warning-soft:rgba(251,191,36,.12); --info-soft:rgba(96,165,250,.12);
+    --env-stage:#e6b73e; --env-local:#b49cfb;
+    --scrim:rgba(0,0,0,.6);
+    --shadow:0 12px 32px rgba(0,0,0,.55);
+    --shadow-raised:0 1px 2px rgba(0,0,0,.4);
+    --panel:#111827; --line:#1f2937; --warn:#fbbf24; --warn-soft:rgba(251,191,36,.12);
   }
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;padding:0}
-  body{font-family:var(--sans);font-size:13px;color:var(--text);background:var(--bg);overflow:hidden}
+  body{font-family:var(--sans);font-size:14px;line-height:1.5;color:var(--text);background:var(--bg);overflow:hidden}
   button{font-family:inherit;cursor:pointer;border:0;background:transparent;color:inherit}
-  input,textarea,select{font-family:inherit;font-size:13px;color:var(--text);background:var(--bg-elev-2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;outline:none;width:100%}
-  input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+  input,textarea,select{font-family:inherit;font-size:14px;color:var(--text);background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:var(--radius-md);padding:8px 12px;outline:none;width:100%}
+  input:focus,textarea:focus,select:focus{border-color:var(--focus);box-shadow:0 0 0 1px var(--focus)}
   textarea{font-family:var(--mono);resize:vertical;min-height:90px}
   .mono{font-family:var(--mono)}
   .muted{color:var(--text-muted)}
@@ -48,87 +64,103 @@
 
   /* ---------- top bar ---------- */
   .topbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;row-gap:6px;padding:8px 16px;background:var(--bg-elev);border-bottom:1px solid var(--border);min-height:56px;flex-shrink:0}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px;padding-right:14px;border-right:1px solid var(--border);flex-shrink:0}
-  .brand-logo{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--accent),#ec4899);display:grid;place-items:center;color:#fff;font-weight:700;font-size:12px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;padding-right:14px;border-right:1px solid var(--border);flex-shrink:0}
+  .brand-logo{width:28px;height:28px;border-radius:var(--radius-md);background:var(--accent-strong);display:grid;place-items:center;color:var(--on-accent);font-weight:700;font-size:14px}
   .tb-field{display:flex;align-items:center;gap:6px;flex-shrink:1;min-width:0}
-  .tb-field label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
-  .tb-field input{min-width:160px;height:30px;font-size:12px}
-  .env-select{height:30px;font-size:12px;font-weight:600;width:auto;padding-right:22px}
-  .env-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--text-muted)}
-  .env-dot.stage{background:#e6b73e}
-  .env-dot.local{background:var(--accent)}
+  .tb-field label{font-size:12px;color:var(--text-muted);white-space:nowrap}
+  .tb-field input{min-width:160px;height:var(--control-sm);font-size:13px}
+  .env-select{height:var(--control-sm);font-size:14px;font-weight:700;width:auto;padding:0 26px 0 10px;border-radius:var(--radius-pill)}
+  .env-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;background:var(--text-muted)}
+  .env-dot.stage{background:var(--env-stage)}
+  .env-dot.local{background:var(--env-local)}
   .env-dot.custom{background:var(--text-muted)}
+  /* ---------- first-steps guide ---------- */
+  .guide{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:8px 16px;background:var(--bg-elev);border-bottom:1px solid var(--border);flex-shrink:0}
+  .guide[hidden]{display:none}
+  .guide-steps{display:flex;align-items:center;gap:8px;flex-wrap:wrap;list-style:none;margin:0;padding:0;counter-reset:gs}
+  .guide-steps li{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);counter-increment:gs}
+  .guide-steps li+li::before{content:"";width:20px;height:1px;background:var(--border-strong)}
+  .guide-steps i{font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--border-strong);font-size:12px;font-weight:700}
+  .guide-steps i::before{content:counter(gs)}
+  .guide-steps li.done{color:var(--text)}
+  .guide-steps li.done i{background:var(--success-soft);border-color:var(--success);color:var(--success)}
+  .guide-steps li.done i::before{content:"✓"}
+  .guide-steps li.now{color:var(--accent);font-weight:700}
+  .guide-steps li.now i{background:var(--accent-strong);border-color:var(--accent-strong);color:var(--on-accent)}
+  .guide-note{font-size:13px;color:var(--text-muted);margin-left:auto}
+  @media (max-width:1000px){ .guide-note{display:none} }
+
   /* ---------- module chip + picker ---------- */
   .mchip{display:inline-flex;align-items:center;gap:8px;padding:5px 11px;border-radius:999px;
-    border:1px solid var(--border);background:var(--bg-elev-2);font-size:12px;cursor:pointer;flex-shrink:0;max-width:320px}
+    border:1px solid var(--border);background:var(--bg-elev-2);font-size:13px;cursor:pointer;flex-shrink:0;max-width:320px}
   .mchip:hover{border-color:var(--border-strong);background:var(--bg-hover)}
   .mchip .mc-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mchip .mc-meta{color:var(--text-dim);font-family:var(--mono);font-size:10.5px;white-space:nowrap}
-  .mchip .mc-caret{color:var(--text-dim);font-size:10px}
+  .mchip .mc-meta{color:var(--text-dim);font-family:var(--mono);font-size:12px;white-space:nowrap}
+  .mchip .mc-caret{color:var(--text-dim);font-size:12px}
   .mpicker{position:absolute;top:52px;left:16px;z-index:70;width:380px;max-width:92vw;display:none;
     background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
   .mpicker.open{display:block}
-  .mp-head{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600}
+  .mp-head{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
   .mp-list{max-height:340px;overflow-y:auto}
   .mp-item{padding:9px 14px;cursor:pointer;border-left:2px solid transparent}
   .mp-item:hover{background:var(--bg-elev-2)}
   .mp-item.on{background:var(--accent-soft);border-left-color:var(--accent)}
   .mp-row1{display:flex;align-items:center;gap:8px}
-  .mp-name{font-size:12.5px;font-weight:500}
-  .mp-fail{font-family:var(--mono);font-size:9.5px;padding:1px 5px;border-radius:6px;background:var(--danger-soft);color:var(--danger)}
-  .mp-count{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text-dim)}
-  .mp-row2{display:flex;align-items:center;gap:8px;margin-top:2px;font-size:10.5px;color:var(--text-dim)}
+  .mp-name{font-size:14px;font-weight:500}
+  .mp-fail{font-family:var(--mono);font-size:12px;padding:1px 5px;border-radius:6px;background:var(--danger-soft);color:var(--danger)}
+  .mp-count{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--text-dim)}
+  .mp-row2{display:flex;align-items:center;gap:8px;margin-top:2px;font-size:12px;color:var(--text-dim)}
   .mp-spec{color:var(--success)} .mp-nospec{color:var(--text-dim)}
   .mp-foot{display:flex;gap:6px;padding:9px 12px;border-top:1px solid var(--border);background:var(--bg-elev-2)}
   .danger-text{color:var(--danger)}
 
   /* ---------- auth chip + popovers ---------- */
   .authchip{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;
-    border:1px solid var(--border);background:var(--bg-elev-2);font-size:12px;cursor:pointer;flex-shrink:0}
+    border:1px solid var(--border);background:var(--bg-elev-2);font-size:13px;cursor:pointer;flex-shrink:0}
   .authchip:hover{border-color:var(--border-strong);background:var(--bg-hover)}
   .authchip .ad{width:7px;height:7px;border-radius:50%;background:var(--danger)}
   .authchip.set .ad{background:var(--success)}
-  .authchip .at{font-family:var(--mono);font-size:10.5px;color:var(--text-dim)}
+  .authchip .at{font-family:var(--mono);font-size:12px;color:var(--text-dim)}
   .pop{position:absolute;top:52px;z-index:70;width:340px;max-width:92vw;display:none;padding:12px 14px;
     background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow)}
   .pop.open{display:block}
-  .pop h5{margin:0 0 8px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim)}
+  .pop h5{margin:0 0 8px;font-size:12px;color:var(--text-dim)}
   .menu{position:absolute;top:52px;right:16px;z-index:70;width:230px;display:none;padding:6px;
     background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow)}
   .menu.open{display:block}
-  .menu button{display:flex;width:100%;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;font-size:12.5px;text-align:left}
+  .menu button{display:flex;width:100%;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;font-size:14px;text-align:left}
   .menu button:hover{background:var(--bg-elev-2)}
   .menu .sep{height:1px;background:var(--border);margin:5px 2px}
-  .menu .k{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+  .menu .k{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--text-dim)}
 
   /* ---------- view switch (Cases | Run Report) ---------- */
   .viewsw{display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;background:var(--bg-elev-2);flex-shrink:0}
-  .viewsw button{padding:5px 11px;font-size:12px;font-weight:500;color:var(--text-muted);border-right:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
+  .viewsw button{padding:6px 12px;font-size:13px;font-weight:700;color:var(--text-muted);border-right:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
   .viewsw button:last-child{border-right:0}
-  .viewsw button.on{background:var(--accent);color:#fff}
-  .viewsw .badge{font-family:var(--mono);font-size:9.5px;padding:1px 5px;border-radius:8px;background:var(--danger-soft);color:var(--danger)}
+  .viewsw button.on{background:var(--accent-strong);color:var(--on-accent)}
+  .viewsw .badge{font-family:var(--mono);font-size:12px;padding:1px 5px;border-radius:8px;background:var(--danger-soft);color:var(--danger)}
   .viewsw button.on .badge{background:rgba(255,255,255,.22);color:#fff}
 
   /* ---------- Run Report (design direction A) ---------- */
   .rp-rail{width:216px;flex:none;background:var(--bg-elev);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-  .rp-rail-h{padding:11px 13px 8px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+  .rp-rail-h{padding:11px 13px 8px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text-muted);}
   .rp-tags{overflow-y:auto;padding:6px 0 14px}
   .rp-tag{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:8px 13px;cursor:pointer;border-left:2px solid transparent}
   .rp-tag:hover{background:var(--bg-elev-2)}
   .rp-tag.on{background:var(--accent-soft);border-left-color:var(--accent)}
-  .rp-tag .nm{font-family:var(--mono);font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .rp-tag .ct{font-family:var(--mono);font-size:10px;color:var(--text-dim)}
+  .rp-tag .nm{font-family:var(--mono);font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rp-tag .ct{font-family:var(--mono);font-size:12px;color:var(--text-dim)}
   .rp-bars{grid-column:1/-1;display:flex;height:3px;border-radius:2px;overflow:hidden;background:var(--bg-elev-2);margin-top:3px}
   .rp-body{flex:1;overflow-y:auto;padding:18px 22px 48px;min-width:0}
   .rp-runhead{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
   .rp-runsel{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:16px;font-weight:600}
-  .rp-runsel select{width:auto;height:28px;font-family:var(--mono);font-size:13px;font-weight:600;padding:2px 8px}
-  .rp-runsel .cv{color:var(--text-dim);font-size:11px;font-weight:400}
-  .rp-delta{font-size:11.5px;color:var(--text-muted);margin-top:4px;font-family:var(--mono)}
+  .rp-runsel select{width:auto;height:28px;font-family:var(--mono);font-size:14px;font-weight:600;padding:2px 8px}
+  .rp-runsel .cv{color:var(--text-dim);font-size:12px;font-weight:400}
+  .rp-delta{font-size:13px;color:var(--text-muted);margin-top:4px;font-family:var(--mono)}
   .rp-delta b.up{color:var(--success)} .rp-delta b.dn{color:var(--danger)}
   .rp-stats{margin-left:auto;display:flex;gap:16px;align-items:flex-end}
   .rp-stat .v{font-family:var(--mono);font-size:19px;font-weight:700;line-height:1}
-  .rp-stat .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-dim);margin-top:4px}
+  .rp-stat .k{font-family:var(--mono);font-size:12px;color:var(--text-dim);margin-top:4px}
   .rp-stat.pass .v{color:var(--success)} .rp-stat.fail .v{color:var(--danger)}
   .rp-stat.skip .v{color:var(--warning)} .rp-stat.blocked .v{color:var(--info)}
   .rp-stat.pending .v{color:var(--text-muted)}
@@ -140,41 +172,41 @@
   .rp-ticks i.skip{background:var(--warning);height:38%}
   .rp-ticks i.blocked{background:var(--info);height:38%}
   .rp-ticks i.pending{background:var(--border-strong);height:38%}
-  .rp-axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--text-dim);margin-top:6px}
+  .rp-axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;color:var(--text-dim);margin-top:6px}
   .rp-sec{margin-top:22px}
   .rp-sec-h{display:flex;align-items:center;gap:9px;margin-bottom:9px}
-  .rp-sec-h h4{margin:0;font-size:12.5px;font-weight:600}
-  .rp-sec-h .why{font-size:11.5px;color:var(--text-muted)}
+  .rp-sec-h h4{margin:0;font-size:14px;font-weight:600}
+  .rp-sec-h .why{font-size:13px;color:var(--text-muted)}
   .rp-group{border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:10px;background:var(--bg-elev)}
-  .rp-group-h{display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--bg-elev-2);border-bottom:1px solid var(--border);font-size:12px}
+  .rp-group-h{display:flex;align-items:center;gap:9px;padding:8px 12px;background:var(--bg-elev-2);border-bottom:1px solid var(--border);font-size:13px}
   .rp-group-h .cause{color:var(--text);font-weight:600}
-  .rp-group-h .note{color:var(--text-dim);font-size:11.5px}
-  .rp-group-h .n{font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-left:auto;white-space:nowrap}
-  .rp-row{display:grid;grid-template-columns:10px 46px 62px 1fr auto auto;gap:10px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer}
+  .rp-group-h .note{color:var(--text-dim);font-size:13px}
+  .rp-group-h .n{font-family:var(--mono);font-size:12px;color:var(--text-dim);margin-left:auto;white-space:nowrap}
+  .rp-row{display:grid;grid-template-columns:10px 60px 72px 1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer}
   .rp-row:last-child{border-bottom:0}
   .rp-row:hover{background:var(--bg-elev-2)}
-  .rp-row .id{font-family:var(--mono);font-size:10.5px;color:var(--text-dim)}
+  .rp-row .id{font-family:var(--mono);font-size:12px;color:var(--text-dim)}
   .rp-row .sc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .rp-row .exp{font-family:var(--mono);font-size:10.5px;color:var(--text-muted);white-space:nowrap}
+  .rp-row .exp{font-family:var(--mono);font-size:12px;color:var(--text-muted);white-space:nowrap}
   .rp-row .exp s{color:var(--text-dim);text-decoration:none}
   .rp-row .exp b{color:var(--danger)}
-  .rp-row .ms{font-family:var(--mono);font-size:10.5px;color:var(--text-dim);text-align:right;min-width:52px}
-  .rp-dot{width:7px;height:7px;border-radius:50%;background:var(--text-dim)}
+  .rp-row .ms{font-family:var(--mono);font-size:12px;color:var(--text-dim);text-align:right;min-width:52px}
+  .rp-dot{width:10px;height:10px;border-radius:50%;background:var(--text-dim)}
   .rp-dot.pass{background:var(--success)} .rp-dot.fail{background:var(--danger)}
   .rp-dot.skip{background:var(--warning)} .rp-dot.blocked{background:var(--info)}
   .rp-open{border-bottom:1px solid var(--border)}
   .rp-open-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:1px;background:var(--border)}
   .rp-open-col{background:var(--bg-elev);padding:11px 13px;min-width:0}
   .rp-open-col.res{padding:0;background:var(--bg);display:flex;flex-direction:column}
-  .rp-open-col h5{margin:0 0 8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:600}
-  .rp-code{font-family:var(--mono);font-size:10.5px;line-height:1.6;color:var(--text-muted);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;white-space:pre-wrap;word-break:break-all;max-height:190px;overflow:auto}
-  .rp-assert{font-size:11.5px;line-height:1.9;color:var(--text-muted)}
+  .rp-open-col h5{margin:0 0 8px;font-family:var(--mono);font-size:12px;color:var(--text-dim);font-weight:600}
+  .rp-code{font-family:var(--mono);font-size:12px;line-height:1.6;color:var(--text-muted);background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:9px 10px;white-space:pre-wrap;word-break:break-all;max-height:190px;overflow:auto}
+  .rp-assert{font-size:13px;line-height:1.9;color:var(--text-muted)}
   .rp-assert .mark{display:inline-block;width:14px;font-weight:700}
   .rp-assert .mark.ok{color:var(--success)} .rp-assert .mark.no{color:var(--danger)}
   .rp-resh{display:flex;align-items:center;gap:9px;padding:7px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-  .rp-resbody{flex:1;font-family:var(--mono);font-size:10.5px;line-height:1.6;padding:10px 12px;white-space:pre-wrap;word-break:break-word;overflow:auto;max-height:260px;color:var(--text-muted)}
+  .rp-resbody{flex:1;font-family:var(--mono);font-size:12px;line-height:1.6;padding:10px 12px;white-space:pre-wrap;word-break:break-word;overflow:auto;max-height:260px;color:var(--text-muted)}
   .rp-actions{display:flex;gap:6px;padding:9px 13px;background:var(--bg-elev);border-top:1px solid var(--border);flex-wrap:wrap}
-  .rp-collapsed{display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:9px;background:var(--bg-elev);font-size:12px;color:var(--text-muted);margin-bottom:8px;cursor:pointer}
+  .rp-collapsed{display:flex;align-items:center;gap:9px;padding:10px 13px;border:1px solid var(--border);border-radius:9px;background:var(--bg-elev);font-size:13px;color:var(--text-muted);margin-bottom:8px;cursor:pointer}
   .rp-collapsed b{color:var(--text)}
   .rp-collapsed .caret{margin-left:auto;color:var(--text-dim)}
   .rp-sub{border:1px solid var(--border);border-top:0;border-radius:0 0 9px 9px;margin:-9px 0 8px;background:var(--bg-elev);max-height:280px;overflow:auto}
@@ -186,105 +218,108 @@
   }
 
   /* ---------- onboarding ---------- */
-  .ob-choice{border:1px solid var(--border);border-radius:9px;padding:13px 15px;margin-bottom:9px;cursor:pointer;transition:border-color .15s,background .15s}
+  .ob-choice{position:relative;border:1px solid var(--border-strong);border-radius:var(--radius-lg);padding:16px 16px 16px 64px;margin-bottom:10px;cursor:pointer;transition:border-color .15s,background .15s;counter-increment:ob}
+  .ob-choice::before{content:counter(ob);position:absolute;left:16px;top:16px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:15px}
+  #modalWelcome .modal-body{counter-reset:ob}
+  .ob-tag{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:var(--radius-pill);background:var(--success-soft);color:var(--success);font-size:12px;font-weight:700;vertical-align:2px}
   .ob-choice:hover{border-color:var(--accent);background:var(--accent-soft)}
-  .ob-t{font-size:13.5px;font-weight:600;margin-bottom:3px}
-  .ob-d{font-size:11.5px;color:var(--text-muted);line-height:1.6}
+  .ob-t{font-size:16px;font-weight:700;margin-bottom:2px}
+  .ob-d{font-size:13px;color:var(--text-muted);line-height:1.55}
   .ob-row{display:flex;gap:6px;margin-top:10px}
-  .ob-row input{flex:1;min-width:0;height:30px;font-size:12px}
+  .ob-row input{flex:1;min-width:0;height:var(--control-md);font-size:13px;font-family:var(--mono)}
 
   /* ---------- browser-blocked cases + streaming ---------- */
-  .blocked-note{padding:12px 14px;font-size:12px;line-height:1.7;color:var(--text-muted)}
+  .blocked-note{padding:12px 14px;font-size:13px;line-height:1.7;color:var(--text-muted)}
   .blocked-note p{margin:0 0 10px;color:var(--text)}
-  .stream-chip{font-family:var(--mono);font-size:9.5px;padding:1px 6px;border-radius:8px;
+  .stream-chip{font-family:var(--mono);font-size:12px;padding:1px 6px;border-radius:8px;
     background:var(--info-soft);color:var(--info);margin-left:6px}
 
   /* ---------- assertions ---------- */
   .as-head{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
-  .as-blurb{font-size:11.5px;color:var(--text-muted);line-height:1.6}
+  .as-blurb{font-size:13px;color:var(--text-muted);line-height:1.6}
   .as-actions{display:flex;gap:6px;align-items:center}
-  .as-actions select{width:auto;height:28px;font-size:11.5px}
+  .as-actions select{width:auto;height:28px;font-size:13px}
   .as-list{display:flex;flex-direction:column;gap:6px}
-  .as-row{display:grid;grid-template-columns:auto minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr) auto;gap:5px;align-items:center;
-    padding:7px;border:1px solid var(--border);border-radius:7px;background:var(--bg-elev)}
+  .as-row{display:grid;grid-template-columns:auto minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr) auto;gap:6px;align-items:center;
+    padding:8px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--bg-elev)}
   .as-row.ok{border-left:2px solid var(--success)}
   .as-row.bad{border-left:2px solid var(--danger)}
-  .as-row select,.as-row input[type=text],.as-row input:not([type]){height:26px;font-size:11px;padding:3px 6px}
-  .as-row input{height:26px;font-size:11px;padding:3px 6px}
-  .as-novalue{color:var(--text-dim);text-align:center;font-size:11px}
+  .as-row select,.as-row input[type=text],.as-row input:not([type]){height:var(--control-sm);font-size:13px;padding:4px 8px}
+  .as-row input{height:var(--control-sm);font-size:13px;padding:4px 8px}
+  .as-novalue{color:var(--text-dim);text-align:center;font-size:12px}
   .as-del{color:var(--text-dim);font-size:15px;line-height:1;padding:0 4px}
   .as-del:hover{color:var(--danger)}
-  .as-result{grid-column:1/-1;font-size:10.5px;padding-left:22px}
+  .as-result{grid-column:1/-1;font-size:12px;padding-left:22px}
   .as-result.ok{color:var(--success)} .as-result.bad{color:var(--danger)}
-  .as-sum{margin-top:10px;font-size:11.5px;padding:7px 10px;border-radius:6px;background:var(--bg-elev-2)}
+  .as-sum{margin-top:10px;font-size:13px;padding:7px 10px;border-radius:6px;background:var(--bg-elev-2)}
   .as-sum.ok{color:var(--success)} .as-sum.bad{color:var(--danger)}
-  .as-empty{padding:18px 14px;text-align:center;color:var(--text-muted);font-size:12px;border:1px dashed var(--border);border-radius:8px}
-  .as-empty p{font-size:11px;line-height:1.7;margin:8px 0 0;color:var(--text-dim)}
+  .as-empty{padding:18px 14px;text-align:center;color:var(--text-muted);font-size:13px;border:1px dashed var(--border);border-radius:8px}
+  .as-empty p{font-size:12px;line-height:1.7;margin:8px 0 0;color:var(--text-dim)}
 
   /* ---------- API explorer ---------- */
   .sb-modes{display:flex;gap:0;border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:8px}
-  .sb-modes button{flex:1;padding:5px 8px;font-size:11.5px;font-weight:500;color:var(--text-muted);border-right:1px solid var(--border)}
+  .sb-modes button{flex:1;padding:5px 8px;font-size:13px;font-weight:500;color:var(--text-muted);border-right:1px solid var(--border)}
   .sb-modes button:last-child{border-right:0}
-  .sb-modes button.on{background:var(--accent);color:#fff}
-  .sb-modes .n{font-family:var(--mono);font-size:9.5px;opacity:.75}
+  .sb-modes button.on{background:var(--accent-strong);color:var(--on-accent)}
+  .sb-modes .n{font-family:var(--mono);font-size:12px;opacity:.75}
   .sb-methods{display:flex;flex-wrap:wrap;gap:4px;padding:8px 10px 4px}
-  .mf{font-family:var(--mono);font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:4px;cursor:pointer;
+  .mf{font-family:var(--mono);font-size:12px;font-weight:700;padding:2px 6px;border-radius:4px;cursor:pointer;
     background:var(--bg-elev-2);color:var(--text-muted);border:1px solid var(--border)}
   .mf:hover{border-color:var(--border-strong)}
-  .mf.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .mf.on{background:var(--accent-strong);color:var(--on-accent);border-color:var(--accent-strong)}
   .mf.clear{font-weight:400;text-transform:none}
-  .sb-item.ep{display:grid;grid-template-columns:46px minmax(0,1fr);gap:4px 8px;align-items:center;padding:6px 10px}
-  .sb-item.ep .ep-path{grid-column:2;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .sb-item.ep .ep-sum{grid-column:2;font-size:10.5px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .sb-item.ep .ep-dep{grid-column:2;font-size:9.5px;color:var(--warn)}
+  .sb-item.ep{display:grid;grid-template-columns:60px minmax(0,1fr);gap:2px 8px;align-items:center;padding:8px 10px}
+  .sb-item.ep .ep-path{grid-column:2;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sb-item.ep .ep-sum{grid-column:2;font-size:12px;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sb-item.ep .ep-dep{grid-column:2;font-size:12px;color:var(--warn)}
   .sb-empty{padding:28px 20px;text-align:center;color:var(--text-muted)}
-  .sb-empty-t{color:var(--text);font-size:13px;font-weight:600;margin-bottom:6px}
-  .sb-empty p{font-size:11.5px;line-height:1.7;margin:0 0 14px}
+  .sb-empty-t{color:var(--text);font-size:14px;font-weight:600;margin-bottom:6px}
+  .sb-empty p{font-size:13px;line-height:1.7;margin:0 0 14px}
   /* spec summary card */
   .spec-sum{border:1px solid var(--success);border-radius:8px;padding:12px 14px;background:var(--success-soft)}
-  .spec-sum-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;margin-bottom:10px}
-  .spec-ok{color:var(--success);font-weight:600;font-size:12px}
-  .spec-ver,.spec-fmt{font-size:10px;padding:1px 6px;border-radius:8px;background:var(--bg-elev-2);color:var(--text-muted)}
+  .spec-sum-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;margin-bottom:10px}
+  .spec-ok{color:var(--success);font-weight:600;font-size:13px}
+  .spec-ver,.spec-fmt{font-size:12px;padding:1px 6px;border-radius:8px;background:var(--bg-elev-2);color:var(--text-muted)}
   .spec-grid{display:grid;gap:6px}
-  .spec-grid > div{display:grid;grid-template-columns:88px minmax(0,1fr);gap:10px;font-size:11.5px;line-height:1.6}
-  .spec-grid .k{color:var(--text-dim);text-transform:uppercase;font-size:9.5px;letter-spacing:.06em;padding-top:2px}
+  .spec-grid > div{display:grid;grid-template-columns:88px minmax(0,1fr);gap:10px;font-size:13px;line-height:1.6}
+  .spec-grid .k{color:var(--text-dim);font-size:12px;letter-spacing:.06em;padding-top:2px}
   .spec-grid .v{color:var(--text);word-break:break-word}
   .spec-grid em{color:var(--success);font-style:normal}
   .spec-actions{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
   .spec-err{border:1px solid var(--danger);border-radius:8px;padding:11px 13px;background:var(--danger-soft);
-    color:var(--text);font-size:12px;line-height:1.6}
+    color:var(--text);font-size:13px;line-height:1.6}
 
   /* ---------- draft request + history ---------- */
   .draft-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
-  .draft-title{font-size:13px;color:var(--text-muted)}
+  .draft-title{font-size:14px;color:var(--text-muted)}
   .draft-head .btn{margin-left:0}
   .draft-title{flex:1;min-width:120px}
-  .draft-url{font-size:12px;color:var(--accent);word-break:break-all;line-height:1.5}
+  .draft-url{font-size:13px;color:var(--accent);word-break:break-all;line-height:1.5}
   .draft-last{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:9px 12px;
     border:1px solid var(--border);border-radius:8px;background:var(--bg-elev)}
   .hist{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg-elev)}
   .hist-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;gap:10px;align-items:center;
-    padding:7px 11px;border-bottom:1px solid var(--border);font-size:12px;cursor:pointer}
+    padding:7px 11px;border-bottom:1px solid var(--border);font-size:13px;cursor:pointer}
   .hist-row:last-child{border-bottom:0}
   .hist-row:hover{background:var(--bg-elev-2)}
   .hist-row.run{cursor:default;background:var(--bg-elev-2)}
-  .hist-badge{font-family:var(--mono);font-size:9.5px;font-weight:700;padding:2px 5px;border-radius:3px;
+  .hist-badge{font-family:var(--mono);font-size:12px;font-weight:700;padding:2px 5px;border-radius:3px;
     background:var(--accent-soft);color:var(--accent)}
-  .hist-path{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px}
-  .hist-status{font-size:11px;font-weight:700}
+  .hist-path{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+  .hist-status{font-size:12px;font-weight:700}
   .hist-status.ok{color:var(--success)} .hist-status.bad{color:var(--danger)}
-  .hist-meta{font-size:10.5px;color:var(--text-dim)}
-  .hist-when{font-size:10.5px;color:var(--text-dim);white-space:nowrap}
+  .hist-meta{font-size:12px;color:var(--text-dim)}
+  .hist-when{font-size:12px;color:var(--text-dim);white-space:nowrap}
   /* body playground */
   .body-tools{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:6px}
-  .body-valid{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--text-dim)}
+  .body-valid{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--text-dim)}
   .body-valid.ok{color:var(--success)}
   .body-valid.bad{color:var(--warn)}
 
   /* ---------- mid-run tray ---------- */
   .runtray{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:60;display:none;
     align-items:center;gap:14px;padding:10px 16px;border-radius:12px;background:var(--bg-elev);
-    border:1px solid var(--border-strong);box-shadow:var(--shadow);font-size:12px;max-width:92vw}
+    border:1px solid var(--border-strong);box-shadow:var(--shadow);font-size:13px;max-width:92vw}
   .runtray.on{display:flex}
   .runtray .n{font-family:var(--mono);font-weight:700}
   .runtray .lanes{display:flex;gap:3px}
@@ -293,24 +328,22 @@
   .runtray .track{width:200px;height:5px;border-radius:3px;background:var(--bg-elev-2);overflow:hidden;display:flex}
   .runtray .track i{display:block;height:100%}
   .runtray .chips{display:flex;gap:4px;flex-wrap:wrap;max-width:320px;overflow:hidden}
-  .runtray .chip{font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:5px;
+  .runtray .chip{font-family:var(--mono);font-size:12px;padding:2px 6px;border-radius:5px;
     background:var(--danger-soft);color:var(--danger);cursor:pointer}
 
   .tb-actions{margin-left:auto;display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:6px;row-gap:6px}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 11px;border-radius:6px;background:var(--bg-elev-2);color:var(--text);border:1px solid var(--border);font-size:12px;font-weight:500;line-height:1;transition:all .15s;white-space:nowrap;flex-shrink:0}
-  .btn:hover{background:var(--bg-hover);border-color:var(--border-strong)}
-  .btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
-  /* AA: white on #8b5cf6 was 4.2:1 — darken the accent used behind white text */
-  .btn.primary,.viewsw button.on,.sb-modes button.on,.mf.on{background:var(--accent-strong);border-color:var(--accent-strong)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:var(--control-md);padding:0 16px;border-radius:var(--radius-md);background:var(--bg-elev);color:var(--text);border:1px solid var(--border-strong);font-size:14px;font-weight:700;line-height:1;transition:all .15s;white-space:nowrap;flex-shrink:0}
+  .btn:hover{background:var(--bg-hover)}
+  .btn.primary{background:var(--accent-strong);color:var(--on-accent);border-color:var(--accent-strong)}
   .btn.primary:hover{background:var(--accent-hover)}
   :focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
   .tp-tab:focus-visible,.sb-filter:focus-visible{outline-offset:-2px}
   .btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
-  .btn.success{background:var(--success);color:#fff;border-color:var(--success)}
-  .btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
-  .btn.ghost{background:transparent;border-color:transparent}
-  .btn.ghost:hover{background:var(--bg-hover);border-color:var(--border)}
-  .btn.small{padding:4px 8px;font-size:11px}
+  .btn.success{background:var(--success-soft);color:var(--success);border-color:var(--success)}
+  .btn.danger{background:var(--danger-soft);color:var(--danger);border-color:var(--danger)}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--text-muted)}
+  .btn.ghost:hover{background:var(--bg-hover);color:var(--text)}
+  .btn.small{min-height:var(--control-sm);padding:0 12px;font-size:13px}
 
   /* ---------- layout ---------- */
   .app{display:flex;flex-direction:column;height:100vh}
@@ -322,28 +355,28 @@
   /* ---------- sidebar ---------- */
   .sb-header{padding:12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
   .sb-search{position:relative}
-  .sb-search input{padding-left:30px;height:32px;font-size:12px;background:var(--bg-elev-2)}
-  .sb-search svg{position:absolute;left:9px;top:8px;color:var(--text-muted)}
+  .sb-search input{padding-left:34px;height:var(--control-md);font-size:14px;background:var(--bg-elev)}
+  .sb-search svg{position:absolute;left:11px;top:13px;color:var(--text-muted)}
   .sb-filters{display:flex;gap:4px;flex-wrap:wrap}
-  .sb-filter{padding:3px 8px;font-size:11px;border-radius:20px;background:var(--bg-elev-2);color:var(--text-muted);cursor:pointer;border:1px solid var(--border)}
+  .sb-filter{padding:4px 10px;font-size:13px;border-radius:var(--radius-pill);background:var(--bg-elev);color:var(--text-muted);cursor:pointer;border:1px solid var(--border-strong)}
   .sb-filter.active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
-  .sb-stats{display:flex;gap:8px;font-size:11px;color:var(--text-muted);padding:4px 2px}
+  .sb-stats{display:flex;gap:8px;font-size:12px;color:var(--text-muted);padding:4px 2px}
   .sb-stats b{color:var(--text);font-weight:600}
   .sb-list{flex:1;overflow-y:auto;padding:4px 0 20px}
-  .sb-tag{padding:10px 12px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
-  .sb-tag:hover{color:var(--text-muted)}
+  .sb-tag{padding:14px 12px 4px;font-size:13px;color:var(--text-muted);font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+  .sb-tag:hover{color:var(--text)}
   .sb-tag .caret{transition:transform .15s}
   .sb-tag.collapsed .caret{transform:rotate(-90deg)}
-  .sb-item{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;border-left:2px solid transparent;font-size:12px}
-  .sb-item:hover{background:var(--bg-elev-2)}
-  .sb-item.active{background:var(--accent-soft);border-left-color:var(--accent)}
+  .sb-item{display:flex;align-items:center;gap:8px;padding:8px 12px;margin:1px 6px;cursor:pointer;border-radius:var(--radius-md);font-size:13px}
+  .sb-item:hover{background:var(--bg-hover)}
+  .sb-item.active{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
   .sb-item.active .sb-scenario{color:var(--text)}
   .sb-scenario{flex:1;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .sb-id{font-family:var(--mono);font-size:10px;color:var(--text-dim);flex-shrink:0}
-  .sb-test{background:var(--accent);color:#fff;border:none;border-radius:3px;width:22px;height:20px;font-size:10px;cursor:pointer;opacity:0;transition:opacity .15s;flex-shrink:0;padding:0;line-height:1}
+  .sb-id{font-family:var(--mono);font-size:12px;color:var(--text-dim);flex-shrink:0}
+  .sb-test{background:var(--accent-strong);color:var(--on-accent);border:none;border-radius:var(--radius-sm);width:26px;height:24px;font-size:12px;cursor:pointer;opacity:0;transition:opacity .15s;flex-shrink:0;padding:0;line-height:1}
   .sb-item:hover .sb-test,.sb-item.active .sb-test{opacity:1}
-  .sb-test:hover{background:var(--accent-hover,#3a82d6)}
-  .method{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 5px;border-radius:3px;min-width:42px;text-align:center;flex-shrink:0;letter-spacing:.02em}
+  .sb-test:hover{background:var(--accent-hover)}
+  .method{font-family:var(--mono);font-size:12px;font-weight:700;padding:3px 6px;border-radius:var(--radius-sm);min-width:58px;text-align:center;flex-shrink:0;letter-spacing:.02em}
   .method.GET{background:var(--success-soft);color:var(--success)}
   .method.POST{background:var(--warning-soft);color:var(--warning)}
   .method.PUT{background:var(--info-soft);color:var(--info)}
@@ -351,37 +384,41 @@
   .method.DELETE{background:var(--danger-soft);color:var(--danger)}
   .method.HEAD,.method.OPTIONS{background:var(--bg-elev-2);color:var(--text-muted)}
   .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--text-dim)}
-  .status-dot.pass{background:var(--success);box-shadow:0 0 6px var(--success)}
-  .status-dot.fail{background:var(--danger);box-shadow:0 0 6px var(--danger)}
+  .status-dot.pass{background:var(--success)}
+  .status-dot.fail{background:var(--danger)}
   .status-dot.skip{background:var(--warning)}
   .status-dot.blocked{background:var(--info)}
 
   /* ---------- doc panel ---------- */
-  .doc-empty{display:grid;place-items:center;height:100%;color:var(--text-muted);font-size:13px}
-  .doc-h1{display:flex;align-items:center;gap:10px;margin:0 0 6px;font-size:20px;font-weight:600}
-  .doc-h1 .method{font-size:12px;padding:3px 8px}
+  .doc-empty{display:grid;place-items:center;height:100%;max-width:440px;margin:0 auto;text-align:center;line-height:1.6;color:var(--text-muted);font-size:14px}
+  .doc-h1{display:flex;align-items:center;gap:10px;margin:0 0 6px;font-size:20px;line-height:28px;font-weight:700}
+  .doc-h1 .method{font-size:13px;padding:3px 8px}
   .doc-path{font-family:var(--mono);font-size:14px;color:var(--text-muted);word-break:break-all}
   .doc-section{margin-top:24px}
-  .doc-section h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin:0 0 10px;font-weight:600}
-  .doc-card{background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+  .doc-section h3{font-size:16px;color:var(--text);margin:0 0 10px;font-weight:700}
+  .doc-card{background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-raised)}
   .doc-desc{font-size:14px;line-height:1.6;color:var(--text-muted);margin:8px 0 0}
-  .kv-table{width:100%;border-collapse:collapse;font-size:12px}
-  .kv-table th{text-align:left;padding:8px 10px;background:var(--bg-elev-2);color:var(--text-muted);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border)}
+  .kv-table{width:100%;border-collapse:collapse;font-size:13px}
+  .kv-table th{text-align:left;padding:8px 10px;background:var(--bg-elev-2);color:var(--text-muted);font-weight:500;font-size:12px;border-bottom:1px solid var(--border)}
   .kv-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
   .kv-table tr:last-child td{border-bottom:0}
-  .kv-table .mono{font-family:var(--mono);font-size:12px}
-  .status-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;font-family:var(--mono)}
+  .kv-table .mono{font-family:var(--mono);font-size:13px}
+  .status-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 10px 2px 8px;border-radius:var(--radius-pill);font-size:12px;font-weight:700;font-family:var(--mono)}
+  .status-pill.s2::before,.resp-status.ok::before{content:"✓"}
+  .status-pill.s3::before,.resp-status.redir::before{content:"↪"}
+  .status-pill.s4::before,.resp-status.warn::before{content:"!";font-weight:700}
+  .status-pill.s5::before,.resp-status.err::before{content:"✕"}
+  .resp-status::before{margin-right:5px;font-family:var(--sans)}
   .status-pill.s2{background:var(--success-soft);color:var(--success)}
   .status-pill.s3{background:var(--info-soft);color:var(--info)}
   .status-pill.s4{background:var(--warning-soft);color:var(--warning)}
   .status-pill.s5{background:var(--danger-soft);color:var(--danger)}
-  .code-block{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:12px;color:var(--text);white-space:pre-wrap;word-break:break-all;overflow-x:auto;position:relative;line-height:1.55}
-  .code-block .copy-btn{position:absolute;top:8px;right:8px;padding:4px 8px;background:var(--bg-elev-2);border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--text-muted);opacity:0;transition:opacity .15s}
-  .code-block:hover .copy-btn{opacity:1}
+  .code-block{background:var(--bg-elev-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;font-family:var(--mono);font-size:13px;color:var(--text);white-space:pre-wrap;word-break:break-all;overflow-x:auto;position:relative;line-height:1.55}
+  .code-block .copy-btn{position:absolute;top:8px;right:8px;padding:4px 10px;background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:var(--radius-sm);font-size:12px;font-weight:700;color:var(--text-muted)}
   .code-block .copy-btn:hover{color:var(--text);border-color:var(--border-strong)}
   .doc-status-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .status-sel{display:inline-flex;gap:4px;background:var(--bg-elev-2);padding:3px;border-radius:8px;border:1px solid var(--border)}
-  .status-sel button{padding:5px 12px;border-radius:5px;font-size:12px;font-weight:500;color:var(--text-muted)}
+  .status-sel button{padding:5px 12px;border-radius:5px;font-size:13px;font-weight:500;color:var(--text-muted)}
   .status-sel button:hover{color:var(--text)}
   .status-sel button.active{background:var(--bg-elev);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.15)}
   .status-sel button.active.pass{color:var(--success)}
@@ -391,47 +428,49 @@
 
   /* ---------- try panel ---------- */
   .tp-header{padding:12px 14px;border-bottom:1px solid var(--border)}
-  .tp-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .tp-title{font-size:13px;color:var(--text-muted);font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
   .tp-title .tp-title-label{flex:1}
   .tp-title .btn.small{text-transform:none;letter-spacing:0;font-weight:600}
-  .tp-url{display:flex;gap:0;align-items:stretch;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg-elev-2)}
-  .tp-url select{border:0;border-right:1px solid var(--border);border-radius:0;background:var(--bg-elev-2);width:auto;min-width:84px;font-weight:600;font-family:var(--mono);font-size:11px;padding:8px 10px}
-  .tp-url input{border:0;border-radius:0;background:var(--bg-elev-2);font-family:var(--mono);font-size:12px}
-  .tp-url input:focus{border:0}
-  .tp-send{width:100%;padding:10px;margin-top:10px;background:var(--accent);color:#fff;border-radius:8px;font-weight:600;font-size:13px;transition:.15s}
+  .tp-url{display:flex;gap:0;align-items:stretch;min-height:var(--control-lg);border:1px solid var(--border-strong);border-radius:var(--radius-md);overflow:hidden;background:var(--bg-elev);box-shadow:var(--shadow-raised)}
+  .tp-url:focus-within{outline:2px solid var(--focus);outline-offset:2px}
+  .tp-url select{border:0;border-right:1px solid var(--border);border-radius:0;background:var(--bg-elev-2);width:auto;min-width:96px;font-weight:700;font-family:var(--mono);font-size:13px;padding:8px 10px}
+  .tp-url input{border:0;border-radius:0;background:var(--bg-elev);font-family:var(--mono);font-size:13px}
+  .tp-url input:focus,.tp-url select:focus{border:0;box-shadow:none}
+  .tp-send{width:100%;min-height:var(--control-lg);margin-top:10px;background:var(--accent-strong);color:var(--on-accent);border-radius:var(--radius-md);font-weight:700;font-size:15px;transition:.15s}
   .tp-send:hover{background:var(--accent-hover)}
   .tp-send:disabled{opacity:.6;cursor:wait}
   .tp-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 14px;gap:2px;flex-shrink:0}
-  .tp-tab{padding:10px 12px;font-size:12px;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:500;cursor:pointer}
+  .tp-tab{padding:10px 12px;font-size:13px;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:700;cursor:pointer}
   .tp-tab:hover{color:var(--text)}
   .tp-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-  .tp-tab .badge{display:inline-block;background:var(--bg-hover);color:var(--text-dim);border-radius:10px;padding:1px 6px;font-size:10px;margin-left:5px;font-weight:600}
+  .tp-tab .badge{display:inline-block;background:var(--bg-elev-2);color:var(--text-muted);border-radius:var(--radius-pill);padding:0 7px;font-size:12px;margin-left:6px;font-weight:700;font-family:var(--mono)}
   .tp-content{flex:1;overflow-y:auto;padding:12px 14px}
   .tp-rows{display:flex;flex-direction:column;gap:4px}
-  .tp-row{display:grid;grid-template-columns:20px 1fr 1fr 24px;gap:4px;align-items:center}
-  .tp-row input[type="text"]{height:28px;font-size:12px;font-family:var(--mono)}
+  .tp-row{display:grid;grid-template-columns:20px 1fr 1fr 28px;gap:6px;align-items:center}
+  .tp-row input[type="text"]{height:var(--control-sm);font-size:13px;font-family:var(--mono)}
   .tp-row input[type="checkbox"]{accent-color:var(--accent)}
   .tp-row button{padding:4px;color:var(--text-dim);border-radius:4px}
   .tp-row button:hover{color:var(--danger);background:var(--bg-hover)}
-  .tp-add{margin-top:6px;font-size:11px;color:var(--accent);padding:4px 0}
+  .tp-add{margin-top:8px;font-size:13px;font-weight:700;color:var(--accent);padding:4px 0}
   .tp-add:hover{text-decoration:underline}
 
   /* response */
   .resp-panel{border-top:1px solid var(--border);flex:0 0 auto;max-height:45%;display:flex;flex-direction:column;background:var(--bg-elev-2)}
-  .resp-header{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border);font-size:12px}
-  .resp-status{font-family:var(--mono);font-weight:600;padding:3px 10px;border-radius:4px;font-size:11px}
+  .resp-header{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;background:var(--bg-elev)}
+  .resp-status{display:inline-flex;align-items:center;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);font-size:12px}
+  .resp-hint{font-size:13px;color:var(--text-muted);flex-basis:100%}
   .resp-status.ok{background:var(--success-soft);color:var(--success)}
   .resp-status.err{background:var(--danger-soft);color:var(--danger)}
   .resp-status.redir{background:var(--info-soft);color:var(--info)}
   .resp-status.warn{background:var(--warning-soft);color:var(--warning)}
-  .resp-meta{color:var(--text-muted);font-family:var(--mono);font-size:11px}
-  .resp-verdict{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600}
+  .resp-meta{color:var(--text-muted);font-family:var(--mono);font-size:12px}
+  .resp-verdict{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:var(--radius-pill);font-size:12px;font-weight:700}
   .resp-verdict.pass{background:var(--success-soft);color:var(--success)}
   .resp-verdict.fail{background:var(--danger-soft);color:var(--danger)}
-  .resp-body{padding:0;overflow:auto;flex:1;font-family:var(--mono);font-size:12px;color:var(--text);line-height:1.55;background:var(--bg-deep,#0d1117)}
-  .resp-body.empty{color:var(--text-dim);text-align:center;padding:40px 20px;background:transparent}
-  .resp-ct{padding:4px 14px;font-size:11px;color:var(--text-dim);border-bottom:1px solid var(--line);background:var(--bg-deep,#0d1117)}
-  .resp-pre{margin:0;padding:8px 0;font-family:var(--mono);font-size:12px;line-height:1.6;overflow:auto;background:var(--bg-deep,#0d1117)}
+  .resp-body{padding:0;overflow:auto;flex:1;font-family:var(--mono);font-size:13px;color:var(--text);line-height:1.55;background:var(--bg-deep)}
+  .resp-body.empty{color:var(--text-muted);font-family:var(--sans);font-size:14px;text-align:center;padding:40px 24px;background:transparent}
+  .resp-ct{padding:4px 14px;font-size:12px;color:var(--text-dim);border-bottom:1px solid var(--line);background:var(--bg-deep,#0d1117)}
+  .resp-pre{margin:0;padding:8px 0;font-family:var(--mono);font-size:13px;line-height:1.6;overflow:auto;background:var(--bg-deep,#0d1117)}
   .resp-line{display:block;padding:0 14px 0 0;white-space:pre;min-height:1.6em}
   .resp-ln{display:inline-block;width:34px;padding-right:12px;color:#484f58;text-align:right;user-select:none;font-variant-numeric:tabular-nums}
   .jz-k{color:#79c0ff}
@@ -449,35 +488,36 @@
   [data-theme="light"] .jz-n{color:#953800}
   [data-theme="light"] .jz-b{color:#cf222e}
   [data-theme="light"] .jz-u{color:#6e7781}
-  .resp-hdrs{padding:6px 14px;border-bottom:1px solid var(--line);font-size:11px;background:var(--panel);max-height:160px;overflow:auto}
+  .resp-hdrs{padding:6px 14px;border-bottom:1px solid var(--line);font-size:12px;background:var(--panel);max-height:160px;overflow:auto}
   .resp-hdrs table{width:100%;border-collapse:collapse}
   .resp-hdrs td{padding:2px 8px 2px 0;vertical-align:top}
   .resp-hdrs td:first-child{color:var(--text-dim);white-space:nowrap;width:140px}
   .resp-hdrs td:last-child{font-family:var(--mono);word-break:break-all}
 
   /* ---------- modal ---------- */
-  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
+  .modal-backdrop{position:fixed;inset:0;background:var(--scrim);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px)}
   .modal-backdrop.open{display:flex}
-  .modal{background:var(--bg-elev);border:1px solid var(--border);border-radius:12px;max-width:560px;width:90%;max-height:85vh;overflow:auto;box-shadow:var(--shadow)}
-  .modal-head{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border);font-weight:600}
-  .modal-head button{margin-left:auto;color:var(--text-muted);padding:4px 8px;border-radius:4px;font-size:18px;line-height:1}
+  .modal{background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius-lg);max-width:560px;width:90%;max-height:85vh;overflow:auto;box-shadow:var(--shadow)}
+  .modal-head{display:flex;align-items:center;padding:16px 24px;border-bottom:1px solid var(--border);font-weight:700;font-size:20px;line-height:28px}
+  .modal-head button{margin-left:auto;color:var(--text-muted);min-width:36px;min-height:36px;border-radius:var(--radius-md);font-size:20px;line-height:1}
   .modal-head button:hover{background:var(--bg-hover)}
-  .modal-body{padding:20px}
-  .form-row{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
-  .form-row label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;font-weight:500}
-  .modal-actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px;border-top:1px solid var(--border);background:var(--bg-elev-2);border-radius:0 0 12px 12px}
+  .modal-body{padding:24px}
+  .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+  .form-row label{font-size:14px;color:var(--text);font-weight:700}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 24px;border-top:1px solid var(--border);background:var(--bg-elev-2);border-radius:0 0 var(--radius-lg) var(--radius-lg)}
 
   /* progress bar */
-  .progress-bar{height:3px;background:var(--bg-elev-2);overflow:hidden;display:none}
+  .progress-bar{height:4px;background:var(--bg-elev-2);overflow:hidden;display:none}
   .progress-bar.active{display:block}
   .progress-fill{height:100%;background:var(--accent);width:0;transition:width .2s}
 
   /* toast */
   .toast-host{position:fixed;top:70px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:200;pointer-events:none}
-  .toast{background:var(--bg-elev);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text);box-shadow:var(--shadow);min-width:240px;animation:slideIn .2s}
-  .toast.success{border-left-color:var(--success)}
-  .toast.error{border-left-color:var(--danger)}
-  .toast.warn{border-left-color:var(--warning)}
+  .toast{display:flex;align-items:flex-start;gap:10px;background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 16px;font-size:14px;line-height:1.45;color:var(--text);box-shadow:var(--shadow);min-width:260px;max-width:380px;animation:slideIn .2s}
+  .toast::before{content:"i";flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--info-soft);color:var(--info)}
+  .toast.success::before{content:"✓";background:var(--success-soft);color:var(--success)}
+  .toast.error::before{content:"✕";background:var(--danger-soft);color:var(--danger)}
+  .toast.warn::before{content:"!";background:var(--warning-soft);color:var(--warning)}
   @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 
   /* icon helpers */
@@ -491,9 +531,9 @@
 
   /* summary cards */
   .summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px}
-  .sum-card{background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+  .sum-card{background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;box-shadow:var(--shadow-raised)}
   .sum-card .n{font-size:22px;font-weight:700;font-family:var(--mono)}
-  .sum-card .l{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);font-weight:600;margin-top:2px}
+  .sum-card .l{font-size:13px;color:var(--text-muted);font-weight:700;margin-top:2px}
   .sum-card.pass .n{color:var(--success)}
   .sum-card.fail .n{color:var(--danger)}
   .sum-card.pending .n{color:var(--text-muted)}
@@ -502,46 +542,46 @@
 
   /* bulk select */
   .sb-check{width:14px;height:14px;accent-color:var(--accent);cursor:pointer}
-  .bulk-bar{display:none;padding:8px 12px;background:var(--accent-soft);border-bottom:1px solid var(--border);font-size:11px;color:var(--text);align-items:center;gap:8px;flex-wrap:wrap}
+  .bulk-bar{display:none;padding:8px 12px;background:var(--accent-soft);border-bottom:1px solid var(--border);font-size:12px;color:var(--text);align-items:center;gap:8px;flex-wrap:wrap}
   .bulk-bar.show{display:flex}
   .bulk-bar b{color:var(--accent)}
-  .bulk-bar button{padding:3px 8px;border-radius:4px;font-size:11px;border:1px solid var(--border);background:var(--bg-elev);color:var(--text)}
+  .bulk-bar button{padding:3px 8px;border-radius:4px;font-size:12px;border:1px solid var(--border);background:var(--bg-elev);color:var(--text)}
   .bulk-bar button:hover{background:var(--bg-hover)}
   .bulk-bar button.danger{color:var(--danger)}
   .bulk-bar button.danger:hover{background:var(--danger-soft);border-color:var(--danger)}
 
   /* path vars */
   .pv-section{padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg-elev-2)}
-  .pv-title{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);font-weight:600;margin-bottom:6px}
+  .pv-title{font-size:12px;color:var(--text-dim);font-weight:600;margin-bottom:6px}
   .pv-row{display:grid;grid-template-columns:110px 1fr;gap:6px;align-items:center;margin-bottom:5px}
   .pv-row:last-child{margin-bottom:0}
   #varsPanel .pv-title{display:flex;align-items:center;gap:6px}
   #varsPanel .pv-row{grid-template-columns:100px minmax(0,1fr) auto}
-  .pv-row .key{font-family:var(--mono);font-size:11px;color:var(--accent);padding:4px 6px;background:var(--accent-soft);border-radius:4px;text-align:center}
-  .pv-row input{height:28px;font-family:var(--mono);font-size:11px}
+  .pv-row .key{font-family:var(--mono);font-size:12px;color:var(--accent);padding:4px 6px;background:var(--accent-soft);border-radius:4px;text-align:center}
+  .pv-row input{height:var(--control-sm);font-family:var(--mono);font-size:13px}
 
   /* url preview */
-  .url-preview{font-family:var(--mono);font-size:10px;color:var(--text-dim);padding:4px 2px;word-break:break-all;line-height:1.4;min-height:14px}
+  .url-preview{font-family:var(--mono);font-size:12px;color:var(--text-dim);padding:4px 2px;word-break:break-all;line-height:1.4;min-height:14px}
   .url-preview b{color:var(--accent)}
 
   /* tip / banner */
-  .tip{background:var(--warning-soft);border:1px solid var(--warning);color:var(--warning);border-radius:6px;padding:8px 12px;font-size:11px;margin:10px 14px;display:flex;gap:8px;align-items:start}
+  .tip{background:var(--warning-soft);border:1px solid var(--warning);color:var(--text);border-radius:var(--radius-md);padding:10px 14px;font-size:13px;line-height:1.5;margin:10px 14px;display:flex;gap:10px;align-items:start}
   .tip .ico{color:var(--warning);margin-top:1px}
   .tip a{color:var(--warning);text-decoration:underline;cursor:pointer}
 
   /* help hint */
-  .hint-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:var(--bg-elev-2);border:1px solid var(--border);border-radius:10px;font-size:10px;color:var(--text-muted);margin-left:6px}
+  .hint-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:var(--info-soft);border-radius:var(--radius-pill);font-size:12px;color:var(--info);margin-left:6px}
 
   /* inline draft naming */
   .draft-save{margin-top:12px;padding:11px 13px;border:1px solid var(--accent);border-radius:8px;background:var(--accent-soft)}
-  .draft-save label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:6px}
+  .draft-save label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px}
   .draft-save-row{display:flex;gap:6px;align-items:center}
-  .draft-save-row input{flex:1;min-width:0;height:30px}
-  .draft-save small{display:block;margin-top:7px;font-size:11px;line-height:1.6}
+  .draft-save-row input{flex:1;min-width:0;height:var(--control-md)}
+  .draft-save small{display:block;margin-top:7px;font-size:12px;line-height:1.6}
   /* shortcuts */
   .sc-list{display:flex;flex-direction:column;gap:6px}
-  .sc-row{display:grid;grid-template-columns:130px 1fr;gap:12px;align-items:center;font-size:12px}
-  .sc-row kbd{font-family:var(--mono);font-size:10.5px;padding:3px 7px;border-radius:5px;background:var(--bg-elev-2);
+  .sc-row{display:grid;grid-template-columns:130px 1fr;gap:12px;align-items:center;font-size:13px}
+  .sc-row kbd{font-family:var(--mono);font-size:12px;padding:3px 7px;border-radius:var(--radius-sm);background:var(--bg-elev-2);
     border:1px solid var(--border);color:var(--text);text-align:center}
 
   /* responsive */
@@ -602,13 +642,20 @@
     </div>
     <div class="tb-actions">
       <button class="btn small" onclick="newRequest()" title="Start an unsaved request — no test case needed"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>New Request</button>
-      <button class="btn small" onclick="openModal('swagger')" title="Connect this module to an OpenAPI/Swagger spec"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Swagger<span id="swaggerChip" style="margin-left:4px;font-size:9px;color:var(--success);display:none">●</span></button>
+      <button class="btn small" onclick="openModal('swagger')" title="Connect this module to an OpenAPI/Swagger spec"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Swagger<span id="swaggerChip" style="margin-left:4px;font-size:12px;color:var(--success);display:none">●</span></button>
       <button class="btn small" onclick="openModal('addEndpoint')" title="Create a new test case from scratch"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Case</button>
       <button class="btn small" onclick="openModal('import')" title="Upload CSV/JSON of test cases"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import</button>
       <button class="btn small primary" id="runAllBtn" onclick="runAll()" title="Run this module's cases"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Run All</button>
       <button class="btn small" onclick="exportReport()" title="Download a CSV report of every case + status"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
       <button class="btn ghost small" id="moreBtn" onclick="toggleMoreMenu()" title="Settings, theme">⋯</button>
     </div>
+  </div>
+
+  <!-- first-steps guide: the loop spelled out until the user hides it -->
+  <div class="guide" id="guide" hidden>
+    <ol class="guide-steps" id="guideSteps" aria-label="Getting started"></ol>
+    <span class="guide-note" id="guideNote"></span>
+    <button class="btn ghost small" onclick="dismissGuide()">Hide guide</button>
   </div>
 
   <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
@@ -632,10 +679,10 @@
           <span class="sb-filter" data-f="blocked" role="button" tabindex="0" aria-pressed="false">Blocked</span>
         </div>
         <div class="sb-stats" id="sbStats"></div>
-        <div id="selectAllRow" style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-muted);padding-top:2px">
+        <div id="selectAllRow" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding-top:2px">
           <input type="checkbox" id="selectAll" class="sb-check" onchange="toggleSelectAllVisible(this.checked)" />
           <label for="selectAll" style="cursor:pointer">Select all</label>
-          <button class="btn ghost small" style="margin-left:auto;font-size:10px" onclick="clearAll()" title="Remove every test case">Clear all</button>
+          <button class="btn ghost small" style="margin-left:auto;font-size:12px" onclick="clearAll()" title="Remove every test case">Clear all</button>
         </div>
       </div>
       <div class="bulk-bar" id="bulkBar">
@@ -651,7 +698,7 @@
 
     <!-- doc panel -->
     <section class="doc-panel" id="docPanel">
-      <div class="doc-empty">Select a test case on the left, or click + Endpoint to add one.</div>
+      <div class="doc-empty">Pick an endpoint or test case on the left to see what it does. No API yet? Use <b>Swagger</b> in the top bar to connect one.</div>
     </section>
 
     <!-- try panel -->
@@ -670,7 +717,7 @@
           <input id="tryPath" placeholder="/path" />
         </div>
         <div class="url-preview" id="urlPreview"></div>
-        <button class="tp-send" id="sendBtn" onclick="sendRequest()">Send request  &nbsp;&nbsp;<span style="opacity:.6;font-weight:400;font-size:11px">⌘↵</span></button>
+        <button class="tp-send" id="sendBtn" onclick="sendRequest()">Send request  &nbsp;&nbsp;<span style="opacity:.6;font-weight:400;font-size:12px">⌘↵</span></button>
       </div>
       <div id="varsPanel"></div>
       <div id="pathVars"></div>
@@ -706,7 +753,7 @@
 <div class="pop" id="authPop" style="left:auto">
   <h5>Auth — shared by every module</h5>
   <div class="form-row">
-    <select id="authType" style="height:30px;font-size:12px">
+    <select id="authType" style="height:30px;font-size:13px">
       <option value="bearer">Bearer</option>
       <option value="apikey">API Key</option>
       <option value="basic">Basic</option>
@@ -715,7 +762,7 @@
   </div>
   <div class="form-row" style="margin-top:8px">
     <input id="authToken" placeholder="paste token / key / user:pass" />
-    <small class="muted" id="authExpiry" style="margin-top:5px;font-size:11px;line-height:1.5"></small>
+    <small class="muted" id="authExpiry" style="margin-top:5px;font-size:12px;line-height:1.5"></small>
   </div>
   <div style="display:flex;gap:6px;margin-top:10px">
     <button class="btn small" onclick="checkEnvHealth(true)">Test connection</button>
@@ -741,7 +788,7 @@
   <div class="modal">
     <div class="modal-head">Add module<button onclick="closeModal('addModule')">&times;</button></div>
     <div class="modal-body">
-      <small class="muted" style="display:block;font-size:11.5px;line-height:1.6;margin-bottom:10px">
+      <small class="muted" style="display:block;font-size:13px;line-height:1.6;margin-bottom:10px">
         A module is one API area: its own cases, its own OpenAPI spec, its own run history and its own host.
         The environment, token and settings stay shared, so switching modules doesn't make you set up again.
       </small>
@@ -757,7 +804,7 @@
         <label>Local host</label>
         <input id="am_local" placeholder="http://localhost:3000" />
       </div>
-      <small class="muted" style="font-size:11px;line-height:1.5">
+      <small class="muted" style="font-size:12px;line-height:1.5">
         Once it's created, load its spec with <b>Spec for this module</b>, or bring its cases in with <b>Import</b> (CSV / JSON / Google Sheet).
       </small>
     </div>
@@ -773,28 +820,28 @@
   <div class="modal" style="max-width:560px">
     <div class="modal-head">Welcome to API Test Studio<button onclick="skipOnboarding()" aria-label="Close">&times;</button></div>
     <div class="modal-body">
-      <p class="muted" style="margin-top:0;font-size:12.5px;line-height:1.7">
+      <p class="muted" style="margin-top:0;font-size:14px;line-height:1.7">
         Test any HTTP API from your browser. Nothing is installed, and nothing you do here leaves your machine —
         tokens, requests and results stay in this browser.
       </p>
+      <div class="ob-choice" onclick="obDemo()" role="button" tabindex="0" onkeydown="if(event.key==='Enter')obDemo()">
+        <div class="ob-t">Explore the demo<span class="ob-tag">Recommended for first time</span></div>
+        <div class="ob-d">A free public API with example requests and checks. Nothing to set up — press Run All and watch it work.</div>
+      </div>
       <div class="ob-choice" onclick="obConnect()">
         <div class="ob-t">Connect my API</div>
-        <div class="ob-d">Paste an OpenAPI/Swagger URL — JSON or YAML — and get every endpoint, ready to send.</div>
+        <div class="ob-d">Paste an OpenAPI/Swagger link — JSON or YAML — and every endpoint appears, ready to send.</div>
         <div class="ob-row" onclick="event.stopPropagation()">
-          <input id="ob_url" placeholder="https://api.example.com/openapi.json"
+          <input id="ob_url" placeholder="https://api.example.com/openapi.json" aria-label="OpenAPI or Swagger URL"
                  onkeydown="if(event.key==='Enter')obConnect()" />
-          <button class="btn primary small" onclick="obConnect()">Import</button>
+          <button class="btn primary" onclick="obConnect()">Import</button>
         </div>
       </div>
-      <div class="ob-choice" onclick="obBlank()">
+      <div class="ob-choice" onclick="obBlank()" role="button" tabindex="0" onkeydown="if(event.key==='Enter')obBlank()">
         <div class="ob-t">Start with a single request</div>
-        <div class="ob-d">No spec handy? Type a URL, set a method, send it. You can import a spec later.</div>
+        <div class="ob-d">No spec handy? Type a URL, pick a method, press Send. You can import a spec later.</div>
       </div>
-      <div class="ob-choice" onclick="obDemo()">
-        <div class="ob-t">Explore the demo</div>
-        <div class="ob-d">A free public API with example endpoints and test cases, to see how the whole thing works.</div>
-      </div>
-      <small class="muted" style="display:block;margin-top:12px;font-size:11px;line-height:1.6">
+      <small class="muted" style="display:block;margin-top:12px;font-size:12px;line-height:1.6">
         Heads up: a browser can only call APIs that permit it (CORS). If yours doesn't, Settings → Relay explains
         the one-time fix.
       </small>
@@ -807,7 +854,7 @@
   <div class="modal" style="max-width:420px">
     <div class="modal-head">Keyboard shortcuts<button onclick="closeModal('shortcuts')" aria-label="Close">&times;</button></div>
     <div class="modal-body"><div id="sc_list" class="sc-list"></div>
-      <small class="muted" style="display:block;margin-top:10px;font-size:11px;line-height:1.6">Single-key shortcuts are ignored while you're typing in a field.</small>
+      <small class="muted" style="display:block;margin-top:10px;font-size:12px;line-height:1.6">Single-key shortcuts are ignored while you're typing in a field.</small>
     </div>
   </div>
 </div>
@@ -820,11 +867,11 @@
   <div class="modal">
     <div class="modal-head">Settings<button onclick="closeModal('settings')">&times;</button></div>
     <div class="modal-body">
-      <div style="font-size:13px;font-weight:600;margin-bottom:6px" id="set_module_title">This module</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px" id="set_module_title">This module</div>
       <div class="form-row">
         <label id="set_host_label">Host</label>
         <input id="set_host" placeholder="https://api.example.com" />
-        <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.5">
+        <small class="muted" style="margin-top:4px;font-size:12px;line-height:1.5">
           The host this module uses in the current environment. Leave it empty to fall back to the shared default for its service. Switching environments swaps this automatically — that's why there's no Base URL box in the top bar any more.
         </small>
       </div>
@@ -834,11 +881,11 @@
       </div>
 
       <hr style="border:none;border-top:1px solid var(--border);margin:14px 0" />
-      <div style="font-size:13px;font-weight:600;margin-bottom:6px">Running</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">Running</div>
       <div class="form-row">
         <label>Relay URL (for APIs that don't allow browser calls)</label>
         <input id="set_relay" placeholder="https://your-worker.your-subdomain.workers.dev" />
-        <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.6">
+        <small class="muted" style="margin-top:4px;font-size:12px;line-height:1.6">
           Most APIs can't be called from a web page unless they send CORS headers. Deploy the bundled
           <code class="mono">worker/worker.js</code> to Cloudflare (free) and paste its URL here — it forwards every
           method and returns the real response. See the README for the two config values that keep it from
@@ -853,7 +900,7 @@
         <input type="checkbox" id="set_relay_trusted" style="width:auto;margin-top:2px" />
         <label for="set_relay_trusted" style="margin:0;cursor:pointer;font-weight:400;line-height:1.6">
           Send my auth token through this relay.<br>
-          <span class="muted" style="font-size:11px">Only tick this for a relay you or your team deployed —
+          <span class="muted" style="font-size:12px">Only tick this for a relay you or your team deployed —
           whoever runs it can read every credential that passes through. Left unticked, requests still go through
           the relay but without the Authorization header, so protected endpoints will return 401.</span>
         </label>
@@ -863,8 +910,8 @@
       <div class="form-row">
         <label>CORS proxy URL (legacy, optional)</label>
         <input id="set_proxy" placeholder="https://your-proxy.example.com/?url=" oninput="proxyHint(this.value)" />
-        <div id="proxy_hint" style="display:none;margin-top:6px;padding:8px 10px;border-radius:4px;background:rgba(230,183,62,.12);border:1px solid rgba(230,183,62,.4);color:var(--warn,#e6b73e);font-size:11px;line-height:1.5"></div>
-        <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.5">
+        <div id="proxy_hint" style="display:none;margin-top:6px;padding:8px 10px;border-radius:4px;background:rgba(230,183,62,.12);border:1px solid rgba(230,183,62,.4);color:var(--warn,#e6b73e);font-size:12px;line-height:1.5"></div>
+        <small class="muted" style="margin-top:4px;font-size:12px;line-height:1.5">
           <b>Usually leave this empty.</b> If your API already returns <code class="mono">Access-Control-Allow-Origin</code>, the browser calls it directly and no proxy is needed.<br>
           Browsers block cross-origin API calls from <code class="mono">file://</code> pages. If your API doesn't allow CORS from your origin, set a proxy URL here (e.g. <code class="mono">https://corsproxy.io/?</code>) and requests will be routed through it. <b>Leave blank</b> if your API already returns the right CORS headers, or if you run this page behind your own dev server.<br>
           <b>Heads up:</b> public proxies like <code class="mono">corsproxy.io</code> and <code class="mono">allorigins.win</code> only forward <b>GET</b>. For POST/PUT/PATCH/DELETE, either clear this field or host your own proxy.
@@ -873,7 +920,7 @@
       <div class="form-row">
         <label>Per-case timeout (ms)</label>
         <input id="set_casetimeout" type="number" placeholder="10000" />
-        <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.5">
+        <small class="muted" style="margin-top:4px;font-size:12px;line-height:1.5">
           How long any one case may hang before it's called a failure. This is the single biggest lever on run time — two cases parked on a 30 s timeout cost more than the other hundred combined. Timing and load cases ignore it and use the ceiling below.
         </small>
       </div>
@@ -884,7 +931,7 @@
       <div class="form-row">
         <label>Parallel lanes during a run</label>
         <input id="set_lanes" type="number" min="1" max="12" placeholder="6" />
-        <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.5">
+        <small class="muted" style="margin-top:4px;font-size:12px;line-height:1.5">
           How many requests are in flight at once. Set to <b>1</b> for the old strictly-sequential behaviour. Cases about response time, rate limiting or concurrent load are always pulled out and run alone at the end, so a busy pool can't invalidate them.
         </small>
       </div>
@@ -894,16 +941,16 @@
       </div>
 
       <hr style="border:none;border-top:1px solid var(--border);margin:14px 0" />
-      <div style="font-size:13px;font-weight:600;margin-bottom:6px">Start over</div>
-      <small class="muted" style="display:block;font-size:11px;line-height:1.6;margin-bottom:8px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">Start over</div>
+      <small class="muted" style="display:block;font-size:12px;line-height:1.6;margin-bottom:8px">
         Wipes everything this browser has stored — modules, cases, run history, captured values, token and
         settings — and shows the welcome screen again. Nothing on any server is touched.
       </small>
       <button class="btn small" onclick="resetEverything()">Reset this browser</button>
 
       <hr style="border:none;border-top:1px solid var(--border);margin:14px 0" />
-      <div style="font-size:13px;font-weight:600;margin-bottom:6px">☁ Cloud sync (cross-device)</div>
-      <small class="muted" style="display:block;font-size:11px;line-height:1.5;margin-bottom:8px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px">☁ Cloud sync (cross-device)</div>
+      <small class="muted" style="display:block;font-size:12px;line-height:1.5;margin-bottom:8px">
         Sync your test cases, runs, and history across devices. Deploy the bundled <code class="mono">worker.js</code> on Cloudflare Workers (free), paste its URL below, and pick a private user token. Same URL + token on every device → same data.
       </small>
       <div class="form-row">
@@ -916,7 +963,7 @@
           <input id="set_sync_token" placeholder="generate or paste a long random string" />
           <button class="btn small" onclick="generateSyncToken()">Generate</button>
         </div>
-        <small class="muted" style="margin-top:4px;font-size:11px">Use the same token on every device. Anyone with this token can read/write your cases.</small>
+        <small class="muted" style="margin-top:4px;font-size:12px">Use the same token on every device. Anyone with this token can read/write your cases.</small>
       </div>
       <div class="form-row" style="display:flex;align-items:center;gap:8px">
         <label style="margin:0;display:flex;align-items:center;gap:6px;cursor:pointer">
@@ -926,7 +973,7 @@
       <div style="display:flex;gap:6px;margin-top:6px">
         <button class="btn small" onclick="cloudPush()">↑ Push to cloud</button>
         <button class="btn small" onclick="cloudPull()">↓ Pull from cloud</button>
-        <span id="sync_status" class="muted" style="font-size:11px;margin-left:auto;align-self:center"></span>
+        <span id="sync_status" class="muted" style="font-size:12px;margin-left:auto;align-self:center"></span>
       </div>
     </div>
     <div class="modal-actions">
@@ -941,39 +988,39 @@
   <div class="modal" style="max-width:620px">
     <div class="modal-head">Connect Swagger / OpenAPI<button onclick="closeModal('swagger')">&times;</button></div>
     <div class="modal-body">
-      <div id="sw_module_note" class="muted" style="font-size:12px;margin-bottom:10px;padding:8px 10px;border-radius:6px;background:var(--bg-elev-2);border:1px solid var(--border)"></div>
+      <div id="sw_module_note" class="muted" style="font-size:13px;margin-bottom:10px;padding:8px 10px;border-radius:6px;background:var(--bg-elev-2);border:1px solid var(--border)"></div>
       <div style="padding:12px;border:1px solid var(--border-strong);background:var(--bg-elev-2);border-radius:6px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
         <div style="flex:1;min-width:220px">
-          <div style="font-size:13px;font-weight:600">No spec handy? Try the demo API</div>
-          <div class="muted" style="font-size:11px;margin-top:2px">Twelve endpoints against <code class="mono">jsonplaceholder.typicode.com</code>, a free public API for demos — real reads, harmless writes. Comes with eight example test cases.</div>
+          <div style="font-size:14px;font-weight:600">No spec handy? Try the demo API</div>
+          <div class="muted" style="font-size:12px;margin-top:2px">Twelve endpoints against <code class="mono">jsonplaceholder.typicode.com</code>, a free public API for demos — real reads, harmless writes. Comes with eight example test cases.</div>
         </div>
         <button class="btn" onclick="loadDemoSpec()">Load demo</button>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-        <span class="muted" style="font-size:11px;align-self:center">Public specs to try:</span>
+        <span class="muted" style="font-size:12px;align-self:center">Public specs to try:</span>
         <button class="btn ghost small" onclick="trySampleSpec('https://petstore3.swagger.io/api/v3/openapi.json')">Swagger Petstore</button>
         <button class="btn ghost small" onclick="trySampleSpec('https://httpbin.org/spec.json')">httpbin (Swagger 2.0)</button>
       </div>
-      <p class="muted" style="margin-top:0;font-size:13px">Or paste your API's docs URL and hit <b>Connect</b>. The app fetches the spec, fills every matching test case with the documented query params, path vars, headers, and example request body — and checks every live response against the spec.</p>
+      <p class="muted" style="margin-top:0;font-size:14px">Or paste your API's docs URL and hit <b>Connect</b>. The app fetches the spec, fills every matching test case with the documented query params, path vars, headers, and example request body — and checks every live response against the spec.</p>
       <div class="form-row">
         <label>Docs or spec URL</label>
         <div style="display:flex;gap:6px">
           <input type="text" id="sw_url" placeholder="https://your-api.com/api-docs  or  /openapi.json" />
           <button class="btn primary" onclick="connectSwagger()" style="white-space:nowrap">Connect</button>
         </div>
-        <small class="muted" style="margin-top:4px;font-size:11px">Works with raw JSON (<code class="mono">/api-docs/json</code>, <code class="mono">/openapi.json</code>), Scalar/Swagger UI pages, and plain docs URLs. If the browser blocks it, set a CORS proxy in Settings ⚙.</small>
+        <small class="muted" style="margin-top:4px;font-size:12px">Works with raw JSON (<code class="mono">/api-docs/json</code>, <code class="mono">/openapi.json</code>), Scalar/Swagger UI pages, and plain docs URLs. If the browser blocks it, set a CORS proxy in Settings ⚙.</small>
       </div>
       <details style="margin:6px 0 0">
-        <summary class="muted" style="font-size:12px;cursor:pointer">Or paste the spec directly — JSON or YAML</summary>
+        <summary class="muted" style="font-size:13px;cursor:pointer">Or paste the spec directly — JSON or YAML</summary>
         <textarea id="sw_paste" rows="6" placeholder='Paste OpenAPI/Swagger — JSON or YAML' style="margin-top:6px"></textarea>
         <button class="btn small" onclick="loadSwagger()" style="margin-top:4px">Load pasted spec</button>
       </details>
       <div id="sw_summary" style="display:none;margin-top:10px"></div>
-      <div id="sw_status" class="muted" style="font-size:12px;margin-top:8px"></div>
-      <div id="sw_coverage" class="muted" style="font-size:12px;margin-top:4px"></div>
+      <div id="sw_status" class="muted" style="font-size:13px;margin-top:8px"></div>
+      <div id="sw_coverage" class="muted" style="font-size:13px;margin-top:4px"></div>
       <div id="sw_gen_box" style="margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:6px;background:var(--panel);display:none">
-        <div style="font-size:12px;font-weight:600;margin-bottom:6px">Generate test cases straight from the spec</div>
-        <div class="muted" style="font-size:11px;margin-bottom:8px">Creates one executable test case per documented operation — ready to Send, with example body, query params, and headers pre-filled from the spec.</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px">Generate test cases straight from the spec</div>
+        <div class="muted" style="font-size:12px;margin-bottom:8px">Creates one executable test case per documented operation — ready to Send, with example body, query params, and headers pre-filled from the spec.</div>
         <button class="btn primary small" onclick="importAllOpsFromSpec()">Generate cases from spec</button>
         <button class="btn small" onclick="syncAllCasesWithSpec()">Re-sync existing cases</button>
       </div>
@@ -1007,9 +1054,9 @@
       <div class="form-row"><label>Test Case ID (auto if blank)</label><input id="ae_id" /></div>
       <div class="form-row"><label>Scenario</label><input id="ae_scenario" placeholder="What does this test verify?" /></div>
       <div class="form-row" style="display:grid;grid-template-columns:140px 1fr;gap:8px">
-        <div><label style="display:block;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Method</label>
+        <div><label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Method</label>
         <select id="ae_method"><option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option><option>HEAD</option><option>OPTIONS</option></select></div>
-        <div><label style="display:block;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Path</label>
+        <div><label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Path</label>
         <input id="ae_path" placeholder="/endpoint" /></div>
       </div>
       <div class="form-row"><label>Tag / Group (optional)</label><input id="ae_tag" placeholder="e.g. templates" /></div>
@@ -1037,13 +1084,13 @@
           <input type="text" id="imp_gid" placeholder="Tab gid (0)" style="width:120px" title="Google Sheets tab ID — found in the URL after #gid=. Leave blank or 0 for the first tab." />
           <button class="btn" onclick="fetchSheetUrl()" style="white-space:nowrap">Fetch</button>
         </div>
-        <small class="muted" style="margin-top:4px;font-size:11px;line-height:1.5">Paste the Google Sheets link. If your workbook has <b>multiple tabs</b>, click the tab in Google Sheets first — the URL will change to include <code class="mono">#gid=123456</code>; paste that full URL here, or type just the gid into the box on the right. The sheet must be shared as <b>"Anyone with the link: Viewer"</b>. Hits CORS? Set a proxy in Settings ⚙.</small>
+        <small class="muted" style="margin-top:4px;font-size:12px;line-height:1.5">Paste the Google Sheets link. If your workbook has <b>multiple tabs</b>, click the tab in Google Sheets first — the URL will change to include <code class="mono">#gid=123456</code>; paste that full URL here, or type just the gid into the box on the right. The sheet must be shared as <b>"Anyone with the link: Viewer"</b>. Hits CORS? Set a proxy in Settings ⚙.</small>
       </div>
       <div class="form-row"><label>Or upload a file</label><input type="file" id="imp_file" accept=".csv,.tsv,.json,.txt" /></div>
       <div class="form-row"><label>Or paste content (CSV, TSV, or JSON)</label><textarea id="imp_paste" rows="10" placeholder="Paste rows directly from Google Sheets / Excel here..."></textarea></div>
       <div class="form-row" style="flex-direction:row;align-items:center;gap:8px">
         <input type="checkbox" id="imp_replace" style="width:auto" />
-        <label for="imp_replace" style="text-transform:none;letter-spacing:0;color:var(--text);font-size:12px;margin:0">Replace existing test cases (otherwise append)</label>
+        <label for="imp_replace" style="text-transform:none;letter-spacing:0;color:var(--text);font-size:13px;margin:0">Replace existing test cases (otherwise append)</label>
       </div>
     </div>
     <div class="modal-actions">
@@ -1253,7 +1300,7 @@ function envForBase(url) {
 
 const state = (() => {
   const defaults = {
-    theme: "dark",
+    theme: "light",
     env: DEFAULT_ENV,
     baseUrl: DEFAULT_BASE,
     authType: "bearer",
@@ -1264,6 +1311,7 @@ const state = (() => {
     relayToken: "",
     relayTrusted: false,// send credentials through it? an explicit decision
     onboarded: false,
+    guideDone: false,   // the four-step guide strip under the top bar, until dismissed
     timeoutMs: 30000,     // ceiling, used by timing/load cases
     caseTimeoutMs: 10000, // fail-fast default for everything else
     lanes: 6,             // parallel requests during a run
@@ -1684,7 +1732,7 @@ function openModulePicker() {
   const p = $("#modulePicker"); if (!p) return;
   syncActiveModule();
   p.innerHTML = `
-    <div class="mp-head">Modules<span class="dim" style="font-weight:400;margin-left:auto;font-size:11px">env stays ${esc(ENVS[state.env] ? ENVS[state.env].label : "Custom")}</span></div>
+    <div class="mp-head">Modules<span class="dim" style="font-weight:400;margin-left:auto;font-size:12px">env stays ${esc(ENVS[state.env] ? ENVS[state.env].label : "Custom")}</span></div>
     <div class="mp-list">
       ${state.modules.map(m => {
         const host = baseUrlFor(m, state.env);
@@ -2109,7 +2157,7 @@ function renderExplorer() {
     if (!collapsed) groups[tag].forEach(e => { html += epRowHtml(e, active); });
   });
 
-  if (!eps.length) html += `<div style="padding:24px;text-align:center;color:var(--text-dim);font-size:12px">No endpoint matches.</div>`;
+  if (!eps.length) html += `<div style="padding:24px;text-align:center;color:var(--text-dim);font-size:13px">No endpoint matches.</div>`;
   host.innerHTML = html;
   renderStats(); renderBulkBar(); renderModuleChip();
 }
@@ -2177,7 +2225,7 @@ function renderSidebar() {
       });
     }
   });
-  if (!tagNames.length) html = `<div style="padding:24px;text-align:center;color:var(--text-dim);font-size:12px">No cases match filter.</div>`;
+  if (!tagNames.length) html = `<div style="padding:24px;text-align:center;color:var(--text-dim);font-size:13px">No cases match filter.</div>`;
   $("#sbList").innerHTML = html;
   renderStats();
   renderBulkBar();
@@ -2318,7 +2366,7 @@ function renderDoc() {
           <span class="status-pill s${String(last.status)[0]}">${last.status || "ERR"}</span>
           <span class="muted mono">${last.durationMs}ms</span>
           <span class="muted">${new Date(last.at).toLocaleString()}</span>
-          ${last.verdict ? `<span class="resp-verdict ${last.verdict}" style="margin-left:auto">${last.verdict==='pass'?'✓ passed':'✗ failed'}</span>` : `<span class="muted" style="margin-left:auto;font-size:11px">unsaved request — no verdict</span>`}
+          ${last.verdict ? `<span class="resp-verdict ${last.verdict}" style="margin-left:auto">${last.verdict==='pass'?'✓ passed':'✗ failed'}</span>` : `<span class="muted" style="margin-left:auto;font-size:12px">unsaved request — no verdict</span>`}
         </div>
         ${last.error ? `<div class="doc-desc" style="color:var(--danger)">${esc(last.error)}</div>` : ""}
       </div>
@@ -2398,18 +2446,18 @@ function renderTry() {
     } else if (mode === "form") {
       const rows = c.formData || [];
       html += `<div class="tp-rows">
-        ${rows.map((r,i)=>formRowHtml(r,i)).join("") || `<div class="muted" style="padding:12px;text-align:center;font-size:11px">No form fields yet</div>`}
+        ${rows.map((r,i)=>formRowHtml(r,i)).join("") || `<div class="muted" style="padding:12px;text-align:center;font-size:12px">No form fields yet</div>`}
       </div>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
         <button class="btn small" onclick="addFormRow('text')">+ Text field</button>
         <button class="btn small" onclick="addFormRow('file')">+ File</button>
         <button class="btn small" onclick="openFileFromUrl()">+ File from URL</button>
       </div>
-      <div class="muted" style="margin-top:10px;font-size:11px;line-height:1.5">
+      <div class="muted" style="margin-top:10px;font-size:12px;line-height:1.5">
         The app will send <code class="mono">multipart/form-data</code>. File rows attach the selected file; URL rows download the file first then attach it.
       </div>`;
     } else {
-      html += `<div class="muted" style="padding:16px;text-align:center;font-size:12px">No request body will be sent.</div>`;
+      html += `<div class="muted" style="padding:16px;text-align:center;font-size:13px">No request body will be sent.</div>`;
     }
   } else if (tab === "assert") {
     html = renderAssertionsTab(c);
@@ -2443,7 +2491,7 @@ function renderRequestPreview(c) {
     }).join("\n");
   }
   const hdrRows = Object.keys(hdrs).map(k =>
-    `<tr><td style="color:var(--text-dim);padding:2px 8px 2px 0;vertical-align:top;font-size:11px">${esc(k)}</td><td style="padding:2px 0;font-size:11px;word-break:break-all">${esc(String(hdrs[k]))}</td></tr>`
+    `<tr><td style="color:var(--text-dim);padding:2px 8px 2px 0;vertical-align:top;font-size:12px">${esc(k)}</td><td style="padding:2px 0;font-size:12px;word-break:break-all">${esc(String(hdrs[k]))}</td></tr>`
   ).join("");
   const specMatch = (() => {
     if (!state.swaggerSpec) return "";
@@ -2451,34 +2499,34 @@ function renderRequestPreview(c) {
     if (hit) {
       const cmp = compareCaseToSpec(c);
       const issues = (cmp && cmp.issues && cmp.issues.length)
-        ? `<div style="color:var(--warn);font-size:11px;margin-top:4px">⚠ ${cmp.issues.map(i=>esc(i.kind+":"+i.name)).join(" · ")}</div>` : "";
-      return `<div style="padding:8px 10px;background:var(--success-soft,rgba(46,160,67,.12));border:1px solid var(--success);border-radius:4px;margin:10px 0;font-size:11px">
+        ? `<div style="color:var(--warn);font-size:12px;margin-top:4px">⚠ ${cmp.issues.map(i=>esc(i.kind+":"+i.name)).join(" · ")}</div>` : "";
+      return `<div style="padding:8px 10px;background:var(--success-soft,rgba(46,160,67,.12));border:1px solid var(--success);border-radius:4px;margin:10px 0;font-size:12px">
         <b style="color:var(--success)">✓ Matches spec</b> <span class="muted">${esc(method)} ${esc(hit.path)}</span>${issues}
       </div>`;
     }
-    return `<div style="padding:8px 10px;background:var(--warn-soft,rgba(210,153,34,.12));border:1px solid var(--warn);border-radius:4px;margin:10px 0;font-size:11px">
+    return `<div style="padding:8px 10px;background:var(--warn-soft,rgba(210,153,34,.12));border:1px solid var(--warn);border-radius:4px;margin:10px 0;font-size:12px">
       <b style="color:var(--warn)">⚠ Not found in loaded spec</b> — this endpoint may not exist in your API docs.
     </div>`;
   })();
   const curl = buildCurl(c);
   return `
     <div style="padding:12px 14px">
-      <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Full URL</div>
-      <div class="mono" style="padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:4px;font-size:12px;word-break:break-all;margin-bottom:10px">
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">Full URL</div>
+      <div class="mono" style="padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:4px;font-size:13px;word-break:break-all;margin-bottom:10px">
         <span style="color:var(--accent);font-weight:600">${esc(method)}</span> ${esc(url)}
       </div>
       ${specMatch}
-      <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Headers (${Object.keys(hdrs).length})</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">Headers (${Object.keys(hdrs).length})</div>
       <div style="padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:4px;margin-bottom:10px">
-        ${hdrRows ? `<table style="width:100%;border-collapse:collapse" class="mono">${hdrRows}</table>` : `<div class="muted" style="font-size:11px">No headers</div>`}
+        ${hdrRows ? `<table style="width:100%;border-collapse:collapse" class="mono">${hdrRows}</table>` : `<div class="muted" style="font-size:12px">No headers</div>`}
       </div>
-      <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Body <span style="color:var(--text-dim);text-transform:none;letter-spacing:0">— ${esc(bodyLabel)}</span></div>
-      <div class="mono" style="padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:4px;font-size:11px;white-space:pre-wrap;word-break:break-all;max-height:240px;overflow:auto;margin-bottom:10px">${bodyStr ? esc(bodyStr) : `<span class="muted">(no body)</span>`}</div>
-      <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px;display:flex;align-items:center;justify-content:space-between">
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">Body <span style="color:var(--text-dim);text-transform:none;letter-spacing:0">— ${esc(bodyLabel)}</span></div>
+      <div class="mono" style="padding:8px 10px;background:var(--panel);border:1px solid var(--border);border-radius:4px;font-size:12px;white-space:pre-wrap;word-break:break-all;max-height:240px;overflow:auto;margin-bottom:10px">${bodyStr ? esc(bodyStr) : `<span class="muted">(no body)</span>`}</div>
+      <div style="font-size:12px;color:var(--text-dim);margin:10px 0 4px;display:flex;align-items:center;justify-content:space-between">
         <span>cURL equivalent</span>
         <button class="btn small" onclick="copyText(${JSON.stringify(curl).replace(/"/g,'&quot;')})">Copy</button>
       </div>
-      <div class="mono" style="padding:8px 10px;background:var(--bg-deep,#0d1117);border:1px solid var(--border);border-radius:4px;font-size:11px;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto">${esc(curl)}</div>
+      <div class="mono" style="padding:8px 10px;background:var(--bg-deep,#0d1117);border:1px solid var(--border);border-radius:4px;font-size:12px;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto">${esc(curl)}</div>
     </div>
   `;
 }
@@ -2504,15 +2552,15 @@ function openCaseDetails(id) {
   const specPath = hit?.path || c.path;
   const methColor = { GET:"#3bb46a", POST:"#e6b73e", PUT:"#58a6ff", PATCH:"#bc8cff", DELETE:"#f85149", HEAD:"#8b949e", OPTIONS:"#8b949e" }[c.method] || "#58a6ff";
 
-  $("#execModalTitle").innerHTML = `<span class="mono" style="padding:3px 8px;border-radius:3px;background:${methColor};color:#0d1117;font-weight:700;font-size:11px">${esc(c.method)}</span> <span style="font-weight:500">${esc(summary || specPath)}</span> <span class="muted mono" style="font-size:11px">${esc(specPath)}</span>`;
+  $("#execModalTitle").innerHTML = `<span class="mono" style="padding:3px 8px;border-radius:3px;background:${methColor};color:#0d1117;font-weight:700;font-size:12px">${esc(c.method)}</span> <span style="font-weight:500">${esc(summary || specPath)}</span> <span class="muted mono" style="font-size:12px">${esc(specPath)}</span>`;
 
   // Build the sheet-metadata strip so imported case info is visible
   const metaRows = [];
-  if (c.id) metaRows.push(`<span><span class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em">ID</span> <span class="mono" style="font-size:11px">${esc(c.id)}</span></span>`);
-  if (c.tag) metaRows.push(`<span><span class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em">Tag</span> <span style="font-size:11px;padding:2px 6px;border-radius:3px;background:var(--panel);border:1px solid var(--border)">${esc(c.tag)}</span></span>`);
-  if (c.expected != null && c.expected !== "") metaRows.push(`<span><span class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em">Exp</span> <span class="mono" style="font-size:11px;color:var(--accent)">${esc(String(c.expected))}</span></span>`);
-  const scenarioBlock = c.scenario ? `<div style="font-size:12px;line-height:1.5;color:var(--text);margin-bottom:6px"><span class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;margin-right:6px">Scenario</span>${esc(c.scenario)}</div>` : "";
-  const notesBlock = c.notes ? `<div style="font-size:12px;line-height:1.5;color:var(--text-dim);margin-bottom:6px"><span class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.05em;margin-right:6px">Notes</span>${esc(c.notes)}</div>` : "";
+  if (c.id) metaRows.push(`<span><span class="muted" style="font-size:12px;">ID</span> <span class="mono" style="font-size:12px">${esc(c.id)}</span></span>`);
+  if (c.tag) metaRows.push(`<span><span class="muted" style="font-size:12px;">Tag</span> <span style="font-size:12px;padding:2px 6px;border-radius:3px;background:var(--panel);border:1px solid var(--border)">${esc(c.tag)}</span></span>`);
+  if (c.expected != null && c.expected !== "") metaRows.push(`<span><span class="muted" style="font-size:12px;">Exp</span> <span class="mono" style="font-size:12px;color:var(--accent)">${esc(String(c.expected))}</span></span>`);
+  const scenarioBlock = c.scenario ? `<div style="font-size:13px;line-height:1.5;color:var(--text);margin-bottom:6px"><span class="muted" style="font-size:12px;margin-right:6px">Scenario</span>${esc(c.scenario)}</div>` : "";
+  const notesBlock = c.notes ? `<div style="font-size:13px;line-height:1.5;color:var(--text-dim);margin-bottom:6px"><span class="muted" style="font-size:12px;margin-right:6px">Notes</span>${esc(c.notes)}</div>` : "";
   const metaStrip = (scenarioBlock || notesBlock || metaRows.length) ? `
     <div style="padding:10px 18px;border-bottom:1px solid var(--border);background:var(--panel)">
       ${scenarioBlock}
@@ -2525,9 +2573,9 @@ function openCaseDetails(id) {
       ${metaStrip}
       <!-- Request section -->
       <div style="padding:14px 18px;border-bottom:1px solid var(--border)">
-        ${hit?.op?.description ? `<div class="muted" style="font-size:12px;margin-bottom:10px;line-height:1.5">${esc(hit.op.description).slice(0,400)}</div>` : ""}
+        ${hit?.op?.description ? `<div class="muted" style="font-size:13px;margin-bottom:10px;line-height:1.5">${esc(hit.op.description).slice(0,400)}</div>` : ""}
 
-        <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Endpoint URL (editable)</div>
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">Endpoint URL (editable)</div>
         <div style="display:flex;gap:6px;margin-bottom:12px">
           <select id="exec_method" style="width:110px">
             <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option>
@@ -2542,20 +2590,20 @@ function openCaseDetails(id) {
         <div id="exec_body_host"></div>
 
         <div style="display:flex;gap:8px;align-items:center;margin-top:14px">
-          <button class="btn primary" id="execSendBtn" onclick="execSendRequest()" style="font-size:13px;padding:8px 18px;font-weight:600">Send request</button>
+          <button class="btn primary" id="execSendBtn" onclick="execSendRequest()" style="font-size:14px;padding:8px 18px;font-weight:600">Send request</button>
           <button class="btn small" onclick="execCopyCurl()">Copy as cURL</button>
           <button class="btn small" onclick="execResetFromSpec()" ${spec?'':'style="display:none"'}>↻ Reset from spec</button>
-          <span class="muted" style="font-size:11px;margin-left:auto">${hit?'<span style="color:var(--success)">✓ Spec-matched</span>':spec?'<span style="color:var(--warn)">⚠ Not in loaded spec</span>':'No spec loaded'}</span>
+          <span class="muted" style="font-size:12px;margin-left:auto">${hit?'<span style="color:var(--success)">✓ Spec-matched</span>':spec?'<span style="color:var(--warn)">⚠ Not in loaded spec</span>':'No spec loaded'}</span>
         </div>
       </div>
 
       <!-- Response section -->
       <div style="padding:14px 18px;background:var(--bg-deep,#0d1117)">
-        <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;display:flex;align-items:center;gap:8px">
           <span>Response</span>
           <span id="exec_resp_badges" style="display:flex;gap:6px"></span>
         </div>
-        <div id="exec_resp" style="font-size:12px;color:var(--text-dim)">Send the request to see the response here.</div>
+        <div id="exec_resp" style="font-size:13px;color:var(--text-dim)">Send the request to see the response here.</div>
       </div>
 
       ${hit && hit.op.responses && hit.op.responses["200"] ? renderSpecExampleBlock(hit.op) : ""}
@@ -2584,7 +2632,7 @@ function renderSpecExampleBlock(op) {
     const txt = JSON.stringify(ex, null, 2);
     return `
       <details style="border-top:1px solid var(--border);background:var(--panel)">
-        <summary style="padding:8px 18px;cursor:pointer;font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em">Expected response (from spec)</summary>
+        <summary style="padding:8px 18px;cursor:pointer;font-size:12px;color:var(--text-dim);">Expected response (from spec)</summary>
         ${renderScalarBody(txt, true)}
       </details>`;
   } catch(e) { return ""; }
@@ -2597,12 +2645,12 @@ function renderExecPathVars() {
   if (!keys.length) { host.innerHTML = ""; return; }
   c.pathVars = c.pathVars || {};
   host.innerHTML = `
-    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 4px">Path Parameters</div>
+    <div style="font-size:12px;color:var(--text-dim);margin:10px 0 4px">Path Parameters</div>
     <div style="display:grid;gap:6px">
       ${keys.map(k => {
         const name = k.slice(1,-1);
         return `<div style="display:grid;grid-template-columns:140px 1fr;gap:8px;align-items:center">
-          <span class="mono" style="font-size:11px;color:var(--accent)">${esc(name)}</span>
+          <span class="mono" style="font-size:12px;color:var(--accent)">${esc(name)}</span>
           <input type="text" value="${esc(c.pathVars[name] || "")}" oninput="execUpdatePathVar('${esc(name)}', this.value)" placeholder="value" />
         </div>`;
       }).join("")}
@@ -2620,7 +2668,7 @@ function renderExecQuery() {
   const host = $("#exec_query_host"); if (!host) return;
   const q = c.query || [];
   host.innerHTML = `
-    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 4px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:12px;color:var(--text-dim);margin:12px 0 4px;display:flex;align-items:center;justify-content:space-between">
       <span>Query Parameters (${q.length})</span>
       <button class="btn small" onclick="execAddQuery()">+ Add</button>
     </div>
@@ -2630,7 +2678,7 @@ function renderExecQuery() {
         <input type="text" placeholder="key" value="${esc(r.key||"")}" oninput="execUpdateQuery(${i},'key',this.value)" />
         <input type="text" placeholder="value" value="${esc(r.value||"")}" oninput="execUpdateQuery(${i},'value',this.value)" />
         <button class="btn small" onclick="execRemoveQuery(${i})" title="Remove">×</button>
-      </div>`).join("") : `<div class="muted" style="font-size:11px">No query parameters</div>`
+      </div>`).join("") : `<div class="muted" style="font-size:12px">No query parameters</div>`
     }</div>`;
 }
 function execUpdateQuery(i, k, v) { const c = currentCase(); c.query[i][k] = v; save(); }
@@ -2644,7 +2692,7 @@ function renderExecHeaders() {
   const mergedPreview = buildHeaders(c);
   const autoKeys = Object.keys(mergedPreview).filter(k => !h.some(r => r.key && r.key.toLowerCase() === k.toLowerCase()));
   host.innerHTML = `
-    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 4px;display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:12px;color:var(--text-dim);margin:12px 0 4px;display:flex;align-items:center;justify-content:space-between">
       <span>Headers (${Object.keys(mergedPreview).length})</span>
       <button class="btn small" onclick="execAddHeader()">+ Add</button>
     </div>
@@ -2655,7 +2703,7 @@ function renderExecHeaders() {
         <input type="text" placeholder="value" value="${esc(r.value||"")}" oninput="execUpdateHeader(${i},'value',this.value)" />
         <button class="btn small" onclick="execRemoveHeader(${i})">×</button>
       </div>`).join("")
-    }${autoKeys.length ? `<div class="muted" style="font-size:11px;padding:4px 0;border-top:1px dashed var(--border)">+ ${autoKeys.length} auto-injected: <span class="mono">${autoKeys.map(esc).join(", ")}</span></div>` : ""}</div>`;
+    }${autoKeys.length ? `<div class="muted" style="font-size:12px;padding:4px 0;border-top:1px dashed var(--border)">+ ${autoKeys.length} auto-injected: <span class="mono">${autoKeys.map(esc).join(", ")}</span></div>` : ""}</div>`;
 }
 function execUpdateHeader(i, k, v) { const c = currentCase(); c.headers[i][k] = v; save(); }
 function execAddHeader() { const c = currentCase(); (c.headers=c.headers||[]).push({ key:"", value:"", enabled:true }); save(); renderExecHeaders(); }
@@ -2668,11 +2716,11 @@ function renderExecBody() {
   if (method === "GET" || method === "HEAD") { host.innerHTML = ""; return; }
   const body = c.body || "";
   host.innerHTML = `
-    <div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 4px">
+    <div style="font-size:12px;color:var(--text-dim);margin:12px 0 4px">
       Request Body <span style="color:var(--text-dim);text-transform:none;letter-spacing:0">(application/json)</span>
     </div>
-    <textarea id="exec_body_edit" style="width:100%;min-height:160px;font-family:var(--mono);font-size:12px;line-height:1.5" placeholder='{"key":"value"}' oninput="execUpdateBody(this.value)">${esc(body)}</textarea>
-    <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Sample body pre-filled from the spec. Edit freely — changes are saved to this case.</div>
+    <textarea id="exec_body_edit" style="width:100%;min-height:160px;font-family:var(--mono);font-size:13px;line-height:1.5" placeholder='{"key":"value"}' oninput="execUpdateBody(this.value)">${esc(body)}</textarea>
+    <div style="font-size:12px;color:var(--text-dim);margin-top:4px">Sample body pre-filled from the spec. Edit freely — changes are saved to this case.</div>
   `;
 }
 function execUpdateBody(v) { const c = currentCase(); c.body = v; c.bodyMode = "json"; save(); }
@@ -2708,7 +2756,7 @@ async function execSendRequest() {
   btn.textContent = "Sending...";
   const respHost = $("#exec_resp");
   const badgesHost = $("#exec_resp_badges");
-  respHost.innerHTML = `<div class="muted" style="font-size:12px">Awaiting response...</div>`;
+  respHost.innerHTML = `<div class="muted" style="font-size:13px">Awaiting response...</div>`;
   badgesHost.innerHTML = "";
   try {
     // sendRequest() uses currentCase() when no argument is given
@@ -2721,7 +2769,7 @@ async function execSendRequest() {
   } catch (e) {
     btn.disabled = false;
     btn.textContent = "Send request";
-    respHost.innerHTML = `<div style="color:var(--danger);font-size:12px">${esc(String(e.message||e))}</div>`;
+    respHost.innerHTML = `<div style="color:var(--danger);font-size:13px">${esc(String(e.message||e))}</div>`;
   }
 }
 
@@ -2730,26 +2778,26 @@ function renderExecResponse(run) {
   const badgesHost = $("#exec_resp_badges");
   if (run.error) {
     badgesHost.innerHTML = `<span class="resp-verdict fail">ERR</span>`;
-    respHost.innerHTML = `<div style="color:var(--danger);font-size:12px;padding:8px;background:var(--danger-soft,rgba(248,81,73,.1));border-radius:4px">${esc(run.error)}</div>`;
+    respHost.innerHTML = `<div style="color:var(--danger);font-size:13px;padding:8px;background:var(--danger-soft,rgba(248,81,73,.1));border-radius:4px">${esc(run.error)}</div>`;
     return;
   }
   const cls = run.status >= 200 && run.status < 300 ? "pass" : (run.status >= 400 ? "fail" : "warn");
   const bytes = run.bytes != null ? run.bytes : byteLen(run.body);
   const sizeLabel = bytes < 1024 ? bytes + " B" : (bytes/1024).toFixed(1) + " KB";
   badgesHost.innerHTML = `
-    <span class="resp-verdict ${cls}" style="padding:2px 8px;border-radius:3px;font-size:11px">${run.status} ${esc(httpStatusText(run.status))}</span>
-    <span class="muted" style="font-size:11px">${run.durationMs}ms · ${sizeLabel}${run.bodyTruncated ? " · showing first 20 KB" : ""}</span>
-    ${run.specCheck ? `<span class="resp-verdict ${run.specCheck.ok?'pass':'fail'}" style="padding:2px 8px;border-radius:3px;font-size:11px">${run.specCheck.ok?'✓ matches spec':'✗ spec mismatch'}</span>` : ""}
+    <span class="resp-verdict ${cls}" style="padding:2px 8px;border-radius:3px;font-size:12px">${run.status} ${esc(httpStatusText(run.status))}</span>
+    <span class="muted" style="font-size:12px">${run.durationMs}ms · ${sizeLabel}${run.bodyTruncated ? " · showing first 20 KB" : ""}</span>
+    ${run.specCheck ? `<span class="resp-verdict ${run.specCheck.ok?'pass':'fail'}" style="padding:2px 8px;border-radius:3px;font-size:12px">${run.specCheck.ok?'✓ matches spec':'✗ spec mismatch'}</span>` : ""}
   `;
   // Pretty print body
   let body = run.body || "";
   let isJson = false;
   try { body = JSON.stringify(JSON.parse(body), null, 2); isJson = true; } catch(e) {}
   const hdrs = run.headers || {};
-  const hdrRows = Object.keys(hdrs).map(k => `<tr><td class="mono" style="padding:2px 8px 2px 0;color:var(--text-dim);vertical-align:top;font-size:10px">${esc(k)}</td><td class="mono" style="padding:2px 0;font-size:10px;word-break:break-all">${esc(String(hdrs[k]))}</td></tr>`).join("");
+  const hdrRows = Object.keys(hdrs).map(k => `<tr><td class="mono" style="padding:2px 8px 2px 0;color:var(--text-dim);vertical-align:top;font-size:12px">${esc(k)}</td><td class="mono" style="padding:2px 0;font-size:12px;word-break:break-all">${esc(String(hdrs[k]))}</td></tr>`).join("");
   respHost.innerHTML = `
     <details style="margin-bottom:8px">
-      <summary style="font-size:11px;color:var(--text-dim);cursor:pointer">Response headers (${Object.keys(hdrs).length})</summary>
+      <summary style="font-size:12px;color:var(--text-dim);cursor:pointer">Response headers (${Object.keys(hdrs).length})</summary>
       <table style="margin-top:6px"><tbody>${hdrRows}</tbody></table>
     </details>
     ${renderScalarBody(body, isJson)}
@@ -2759,22 +2807,22 @@ function formRowHtml(r, i) {
   const isFile = r.type === "file" || r.type === "url";
   const valCell = r.type === "file" ? `
     <div style="display:flex;align-items:center;gap:6px">
-      <input type="file" style="font-size:11px" onchange="setFormFile(${i}, this.files[0])" />
-      ${r.fileName ? `<span class="muted mono" style="font-size:10px">${esc(r.fileName)} (${fmtBytes(r.fileSize||0)})</span>` : ""}
+      <input type="file" style="font-size:12px" onchange="setFormFile(${i}, this.files[0])" />
+      ${r.fileName ? `<span class="muted mono" style="font-size:12px">${esc(r.fileName)} (${fmtBytes(r.fileSize||0)})</span>` : ""}
     </div>` :
   r.type === "url" ? `
     <div style="display:flex;gap:4px">
       <input type="text" placeholder="https://..." value="${esc(r.url||"")}" oninput="updateFormRow(${i},'url',this.value)" />
       <button class="btn small" onclick="fetchFormUrl(${i})" title="Download now">Fetch</button>
     </div>
-    ${r.fileName ? `<div class="muted mono" style="font-size:10px;margin-top:4px">${esc(r.fileName)} (${fmtBytes(r.fileSize||0)})</div>` : ""}` :
+    ${r.fileName ? `<div class="muted mono" style="font-size:12px;margin-top:4px">${esc(r.fileName)} (${fmtBytes(r.fileSize||0)})</div>` : ""}` :
     `<input type="text" placeholder="value" value="${esc(r.value||"")}" oninput="updateFormRow(${i},'value',this.value)" />`;
 
   return `<div class="tp-row" style="grid-template-columns:18px 1fr 1fr 60px 20px">
     <input type="checkbox" ${r.enabled!==false?'checked':''} onchange="updateFormRow(${i},'enabled',this.checked)" />
     <input type="text" placeholder="key" value="${esc(r.key||"")}" oninput="updateFormRow(${i},'key',this.value)" />
     ${valCell}
-    <select onchange="changeFormType(${i}, this.value)" style="height:28px;font-size:11px">
+    <select onchange="changeFormType(${i}, this.value)" style="height:28px;font-size:12px">
       <option value="text" ${r.type==='text'||!r.type?'selected':''}>Text</option>
       <option value="file" ${r.type==='file'?'selected':''}>File</option>
       <option value="url" ${r.type==='url'?'selected':''}>URL</option>
@@ -2814,7 +2862,7 @@ function renderPathVars(c) {
       return `<div class="pv-row">
         <span class="key">{${esc(v)}}</span>
         <input type="text" placeholder="${captured ? `auto: ${esc(String(captured).slice(0,28))}` : `value for ${esc(v)}`}" value="${esc(c.pathVars[v]||"")}" oninput="setPathVar('${esc(v)}', this.value)" />
-      </div>${captured && !c.pathVars[v] ? `<div style="font-size:10.5px;color:var(--text-dim);margin:-2px 0 6px 4px">using the value captured from ${esc(src || "an earlier run")}</div>` : ""}`;
+      </div>${captured && !c.pathVars[v] ? `<div style="font-size:12px;color:var(--text-dim);margin:-2px 0 6px 4px">using the value captured from ${esc(src || "an earlier run")}</div>` : ""}`;
     }).join("")}
   </div>`;
 }
@@ -2847,10 +2895,10 @@ function renderDraftDoc(c) {
         <div class="draft-last">
           <span class="mono" style="font-weight:700;color:${last.error ? "var(--danger)" : last.status < 400 ? "var(--success)" : "var(--danger)"}">
             ${last.error ? "no response" : last.status + " " + esc(httpStatusText(last.status))}</span>
-          <span class="muted mono" style="font-size:11px">${last.durationMs} ms · ${fmtBytes(last.bytes != null ? last.bytes : byteLen(last.body))}</span>
-          <span class="muted" style="font-size:11px">${last.error ? esc(last.error.slice(0,120)) : "no pass/fail — a draft has nothing to assert yet"}</span>
+          <span class="muted mono" style="font-size:12px">${last.durationMs} ms · ${fmtBytes(last.bytes != null ? last.bytes : byteLen(last.body))}</span>
+          <span class="muted" style="font-size:12px">${last.error ? esc(last.error.slice(0,120)) : "no pass/fail — a draft has nothing to assert yet"}</span>
         </div>` : `
-        <div class="muted" style="font-size:12px;line-height:1.7;margin-top:10px">
+        <div class="muted" style="font-size:13px;line-height:1.7;margin-top:10px">
           Edit the method, path, params, headers or body on the right, then <b>Send request</b>.
           Nothing is recorded against your suite until you save this as a test case.
         </div>`}
@@ -2858,7 +2906,7 @@ function renderDraftDoc(c) {
       <div class="code-block mono" style="white-space:pre-wrap;word-break:break-all">${esc(buildCurl(c))}</div>
       <div style="display:flex;gap:6px;margin-top:8px">
         <button class="btn small" onclick="copyText(buildCurl(currentCase()))">Copy cURL</button>
-        <span class="muted" style="font-size:11px;align-self:center">token is masked in the copy</span>
+        <span class="muted" style="font-size:12px;align-self:center">token is masked in the copy</span>
       </div>
       ${renderHistoryInline()}
     </div>`;
@@ -2956,12 +3004,12 @@ function renderVarsPanel() {
   host.innerHTML = `<div class="pv-section">
     <div class="pv-title">Captured values
       <span class="hint-chip">spend them as {${"{"}name}} or let {id} resolve itself</span>
-      <button class="btn ghost small" style="margin-left:auto;font-size:10px" onclick="clearVars()">Clear</button>
+      <button class="btn ghost small" style="margin-left:auto;font-size:12px" onclick="clearVars()">Clear</button>
     </div>
     ${entries.map(([k, v]) => `<div class="pv-row">
       <span class="key mono">${esc(k)}</span>
-      <span class="mono" style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(String(v).slice(0,40))}</span>
-      <span style="font-size:10px;color:var(--text-dim);white-space:nowrap">from ${esc((state.varSource||{})[k] || "—")}</span>
+      <span class="mono" style="font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(String(v).slice(0,40))}</span>
+      <span style="font-size:12px;color:var(--text-dim);white-space:nowrap">from ${esc((state.varSource||{})[k] || "—")}</span>
     </div>`).join("")}
   </div>`;
 }
@@ -3697,10 +3745,10 @@ function renderStreamProgress(sofar) {
   const hdr = $("#respHeader");
   if (hdr) hdr.innerHTML = `<span class="resp-status">streaming…</span>
     <span class="resp-meta">${fmtBytes(byteLen(sofar))} received</span>
-    <span class="muted" style="font-size:11px">click Send/Cancel to stop</span>`;
+    <span class="muted" style="font-size:12px">click Send/Cancel to stop</span>`;
   host.className = "resp-body";
   const tail = sofar.length > 4000 ? sofar.slice(-4000) : sofar;
-  host.innerHTML = `<pre class="mono" style="margin:0;white-space:pre-wrap;word-break:break-word;font-size:11px">${esc(tail)}</pre>`;
+  host.innerHTML = `<pre class="mono" style="margin:0;white-space:pre-wrap;word-break:break-word;font-size:12px">${esc(tail)}</pre>`;
   host.scrollTop = host.scrollHeight;
 }
 
@@ -3735,11 +3783,11 @@ function setSendButton(busy) {
   const b = $("#sendBtn"); if (!b) return;
   if (busy) {
     b.dataset.busy = "1";
-    b.innerHTML = 'Sending… <span style="opacity:.7;font-weight:400;font-size:11px">click to cancel</span>';
+    b.innerHTML = 'Sending… <span style="opacity:.7;font-weight:400;font-size:12px">click to cancel</span>';
     b.onclick = cancelRequest;
   } else {
     delete b.dataset.busy;
-    b.innerHTML = 'Send request  &nbsp;&nbsp;<span style="opacity:.6;font-weight:400;font-size:11px">⌘↵</span>';
+    b.innerHTML = 'Send request  &nbsp;&nbsp;<span style="opacity:.6;font-weight:400;font-size:12px">⌘↵</span>';
     b.onclick = () => sendRequest();
   }
 }
@@ -3860,7 +3908,7 @@ function renderResp() {
   const blocked = c ? browserBlockReason(c) : null;
   if (blocked) {
     $("#respHeader").innerHTML = `<span class="resp-status" style="background:var(--info-soft);color:var(--info)">Not runnable here</span>
-      <span class="muted" style="font-size:11px">browser restriction, not a bug in your API</span>`;
+      <span class="muted" style="font-size:12px">browser restriction, not a bug in your API</span>`;
     $("#respBody").className = "resp-body";
     $("#respBody").innerHTML = `<div class="blocked-note">
       <p>${esc(blocked)}</p>
@@ -3885,10 +3933,14 @@ function renderResp() {
     } else {
       $("#respHeader").innerHTML = `<span class="muted">No response yet — click <b>Send request</b> or press <span class="mono">⌘↵</span></span>`;
       $("#respBody").className = "resp-body empty";
-      $("#respBody").textContent = "Response will appear here.";
+      $("#respBody").textContent = c
+        ? "Press Send request. The server's answer shows up here, with its status explained in plain words."
+        : "Pick an endpoint on the left, then press Send request. The server's answer shows up here.";
     }
+    renderGuide();
     return;
   }
+  renderGuide();
   const cls = last.error ? "err" : statusClass(last.status);
   const sc = last.specCheck;
   const specBadge = sc ? `<span class="resp-verdict ${sc.ok?'pass':'fail'}" title="${esc((sc.notes||[]).join(' · '))}">${sc.ok?'✓ matches spec':'✗ spec mismatch'}</span>` : "";
@@ -3903,6 +3955,7 @@ function renderResp() {
     ${last.verdict ? `<span class="resp-verdict ${last.verdict}" ${specBadge?'style="margin-left:6px"':''}>${last.verdict==='pass'?'✓ passed':'✗ failed'}</span>` : ""}
     ${last.streamed ? `<span class="stream-chip" title="Read incrementally as a stream">streamed</span>` : ""}
     ${last.assertions && last.assertions.length ? `<span class="resp-verdict ${last.assertions.every(a=>a.ok)?'pass':'fail'}" style="margin-left:6px" title="${esc(last.assertions.map(a=>(a.ok?'✓ ':'✕ ')+a.label).join('\n'))}">${last.assertions.filter(a=>a.ok).length}/${last.assertions.length} assertions</span>` : ""}
+    <span class="resp-hint">${last.status ? esc(httpStatusHint(last.status)) : "Couldn't reach the server — it may be offline, or not allow browser requests (CORS)."}</span>
   `;
   $("#respBody").className = "resp-body";
 
@@ -3930,7 +3983,7 @@ function renderResp() {
   const hdrs = last.headers || {};
   const hdrKeys = Object.keys(hdrs);
   const hdrsHtml = hdrKeys.length
-    ? `<details ${hdrKeys.length<=8?'open':''}><summary style="padding:6px 14px;cursor:pointer;font-size:11px;color:var(--text-dim);border-bottom:1px solid var(--line);background:var(--panel)">Response Headers (${hdrKeys.length})</summary><div class="resp-hdrs"><table><tbody>${hdrKeys.map(k=>`<tr><td>${esc(k)}</td><td>${esc(String(hdrs[k]))}</td></tr>`).join("")}</tbody></table></div></details>`
+    ? `<details ${hdrKeys.length<=8?'open':''}><summary style="padding:6px 14px;cursor:pointer;font-size:12px;color:var(--text-dim);border-bottom:1px solid var(--line);background:var(--panel)">Response Headers (${hdrKeys.length})</summary><div class="resp-hdrs"><table><tbody>${hdrKeys.map(k=>`<tr><td>${esc(k)}</td><td>${esc(String(hdrs[k]))}</td></tr>`).join("")}</tbody></table></div></details>`
     : "";
 
   // Body with line numbers + syntax highlighting (only if JSON)
@@ -3940,9 +3993,9 @@ function renderResp() {
   let extra = "";
   if (sc) {
     const notesHtml = sc.notes && sc.notes.length
-      ? `<div style="padding:8px 14px;font-size:12px;color:${sc.ok?'var(--success)':'var(--warn)'};border-top:1px solid var(--line);background:var(--panel)">${sc.notes.map(esc).join("<br>")}</div>` : "";
+      ? `<div style="padding:8px 14px;font-size:13px;color:${sc.ok?'var(--success)':'var(--warn)'};border-top:1px solid var(--line);background:var(--panel)">${sc.notes.map(esc).join("<br>")}</div>` : "";
     const exHtml = sc.example
-      ? `<details style="border-top:1px solid var(--line);background:var(--panel)"><summary style="padding:6px 14px;cursor:pointer;font-size:11px;color:var(--text-dim)">Spec example (expected shape)</summary>${renderScalarBody(sc.example, true)}</details>` : "";
+      ? `<details style="border-top:1px solid var(--line);background:var(--panel)"><summary style="padding:6px 14px;cursor:pointer;font-size:12px;color:var(--text-dim)">Spec example (expected shape)</summary>${renderScalarBody(sc.example, true)}</details>` : "";
     extra = notesHtml + exHtml;
   }
 
@@ -3984,6 +4037,47 @@ function highlightJsonLine(line) {
 }
 
 /* HTTP reason phrase for common status codes */
+/* The guide strip: choose → fill in → send → check, ticked off from the
+   selected request's own state. Stays until the user hides it. */
+function renderGuide() {
+  const g = $("#guide"); if (!g) return;
+  g.hidden = !!state.guideDone || state.view === "report";
+  if (g.hidden) return;
+  const c = currentCase();
+  const last = c && c.lastRun;
+  const ok = last && last.status >= 200 && last.status < 300;
+  const reached = !c ? 0 : !last ? 1 : ok ? 4 : 3;
+  const steps = ["Choose an endpoint", "Fill in details", "Send", "Check the response"];
+  $("#guideSteps").innerHTML = steps.map((s, i) =>
+    `<li class="${i < reached ? "done" : i === reached ? "now" : ""}"${i === reached ? ' aria-current="step"' : ""}><i></i><span>${s}</span></li>`).join("");
+  $("#guideNote").textContent = [
+    "Start by picking an endpoint from the list on the left.",
+    "Fill in any params, headers or body, then press Send request.",
+    "",
+    last && !last.status ? "The request didn't reach the server — the response pane says why."
+      : "The response pane explains what this status means.",
+    "Nice — your first request worked. Save it as a test case to run it again later.",
+  ][reached];
+}
+function dismissGuide() { state.guideDone = true; save(); renderGuide(); }
+
+/* What a status means, in words someone new to APIs can act on. */
+function httpStatusHint(code) {
+  const map = { 200:"It worked.", 201:"It worked — a new item was created.", 202:"Accepted — the server will finish it later.",
+    204:"It worked — there's nothing to show back.", 301:"Moved — the server points to a different address.",
+    302:"Redirected to a different address.", 304:"Not changed since you last asked.",
+    400:"The request has a mistake — check the params and body.", 401:"You need to sign in — add a token in the Auth chip.",
+    403:"Your token isn't allowed to do this.", 404:"Not found — this path or ID doesn't exist on the server.",
+    405:"This endpoint doesn't accept this method.", 409:"Conflicts with data already on the server.",
+    422:"The body is the right shape but some values are invalid.", 429:"Too many requests — wait a moment and try again.",
+    500:"The server hit an error. This is on the server side, not your request.",
+    502:"The server behind the gateway didn't answer.", 503:"The server is busy or down for now.", 504:"The server took too long to answer." };
+  if (map[code]) return map[code];
+  if (code >= 200 && code < 300) return "It worked.";
+  if (code >= 400 && code < 500) return "The server didn't accept this request.";
+  if (code >= 500) return "The server hit an error.";
+  return "";
+}
 function httpStatusText(code) {
   const map = { 200:"OK",201:"Created",202:"Accepted",204:"No Content",301:"Moved Permanently",302:"Found",304:"Not Modified",400:"Bad Request",401:"Unauthorized",403:"Forbidden",404:"Not Found",405:"Method Not Allowed",409:"Conflict",422:"Unprocessable Entity",429:"Too Many Requests",500:"Internal Server Error",502:"Bad Gateway",503:"Service Unavailable",504:"Gateway Timeout" };
   return map[code] || "";
@@ -4621,8 +4715,8 @@ function specImportError(e, tried) {
         <li>Check it returns OpenAPI/Swagger, not an HTML docs page</li>
         <li>If the server blocks cross-origin reads, paste the document below instead</li>
       </ul>
-      ${tried && tried.length ? `<details style="margin-top:8px"><summary class="muted" style="cursor:pointer;font-size:11px">Technical detail</summary>
-        <div class="mono" style="font-size:10.5px;margin-top:6px;line-height:1.6;color:var(--text-dim)">Tried ${tried.length} URL(s):<br>${tried.map(esc).join("<br>")}</div></details>` : ""}
+      ${tried && tried.length ? `<details style="margin-top:8px"><summary class="muted" style="cursor:pointer;font-size:12px">Technical detail</summary>
+        <div class="mono" style="font-size:12px;margin-top:6px;line-height:1.6;color:var(--text-dim)">Tried ${tried.length} URL(s):<br>${tried.map(esc).join("<br>")}</div></details>` : ""}
     </div>`;
   }
   toast("Couldn't import that specification", "error");
@@ -4949,7 +5043,7 @@ function renderSwaggerDoc(c) {
       <button class="btn small" style="float:right" onclick="syncCurrentCase()">Sync this case from spec</button>
     </h3>
     <div class="doc-card">
-      <div class="mono muted" style="font-size:11px">${esc(specPath)}</div>
+      <div class="mono muted" style="font-size:12px">${esc(specPath)}</div>
       ${op.summary ? `<div style="margin-top:6px;font-weight:500">${esc(op.summary)}</div>` : ""}
       ${op.description ? `<div class="doc-desc">${esc(op.description)}</div>` : ""}
       ${issuesHtml}
@@ -5395,6 +5489,7 @@ function setView(v) {
   $(".main").style.display = state.view === "cases" ? "flex" : "none";
   $("#reportMain").style.display = state.view === "report" ? "flex" : "none";
   if (state.view === "report") renderReport();
+  renderGuide();
 }
 
 /* Badge on the switch = failures in the newest run, so you can see there is
@@ -5518,8 +5613,8 @@ function renderReport() {
 
     <div class="rp-timeline">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
-        <span class="muted" style="font-size:11px">Execution order — one tick per case${tagFilter ? " (all tags)" : ""}</span>
-        <span class="mono" style="margin-left:auto;font-size:10px;color:var(--text-dim)">avg ${avg} ms</span>
+        <span class="muted" style="font-size:12px">Execution order — one tick per case${tagFilter ? " (all tags)" : ""}</span>
+        <span class="mono" style="margin-left:auto;font-size:12px;color:var(--text-dim)">avg ${avg} ms</span>
       </div>
       <div class="rp-ticks">${ticks}</div>
       <div class="rp-axis">
@@ -5645,12 +5740,12 @@ function failOpenHtml(r) {
       <div class="rp-code">${esc(curl)}</div>
       <h5 style="margin-top:13px">Assertions</h5>
       <div class="rp-assert">${asserts.join("")}</div>
-      ${r.cause.note ? `<div style="margin-top:12px;font-size:11.5px;color:var(--text-muted);line-height:1.5">${r.cause.note}</div>` : ""}
+      ${r.cause.note ? `<div style="margin-top:12px;font-size:13px;color:var(--text-muted);line-height:1.5">${r.cause.note}</div>` : ""}
     </div>
     <div class="rp-open-col res">
       <div class="rp-resh">
         <span class="mono" style="font-weight:700;color:${r.error ? "var(--danger)" : r.code < 400 ? "var(--success)" : "var(--danger)"}">${r.error ? "no response" : r.code}</span>
-        <span class="mono" style="color:var(--text-dim);font-size:10.5px">${r.ms} ms${r.ctype ? " · " + esc(r.ctype.split(";")[0]) : ""}</span>
+        <span class="mono" style="color:var(--text-dim);font-size:12px">${r.ms} ms${r.ctype ? " · " + esc(r.ctype.split(";")[0]) : ""}</span>
       </div>
       <div class="rp-resbody">${body ? esc(body) + (truncated ? "\n\n… truncated — open the case for the full response" : "") : esc(r.error || "No body captured.")}</div>
       <div class="rp-actions">
