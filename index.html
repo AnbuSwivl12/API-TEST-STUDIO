@@ -349,8 +349,11 @@
   .app{display:flex;flex-direction:column;height:100vh}
   .main{display:flex;flex:1;overflow:hidden}
   .sidebar{width:300px;flex-shrink:0;background:var(--bg-elev);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
-  .doc-panel{flex:1;overflow-y:auto;padding:24px 28px;min-width:380px}
-  .try-panel{width:460px;flex-shrink:0;background:var(--bg-elev);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+  /* Three columns, read left to right like the loop: pick → edit → read. */
+  .try-panel{flex:1 1 0;min-width:360px;background:var(--bg-elev);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+  .resp-panel{flex:1 1 0;min-width:340px;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+  .doc-panel{flex:1;overflow-y:auto;padding:16px;min-width:0}
+  .doc-panel .doc-section:first-child{margin-top:0}
 
   /* ---------- sidebar ---------- */
   .sb-header{padding:12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
@@ -360,8 +363,18 @@
   .sb-filters{display:flex;gap:4px;flex-wrap:wrap}
   .sb-filter{padding:4px 10px;font-size:13px;border-radius:var(--radius-pill);background:var(--bg-elev);color:var(--text-muted);cursor:pointer;border:1px solid var(--border-strong)}
   .sb-filter.active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
-  .sb-stats{display:flex;gap:8px;font-size:12px;color:var(--text-muted);padding:4px 2px}
-  .sb-stats b{color:var(--text);font-weight:600}
+  .sb-stats{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);padding:0 2px}
+  .sb-stats #sbStats{display:flex;gap:10px;flex-wrap:wrap}
+  .sb-stats b{color:var(--text);font-weight:700}
+  .sb-new{width:100%}
+  .sb-tests{display:flex;flex-direction:column;gap:8px}
+  .sb-tests[hidden]{display:none}
+  .sb-link{margin-left:auto;color:var(--accent);font-size:13px;font-weight:700;padding:2px 4px;border-radius:var(--radius-sm)}
+  .sb-link:hover{text-decoration:underline}
+  /* Checkboxes and bulk actions only while selecting — most of the time you're picking one test. */
+  .sb-selrow{display:none;align-items:center;gap:6px;font-size:13px;color:var(--text-muted)}
+  .sidebar.selecting .sb-selrow{display:flex}
+  .sidebar:not(.selecting) .sb-list .sb-check{display:none}
   .sb-list{flex:1;overflow-y:auto;padding:4px 0 20px}
   .sb-tag{padding:14px 12px 4px;font-size:13px;color:var(--text-muted);font-weight:700;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
   .sb-tag:hover{color:var(--text)}
@@ -373,9 +386,6 @@
   .sb-item.active .sb-scenario{color:var(--text)}
   .sb-scenario{flex:1;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .sb-id{font-family:var(--mono);font-size:12px;color:var(--text-dim);flex-shrink:0}
-  .sb-test{background:var(--accent-strong);color:var(--on-accent);border:none;border-radius:var(--radius-sm);width:26px;height:24px;font-size:12px;cursor:pointer;opacity:0;transition:opacity .15s;flex-shrink:0;padding:0;line-height:1}
-  .sb-item:hover .sb-test,.sb-item.active .sb-test{opacity:1}
-  .sb-test:hover{background:var(--accent-hover)}
   .method{font-family:var(--mono);font-size:12px;font-weight:700;padding:3px 6px;border-radius:var(--radius-sm);min-width:58px;text-align:center;flex-shrink:0;letter-spacing:.02em}
   .method.GET{background:var(--success-soft);color:var(--success)}
   .method.POST{background:var(--warning-soft);color:var(--warning)}
@@ -429,8 +439,10 @@
   /* ---------- try panel ---------- */
   .tp-header{padding:12px 14px;border-bottom:1px solid var(--border)}
   .tp-title{font-size:13px;color:var(--text-muted);font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
-  .tp-title .tp-title-label{flex:1}
-  .tp-title .btn.small{text-transform:none;letter-spacing:0;font-weight:600}
+  .tp-title .tp-title-label{font-size:16px;font-weight:700;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tp-saved{flex:1;font-size:12px;font-weight:700;white-space:nowrap}
+  .tp-saved span{padding:1px 8px;border-radius:var(--radius-pill);background:var(--bg-elev-2);color:var(--text-muted)}
+  .tp-saved span.case{background:var(--accent-soft);color:var(--accent)}
   .tp-url{display:flex;gap:0;align-items:stretch;min-height:var(--control-lg);border:1px solid var(--border-strong);border-radius:var(--radius-md);overflow:hidden;background:var(--bg-elev);box-shadow:var(--shadow-raised)}
   .tp-url:focus-within{outline:2px solid var(--focus);outline-offset:2px}
   .tp-url select{border:0;border-right:1px solid var(--border);border-radius:0;background:var(--bg-elev-2);width:auto;min-width:96px;font-weight:700;font-family:var(--mono);font-size:13px;padding:8px 10px}
@@ -455,7 +467,6 @@
   .tp-add:hover{text-decoration:underline}
 
   /* response */
-  .resp-panel{border-top:1px solid var(--border);flex:0 0 auto;max-height:45%;display:flex;flex-direction:column;background:var(--bg-elev-2)}
   .resp-header{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;background:var(--bg-elev)}
   .resp-status{display:inline-flex;align-items:center;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);font-size:12px}
   .resp-hint{font-size:13px;color:var(--text-muted);flex-basis:100%}
@@ -529,16 +540,6 @@
   ::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px;border:2px solid var(--bg)}
   ::-webkit-scrollbar-thumb:hover{background:var(--border-strong)}
 
-  /* summary cards */
-  .summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px}
-  .sum-card{background:var(--bg-elev);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;box-shadow:var(--shadow-raised)}
-  .sum-card .n{font-size:22px;font-weight:700;font-family:var(--mono)}
-  .sum-card .l{font-size:13px;color:var(--text-muted);font-weight:700;margin-top:2px}
-  .sum-card.pass .n{color:var(--success)}
-  .sum-card.fail .n{color:var(--danger)}
-  .sum-card.pending .n{color:var(--text-muted)}
-  .sum-card.skip .n{color:var(--warning)}
-  .sum-card.blocked .n{color:var(--info)}
 
   /* bulk select */
   .sb-check{width:14px;height:14px;accent-color:var(--accent);cursor:pointer}
@@ -586,10 +587,10 @@
 
   /* responsive */
   @media (max-width:1400px){
-    .try-panel{width:420px}
+    .resp-panel{min-width:300px}
   }
   @media (max-width:1200px){
-    .try-panel{width:380px}
+    .try-panel{min-width:320px}
     .sidebar{width:250px}
     .rp-rail{width:180px}
   }
@@ -597,8 +598,8 @@
     /* Stack the three panes instead of squeezing them into unusable columns. */
     .main{flex-direction:column;overflow:auto}
     .sidebar{width:100%;max-height:38vh;border-right:0;border-bottom:1px solid var(--border)}
-    .doc-panel{min-height:40vh}
-    .try-panel{width:100%;border-left:0;border-top:1px solid var(--border)}
+    .try-panel{min-width:0;min-height:60vh;border-right:0;border-top:1px solid var(--border)}
+    .resp-panel{min-width:0;min-height:50vh;border-top:1px solid var(--border)}
     .topbar{padding:8px 12px}
     .tb-actions{width:100%;justify-content:flex-start}
     .mchip{max-width:60vw}
@@ -636,18 +637,14 @@
       </select>
     </div>
     <div class="authchip" id="authChip" onclick="toggleAuthPop()" title="Auth for every request in every module"></div>
-    <div class="viewsw" id="viewSwitch" role="tablist" aria-label="Workspace view" title="Cases = browse and edit. Run Report = triage the last run.">
-      <button data-v="cases" onclick="setView('cases')">Cases</button>
-      <button data-v="report" onclick="setView('report')">Run Report<span class="badge" id="viewFailBadge" style="display:none">0</span></button>
+    <div class="viewsw" id="viewSwitch" role="tablist" aria-label="Workspace view" title="Explore = send requests. Results = what happened in the last test run.">
+      <button data-v="cases" onclick="setView('cases')">Explore</button>
+      <button data-v="report" onclick="setView('report')">Results<span class="badge" id="viewFailBadge" style="display:none">0</span></button>
     </div>
     <div class="tb-actions">
-      <button class="btn small" onclick="newRequest()" title="Start an unsaved request — no test case needed"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>New Request</button>
-      <button class="btn small" onclick="openModal('swagger')" title="Connect this module to an OpenAPI/Swagger spec"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Swagger<span id="swaggerChip" style="margin-left:4px;font-size:12px;color:var(--success);display:none">●</span></button>
-      <button class="btn small" onclick="openModal('addEndpoint')" title="Create a new test case from scratch"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Case</button>
-      <button class="btn small" onclick="openModal('import')" title="Upload CSV/JSON of test cases"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Import</button>
-      <button class="btn small primary" id="runAllBtn" onclick="runAll()" title="Run this module's cases"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Run All</button>
-      <button class="btn small" onclick="exportReport()" title="Download a CSV report of every case + status"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
-      <button class="btn ghost small" id="moreBtn" onclick="toggleMoreMenu()" title="Settings, theme">⋯</button>
+      <button class="btn small" id="moreBtn" onclick="toggleMoreMenu()" title="Connect an API, import or export tests, settings">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>Menu<span id="swaggerChip" style="display:none" aria-hidden="true"></span>
+      </button>
     </div>
   </div>
 
@@ -663,32 +660,37 @@
   <!-- main -->
   <div class="main">
     <!-- sidebar -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sb-header">
+        <button class="btn sb-new" onclick="newRequest()" title="Start a blank request — no test case needed">+ New request</button>
         <div class="sb-search">
           <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input id="search" placeholder="Search endpoints or cases…" aria-label="Search endpoints or cases" />
+          <input id="search" placeholder="Search…" aria-label="Search endpoints or saved tests" />
         </div>
         <div class="sb-modes" id="sbModeSwitch" role="tablist" aria-label="Sidebar contents"></div>
-        <div class="sb-filters" id="filters" role="toolbar" aria-label="Filter cases by status">
-          <span class="sb-filter active" data-f="all" role="button" tabindex="0" aria-pressed="true">All</span>
-          <span class="sb-filter" data-f="pending" role="button" tabindex="0" aria-pressed="false">Pending</span>
-          <span class="sb-filter" data-f="pass" role="button" tabindex="0" aria-pressed="false">Pass</span>
-          <span class="sb-filter" data-f="fail" role="button" tabindex="0" aria-pressed="false">Fail</span>
-          <span class="sb-filter" data-f="skip" role="button" tabindex="0" aria-pressed="false">Skip</span>
-          <span class="sb-filter" data-f="blocked" role="button" tabindex="0" aria-pressed="false">Blocked</span>
-        </div>
-        <div class="sb-stats" id="sbStats"></div>
-        <div id="selectAllRow" style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);padding-top:2px">
-          <input type="checkbox" id="selectAll" class="sb-check" onchange="toggleSelectAllVisible(this.checked)" />
-          <label for="selectAll" style="cursor:pointer">Select all</label>
-          <button class="btn ghost small" style="margin-left:auto;font-size:12px" onclick="clearAll()" title="Remove every test case">Clear all</button>
+        <!-- only in Saved tests: run them, filter them, select several -->
+        <div class="sb-tests" id="sbTests">
+          <button class="btn small" id="runAllBtn" onclick="runAll()" title="Send every saved test and see which pass (R)"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Run all tests</button>
+          <div class="sb-filters" id="filters" role="toolbar" aria-label="Filter tests by status">
+            <span class="sb-filter active" data-f="all" role="button" tabindex="0" aria-pressed="true">All</span>
+            <span class="sb-filter" data-f="pass" role="button" tabindex="0" aria-pressed="false">Passed</span>
+            <span class="sb-filter" data-f="fail" role="button" tabindex="0" aria-pressed="false">Failed</span>
+            <span class="sb-filter" data-f="pending" role="button" tabindex="0" aria-pressed="false">Not run</span>
+            <span class="sb-filter" data-f="skip" role="button" tabindex="0" aria-pressed="false">Skipped</span>
+            <span class="sb-filter" data-f="blocked" role="button" tabindex="0" aria-pressed="false">Blocked</span>
+          </div>
+          <div class="sb-stats"><span id="sbStats"></span><button class="sb-link" id="selectToggle" onclick="toggleSelectMode()">Select</button></div>
+          <div id="selectAllRow" class="sb-selrow">
+            <input type="checkbox" id="selectAll" class="sb-check" onchange="toggleSelectAllVisible(this.checked)" />
+            <label for="selectAll" style="cursor:pointer">Select all</label>
+            <button class="btn ghost small" style="margin-left:auto" onclick="clearAll()" title="Remove every test case">Delete all</button>
+          </div>
         </div>
       </div>
       <div class="bulk-bar" id="bulkBar">
         <b id="bulkCount">0</b> selected
-        <button onclick="bulkMark('pass')">Mark Pass</button>
-        <button onclick="bulkMark('fail')">Mark Fail</button>
+        <button onclick="bulkMark('pass')">Mark passed</button>
+        <button onclick="bulkMark('fail')">Mark failed</button>
         <button onclick="bulkMark('skip')">Skip</button>
         <button class="danger" onclick="deleteSelected()">Delete</button>
         <button style="margin-left:auto" onclick="clearSelection()">Clear</button>
@@ -696,25 +698,21 @@
       <div class="sb-list" id="sbList"></div>
     </aside>
 
-    <!-- doc panel -->
-    <section class="doc-panel" id="docPanel">
-      <div class="doc-empty">Pick an endpoint or test case on the left to see what it does. No API yet? Use <b>Swagger</b> in the top bar to connect one.</div>
-    </section>
-
-    <!-- try panel -->
-    <aside class="try-panel" id="tryPanel" data-pane="cases">
+    <!-- request: what you're about to send -->
+    <section class="try-panel" id="tryPanel" aria-label="Request">
       <div class="tp-header">
         <div class="tp-title">
-          <span class="tp-title-label">Try it</span>
-          <button class="btn small" id="syncFromSpecBtn" style="display:none" onclick="syncCurrentCase()" title="Re-fetch endpoint + params + body from the loaded Swagger spec">↻ From spec</button>
-          <button class="btn primary small" onclick="openCaseDetails()" title="Open the full Scalar-style execute popup — editable URL, headers, sample body, Send button, inline response">▶ Test Request</button>
+          <span class="tp-title-label" id="tpTitle">Untitled request</span>
+          <span class="tp-saved" id="tpSaved"></span>
+          <button class="btn ghost small" id="syncFromSpecBtn" style="display:none" onclick="syncCurrentCase()" title="Refill the method, params and body from the API spec">↻ Reset from spec</button>
+          <button class="btn small" id="tpSaveBtn" onclick="beginSaveDraft()" title="Keep this request so you can run it again later">Save as test</button>
         </div>
         <div class="tp-url">
-          <select id="tryMethod">
+          <select id="tryMethod" aria-label="Method">
             <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option>
             <option>DELETE</option><option>HEAD</option><option>OPTIONS</option>
           </select>
-          <input id="tryPath" placeholder="/path" />
+          <input id="tryPath" placeholder="/path" aria-label="Path" />
         </div>
         <div class="url-preview" id="urlPreview"></div>
         <button class="tp-send" id="sendBtn" onclick="sendRequest()">Send request  &nbsp;&nbsp;<span style="opacity:.6;font-weight:400;font-size:12px">⌘↵</span></button>
@@ -725,15 +723,20 @@
         <div class="tp-tab active" data-tab="params" role="tab" tabindex="0" aria-selected="true">Params<span class="badge" id="bParams">0</span></div>
         <div class="tp-tab" data-tab="headers" role="tab" tabindex="0" aria-selected="false">Headers<span class="badge" id="bHeaders">0</span></div>
         <div class="tp-tab" data-tab="body" role="tab" tabindex="0" aria-selected="false">Body</div>
-        <div class="tp-tab" data-tab="assert" role="tab" tabindex="0" aria-selected="false">Assertions<span class="badge" id="bAssert">0</span></div>
-        <div class="tp-tab" data-tab="preview" role="tab" tabindex="0" aria-selected="false">Preview</div>
+        <div class="tp-tab" data-tab="assert" role="tab" tabindex="0" aria-selected="false">Checks<span class="badge" id="bAssert">0</span></div>
+        <div class="tp-tab" data-tab="details" role="tab" tabindex="0" aria-selected="false" id="tabDetails">Details</div>
+        <div class="tp-tab" data-tab="preview" role="tab" tabindex="0" aria-selected="false">cURL</div>
       </div>
       <div class="tp-content" id="tpContent"></div>
-      <div class="resp-panel">
-        <div class="resp-header" id="respHeader"><span class="muted">No response yet</span></div>
-        <div class="resp-body empty" id="respBody">Send a request to see the response here.</div>
-      </div>
-    </aside>
+      <!-- the Details tab: test status, notes, docs from the spec, history -->
+      <div class="doc-panel" id="docPanel" hidden></div>
+    </section>
+
+    <!-- response: what came back -->
+    <section class="resp-panel" aria-label="Response">
+      <div class="resp-header" id="respHeader"><span class="muted">No response yet</span></div>
+      <div class="resp-body empty" id="respBody">Send a request to see the response here.</div>
+    </section>
   </div>
 
   <!-- run report (design direction A) -->
@@ -772,6 +775,12 @@
 
 <!-- overflow menu -->
 <div class="menu" id="moreMenu">
+  <button onclick="closeAllPops();newRequest()">New request</button>
+  <button onclick="closeAllPops();openModal('swagger')">Connect an API (OpenAPI / Swagger)…</button>
+  <button onclick="closeAllPops();openModal('addEndpoint')">Add a test by hand…</button>
+  <button onclick="closeAllPops();openModal('import')">Import tests (CSV / JSON / Sheet)…</button>
+  <button onclick="closeAllPops();exportReport()">Export results as CSV</button>
+  <div class="sep"></div>
   <button onclick="closeAllPops();openModal('settings')">Settings…</button>
   <button onclick="closeAllPops();checkEnvHealth(true)">Test connection</button>
   <button onclick="closeAllPops();toggleModulePicker()">Switch module…</button>
@@ -826,7 +835,7 @@
       </p>
       <div class="ob-choice" onclick="obDemo()" role="button" tabindex="0" onkeydown="if(event.key==='Enter')obDemo()">
         <div class="ob-t">Explore the demo<span class="ob-tag">Recommended for first time</span></div>
-        <div class="ob-d">A free public API with example requests and checks. Nothing to set up — press Run All and watch it work.</div>
+        <div class="ob-d">A free public API with example requests and saved tests. Nothing to set up — open Saved tests and press Run all tests.</div>
       </div>
       <div class="ob-choice" onclick="obConnect()">
         <div class="ob-t">Connect my API</div>
@@ -2000,11 +2009,11 @@ function newRequest(seed) {
 /* Inline naming beats a browser prompt(): it keeps you in the page, shows
    the default, and can be cancelled with Escape. */
 function beginSaveDraft() {
-  state.savingDraft = true; renderDoc();
+  state.savingDraft = true; state.activeTab = "details"; renderTry(); renderDoc();
   const el = $("#draftName");
   if (el) { el.focus(); el.select(); }
 }
-function cancelSaveDraft() { state.savingDraft = false; renderDoc(); }
+function cancelSaveDraft() { state.savingDraft = false; renderTry(); renderDoc(); }
 function saveDraftAsCase(nameArg) {
   const d = ensureDraft();
   const fallback = d.scenario && d.scenario !== "Untitled request" ? d.scenario : `${d.method} ${d.path}`;
@@ -2053,10 +2062,9 @@ function renderStats() {
   const counts = { pending:0, pass:0, fail:0, skip:0, blocked:0 };
   state.cases.forEach(c => { counts[c.status || "pending"]++; });
   $("#sbStats").innerHTML =
-    `<span><b>${state.cases.length}</b> total</span>` +
-    `<span style="color:var(--success)"><b>${counts.pass}</b> pass</span>` +
-    `<span style="color:var(--danger)"><b>${counts.fail}</b> fail</span>` +
-    `<span><b>${counts.pending}</b> pending</span>`;
+    `<span><b>${state.cases.length}</b> tests</span>` +
+    `<span style="color:var(--success)">✓ <b>${counts.pass}</b> passed</span>` +
+    `<span style="color:var(--danger)">✕ <b>${counts.fail}</b> failed</span>`;
 }
 
 /* =========================================================================
@@ -2183,10 +2191,11 @@ function renderSidebar() {
     const nEp = state.swaggerSpec ? specEndpoints().length : 0;
     sw.innerHTML = `
       <button class="${state.sbMode === "endpoints" ? "on" : ""}" onclick="setSbMode('endpoints')">Endpoints${nEp ? ` <span class="n">${nEp}</span>` : ""}</button>
-      <button class="${state.sbMode !== "endpoints" ? "on" : ""}" onclick="setSbMode('cases')">Cases <span class="n">${state.cases.length}</span></button>`;
+      <button class="${state.sbMode !== "endpoints" ? "on" : ""}" onclick="setSbMode('cases')">Saved tests <span class="n">${state.cases.length}</span></button>`;
   }
-  const filters = $("#filters"); if (filters) filters.style.display = state.sbMode === "endpoints" ? "none" : "";
-  const selAll = $("#selectAllRow"); if (selAll) selAll.style.display = state.sbMode === "endpoints" ? "none" : "";
+  const tools = $("#sbTests"); if (tools) tools.hidden = state.sbMode === "endpoints";
+  $("#sidebar").classList.toggle("selecting", !!state.selecting && state.sbMode !== "endpoints");
+  const st = $("#selectToggle"); if (st) st.textContent = state.selecting ? "Done" : "Select";
   if (state.sbMode === "endpoints") return renderExplorer();
 
   const q = (state.search || "").toLowerCase();
@@ -2220,16 +2229,25 @@ function renderSidebar() {
           <span class="method ${c.method}">${c.method}</span>
           <span class="sb-scenario">${esc(c.scenario)}</span>
           <span class="sb-id">${esc(c.id)}</span>
-          <button class="sb-test" title="Open execute popup" onclick="event.stopPropagation();openCaseDetails('${esc(c.id)}')">▶</button>
         </div>`;
       });
     }
   });
-  if (!tagNames.length) html = `<div style="padding:24px;text-align:center;color:var(--text-dim);font-size:13px">No cases match filter.</div>`;
+  if (!tagNames.length) html = state.cases.length
+    ? `<div style="padding:24px;text-align:center;color:var(--text-dim);font-size:13px">No tests match this filter.</div>`
+    : `<div class="sb-empty"><div class="sb-empty-t">No saved tests yet</div>
+        <p>Send a request, then press <b>Save as test</b> to keep it here and run it again any time.</p></div>`;
   $("#sbList").innerHTML = html;
   renderStats();
   renderBulkBar();
   renderModuleChip();   // the chip carries the case count — keep it honest
+}
+
+/* Checkboxes stay hidden until you ask to select several tests. */
+function toggleSelectMode() {
+  state.selecting = !state.selecting;
+  if (!state.selecting) state.selection = [];
+  renderSidebar();
 }
 
 function renderBulkBar() {
@@ -2283,42 +2301,20 @@ function renderDoc() {
   }
   const expected = statusList(c.expected);
   const last = c.lastRun;
-  const fullUrl = (state.baseUrl||"") + (c.path||"");
-  const curl = buildCurl(c);
-
-  // summary tiles
-  const counts = { pending:0, pass:0, fail:0, skip:0, blocked:0 };
-  state.cases.forEach(x => counts[x.status || "pending"]++);
-
   $("#docPanel").innerHTML = `
-    <div class="summary-grid">
-      <div class="sum-card"><div class="n">${state.cases.length}</div><div class="l">Total</div></div>
-      <div class="sum-card pass"><div class="n">${counts.pass}</div><div class="l">Pass</div></div>
-      <div class="sum-card fail"><div class="n">${counts.fail}</div><div class="l">Fail</div></div>
-      <div class="sum-card pending"><div class="n">${counts.pending}</div><div class="l">Pending</div></div>
-      <div class="sum-card skip"><div class="n">${counts.skip + counts.blocked}</div><div class="l">Skip/Blk</div></div>
-    </div>
-
-    <div class="doc-h1">
-      <span class="method ${c.method}">${c.method}</span>
-      <span>${esc(c.scenario || "")}</span>
-    </div>
-    <div class="doc-path">${esc(fullUrl)}</div>
-
     <div class="doc-section">
-      <h3>Test case status</h3>
+      <h3>Result of this test</h3>
       <div class="doc-status-bar">
-        <div class="status-sel">
-          ${["pending","pass","fail","skip","blocked"].map(s => `<button class="${(c.status||'pending')===s?'active '+s:''}" onclick="setStatus('${s}')">${s[0].toUpperCase()+s.slice(1)}</button>`).join("")}
+        <div class="status-sel" role="group" aria-label="Test result">
+          ${[["pending","Not run"],["pass","Passed"],["fail","Failed"],["skip","Skipped"],["blocked","Blocked"]].map(([s, label]) => `<button class="${(c.status||'pending')===s?'active '+s:''}" onclick="setStatus('${s}')">${label}</button>`).join("")}
         </div>
-        <span class="muted">ID <span class="mono">${esc(c.id)}</span></span>
-        ${c.tag ? `<span class="muted">Tag <span class="mono">${esc(c.tag)}</span></span>` : ""}
-        <button class="btn small ghost" style="margin-left:auto" onclick="deleteCase('${esc(c.id)}')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>Delete</button>
+        ${c.tag ? `<span class="muted">Group <span class="mono">${esc(c.tag)}</span></span>` : ""}
+        <button class="btn small ghost" style="margin-left:auto" onclick="deleteCase('${esc(c.id)}')"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>Delete test</button>
       </div>
     </div>
 
     <div class="doc-section">
-      <h3>Expected result</h3>
+      <h3>Passes when the status is</h3>
       <div class="doc-card">
         <div>${expected.map(s => `<span class="status-pill s${String(s)[0]}">${s}</span>`).join(" ")}</div>
         ${c.expected?.note ? `<div class="doc-desc">${esc(c.expected.note)}</div>` : ""}
@@ -2326,37 +2322,6 @@ function renderDoc() {
     </div>
 
     ${renderSwaggerDoc(c)}
-
-    ${ (c.query && c.query.length) ? `
-    <div class="doc-section">
-      <h3>Query parameters</h3>
-      <div class="doc-card" style="padding:0;overflow:hidden">
-        <table class="kv-table"><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
-          ${c.query.filter(q=>q.enabled!==false).map(q=>`<tr><td class="mono">${esc(q.key)}</td><td class="mono">${esc(q.value)}</td></tr>`).join("")}
-        </tbody></table>
-      </div>
-    </div>` : ""}
-
-    ${ (c.headers && c.headers.length) ? `
-    <div class="doc-section">
-      <h3>Headers</h3>
-      <div class="doc-card" style="padding:0;overflow:hidden">
-        <table class="kv-table"><thead><tr><th>Name</th><th>Value</th></tr></thead><tbody>
-          ${c.headers.filter(h=>h.enabled!==false).map(h=>`<tr><td class="mono">${esc(h.key)}</td><td class="mono">${esc(h.value)}</td></tr>`).join("")}
-        </tbody></table>
-      </div>
-    </div>` : ""}
-
-    ${ c.body ? `
-    <div class="doc-section">
-      <h3>Request body</h3>
-      <div class="code-block">${esc(c.body)}<button class="copy-btn" onclick="copyTextToBtn(this,${JSON.stringify(c.body)})">Copy</button></div>
-    </div>` : ""}
-
-    <div class="doc-section">
-      <h3>cURL</h3>
-      <div class="code-block">${esc(curl)}<button class="copy-btn" onclick="copyTextToBtn(this,${JSON.stringify(curl)})">Copy</button></div>
-    </div>
 
     ${ last ? `
     <div class="doc-section">
@@ -2389,8 +2354,13 @@ function renderTry() {
     $("#urlPreview").innerHTML = "";
     return;
   }
-  const label = $(".tp-title-label");
-  if (label) label.textContent = isDraft(c) ? "Request" : "Try it";
+  // The pane is named after the request; a tag says whether it's kept.
+  const draft = isDraft(c);
+  $("#tpTitle").textContent = (c.scenario && c.scenario !== "Untitled request") ? c.scenario
+    : (c.path ? `${c.method} ${c.path}` : "Untitled request");
+  $("#tpSaved").innerHTML = draft ? `<span>Not saved</span>` : `<span class="case">Saved test · ${esc(c.id)}</span>`;
+  $("#tpSaveBtn").style.display = draft && !state.savingDraft ? "" : "none";
+  $("#tabDetails").textContent = draft ? "History" : "Details";
   $("#tryMethod").value = c.method;
   $("#tryPath").value = c.path;
   const tab = state.activeTab;
@@ -2464,6 +2434,9 @@ function renderTry() {
   } else if (tab === "preview") {
     html = renderRequestPreview(c);
   }
+  // Details lives in its own element so renderDoc() can redraw it alone.
+  $("#tpContent").hidden = tab === "details";
+  $("#docPanel").hidden = tab !== "details";
   $("#tpContent").innerHTML = html;
   if (tab === "body") showBodyValidity();
   // show/hide "From spec" button
@@ -2870,45 +2843,21 @@ function renderPathVars(c) {
 /* The centre pane while exploring: the request, its last response summary,
    the cURL, and a single call to action to keep it. */
 function renderDraftDoc(c) {
-  const last = c.lastRun;
-  const url = (() => { try { return buildUrl(c); } catch (e) { return (state.baseUrl || "") + (c.path || ""); } })();
   $("#docPanel").innerHTML = `
     <div class="doc-body">
-      <div class="draft-head">
-        <span class="method ${esc(c.method)}">${esc(c.method)}</span>
-        <span class="draft-title">Exploring — not saved as a test case</span>
-        ${state.savingDraft ? "" : `<button class="btn small primary" onclick="beginSaveDraft()">Save as test case</button>
-        <button class="btn ghost small" onclick="newRequest()" title="Start a blank request">New</button>`}
-      </div>
-      ${state.savingDraft ? `<div class="draft-save">
-        <label for="draftName">Name this test case</label>
+      ${state.savingDraft ? `<div class="draft-save" style="margin-top:0">
+        <label for="draftName">Name this test</label>
         <div class="draft-save-row">
           <input id="draftName" value="${esc(c.scenario && c.scenario !== "Untitled request" ? c.scenario : c.method + " " + c.path)}"
                  onkeydown="if(event.key==='Enter'){event.preventDefault();saveDraftAsCase();}if(event.key==='Escape'){cancelSaveDraft();}" />
           <button class="btn primary small" onclick="saveDraftAsCase()">Save</button>
           <button class="btn ghost small" onclick="cancelSaveDraft()">Cancel</button>
         </div>
-        <small class="muted">It joins ${esc((activeModule()||{}).name || "this module")} with its params, headers, body and any assertions. Enter to save, Esc to cancel.</small>
-      </div>` : ""}
-      <div class="draft-url mono">${esc(url)}</div>
-      ${last ? `
-        <div class="draft-last">
-          <span class="mono" style="font-weight:700;color:${last.error ? "var(--danger)" : last.status < 400 ? "var(--success)" : "var(--danger)"}">
-            ${last.error ? "no response" : last.status + " " + esc(httpStatusText(last.status))}</span>
-          <span class="muted mono" style="font-size:12px">${last.durationMs} ms · ${fmtBytes(last.bytes != null ? last.bytes : byteLen(last.body))}</span>
-          <span class="muted" style="font-size:12px">${last.error ? esc(last.error.slice(0,120)) : "no pass/fail — a draft has nothing to assert yet"}</span>
-        </div>` : `
-        <div class="muted" style="font-size:13px;line-height:1.7;margin-top:10px">
-          Edit the method, path, params, headers or body on the right, then <b>Send request</b>.
-          Nothing is recorded against your suite until you save this as a test case.
-        </div>`}
-      <h3 style="margin-top:22px">cURL</h3>
-      <div class="code-block mono" style="white-space:pre-wrap;word-break:break-all">${esc(buildCurl(c))}</div>
-      <div style="display:flex;gap:6px;margin-top:8px">
-        <button class="btn small" onclick="copyText(buildCurl(currentCase()))">Copy cURL</button>
-        <span class="muted" style="font-size:12px;align-self:center">token is masked in the copy</span>
-      </div>
-      ${renderHistoryInline()}
+        <small class="muted">It keeps the params, headers, body and checks, and appears under Saved tests. Enter to save, Esc to cancel.</small>
+      </div>` : `<div class="muted" style="font-size:14px;line-height:1.6">
+        This request isn't saved. Press <b>Save as test</b> above to keep it and run it again later.
+      </div>`}
+      ${renderHistoryInline() || `<div class="muted" style="margin-top:16px;font-size:13px">Requests you send show up here, so you can reopen them.</div>`}
     </div>`;
 }
 
@@ -5542,12 +5491,12 @@ function renderReport() {
   if (!run) {
     $("#rpTags").innerHTML = "";
     $("#rpBody").innerHTML = `<div class="rp-empty">
-      <h3>No run yet</h3>
-      <p>Hit <b>Run All</b> and this becomes the report: every case in execution order,
-      failures sorted to the top and grouped by what actually has to be fixed.</p>
+      <h3>No test run yet</h3>
+      <p>Run all your saved tests at once. This page then shows which passed, which failed,
+      and groups the failures by what needs fixing.</p>
       <div style="margin-top:16px;display:flex;gap:8px;justify-content:center">
-        <button class="btn primary small" onclick="runAll()">▶ Run All</button>
-        <button class="btn small" onclick="setView('cases')">Back to cases</button>
+        <button class="btn primary" onclick="runAll()">▶ Run all tests</button>
+        <button class="btn" onclick="setView('cases')">Back to Explore</button>
       </div></div>`;
     return;
   }
@@ -5601,6 +5550,10 @@ function renderReport() {
           <span class="cv">${esc(run.envLabel)} · ${fmtClock(run.at)} · ${fmtDur(run.durationMs)}${run.partial ? " · selection only" : ""}</span>
         </div>
         <div class="rp-delta">${delta}</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn primary small" onclick="runAll()">▶ Run all again</button>
+          <button class="btn small" onclick="exportReport()">Export CSV</button>
+        </div>
       </div>
       <div class="rp-stats">
         <div class="rp-stat pass"><div class="v">${passes.length}</div><div class="k">passed</div></div>
@@ -6112,9 +6065,9 @@ const SHORTCUTS = [
   ["⌘/Ctrl + Enter", "Send the current request"],
   ["/", "Focus search"],
   ["n", "New request"],
-  ["r", "Run all"],
-  ["e", "Toggle Endpoints / Cases"],
-  ["1 – 5", "Params, Headers, Body, Assertions, Preview"],
+  ["r", "Run all tests"],
+  ["e", "Switch between Endpoints and Saved tests"],
+  ["1 – 6", "Params, Headers, Body, Checks, Details, cURL"],
   ["← →", "Move between request tabs (when focused)"],
   ["Esc", "Close a popover, menu or dialog"],
   ["?", "Show this list"],
@@ -6161,7 +6114,7 @@ function installKeyboard() {
     if (e.key === "n") { e.preventDefault(); newRequest(); return; }
     if (e.key === "r") { e.preventDefault(); runAll(); return; }
     if (e.key === "e") { e.preventDefault(); setSbMode(state.sbMode === "endpoints" ? "cases" : "endpoints"); return; }
-    const tabByNum = { "1": "params", "2": "headers", "3": "body", "4": "assert", "5": "preview" };
+    const tabByNum = { "1": "params", "2": "headers", "3": "body", "4": "assert", "5": "details", "6": "preview" };
     if (tabByNum[e.key]) { e.preventDefault(); state.activeTab = tabByNum[e.key]; save(); renderTry(); }
   });
 }

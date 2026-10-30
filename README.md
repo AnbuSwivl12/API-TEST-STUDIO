@@ -18,7 +18,7 @@ bundled demo.
 To see it working in ten seconds:
 
 1. Open the link above and choose **Explore the demo**.
-2. Hit **Run All**.
+2. Open **Saved tests** in the left panel and hit **Run all tests**.
 
 That runs eight example cases against
 [JSONPlaceholder](https://jsonplaceholder.typicode.com), a free public API —
