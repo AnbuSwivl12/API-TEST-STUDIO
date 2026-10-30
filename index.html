@@ -883,6 +883,7 @@
 <div class="menu" id="moreMenu">
   <button onclick="closeAllPops();newRequest()">New request</button>
   <button onclick="closeAllPops();openModal('swagger')">Connect an API (OpenAPI / Swagger)…</button>
+  <button onclick="closeAllPops();state.swaggerSpec ? ezBatchStart() : openModal('swagger')">Test many APIs at once…</button>
   <button onclick="closeAllPops();openModal('addEndpoint')">Add a test by hand…</button>
   <button onclick="closeAllPops();openModal('import')">Import tests (CSV / JSON / Sheet)…</button>
   <button onclick="closeAllPops();exportReport()">Export results as CSV</button>
@@ -4264,7 +4265,10 @@ async function runAll(opts) {
   // Run Report converge into the same list.
   window.__suppressHistory = true;
   await runPooled(independent);   // wave 1 — creators land their captures here
-  await runPooled(dependent);     // wave 2 — {id} consumers, now resolvable
+  // wave 2 — {id} consumers, now resolvable. Deletes go after the reads and
+  // updates that share the same value, or they'd remove what those check.
+  await runPooled(dependent.filter(c => (c.method || "").toUpperCase() !== "DELETE"));
+  await runPooled(dependent.filter(c => (c.method || "").toUpperCase() === "DELETE"));
   for (const c of serial) {
     await sendRequest(c); run.results.push(snapshotResult(c)); tick();
     if (delay) await new Promise(r => setTimeout(r, delay));
@@ -4753,6 +4757,7 @@ function adoptSpec(spec, source, format) {
   state.sbMode = "endpoints";
   renderAll();
   renderSpecSummary(summary, source, format, picked, sync);
+  if (state.mode !== "full" && source !== "built-in demo") ezBatchStart();
   return summary;
 }
 
@@ -4975,6 +4980,24 @@ function syncAllCasesWithSpec(silent) {
 }
 
 /* Import every operation in the spec as a brand-new test case (dedup by method+specPath). */
+/* A test for one documented operation: the doc's params and example body,
+   passing on the first success code the doc lists (201 for most creates). */
+function newCaseFromSpec(specPath, m, op) {
+  const ok = Object.keys(op.responses || {}).find(k => /^2\d\d$/.test(k));
+  const nc = {
+    id: "SW_" + m.toUpperCase() + "_" + specPath.replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "") + "_" + Math.random().toString(36).slice(2, 5),
+    scenario: op.summary || (m.toUpperCase() + " " + specPath),
+    method: m.toUpperCase(),
+    path: specPath,
+    tag: (op.tags && op.tags[0]) || "spec",
+    query: [], headers: [], pathVars: {},
+    expected: { status: ok ? Number(ok) : 200 },
+    status: "pending",
+    notes: op.description || "",
+  };
+  syncCaseWithSpec(nc, null);
+  return nc;
+}
 function importAllOpsFromSpec(silent) {
   const spec = state.swaggerSpec;
   if (!spec) { toast("Load a spec first", "error"); return; }
@@ -4988,20 +5011,7 @@ function importAllOpsFromSpec(silent) {
       if (!op) continue;
       const key = m.toUpperCase() + " " + specPath;
       if (existing.has(key)) continue;
-      const id = "SW_" + m.toUpperCase() + "_" + specPath.replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g,"") + "_" + Math.random().toString(36).slice(2,5);
-      const nc = {
-        id,
-        scenario: op.summary || (m.toUpperCase() + " " + specPath),
-        method: m.toUpperCase(),
-        path: specPath,
-        tag: (op.tags && op.tags[0]) || "spec",
-        query: [], headers: [], pathVars: {},
-        expected: { status: 200 },
-        status: "pending",
-        notes: op.description || "",
-      };
-      syncCaseWithSpec(nc, null);
-      state.cases.push(nc);
+      state.cases.push(newCaseFromSpec(specPath, m, op));
       existing.add(key);
       added++;
     }
@@ -6319,6 +6329,8 @@ function ezStepsHtml(step) {
 
 function ezTryHtml() {
   const step = state.easyStep || "pick";
+  if (step === "batch" && state.swaggerSpec) return ezBatchHtml();
+  if (step === "batchValues" && state.swaggerSpec) return ezBatchValuesHtml();
   if (step === "fill") return ezStepsHtml("fill") + ezFillHtml();
   if (step === "result" && currentCase().lastRun) return ezStepsHtml("result") + ezResultHtml();
   return ezStepsHtml("pick") + ezPickHtml();
@@ -6346,7 +6358,10 @@ function ezPickHtml() {
           <button class="btn ghost" onclick="newRequest({method:'GET',path:''})">I just have a web address</button></div>
       </div>`;
   }
-  return `<h1 class="ez-h">What do you want to try?</h1>
+  return `<button class="ez-card" style="width:100%;min-height:0;margin-bottom:24px;border-color:var(--accent-strong)" onclick="ezBatchStart()">
+      <span class="t">Test many at once →</span>
+      <span style="font-size:15px;color:var(--text-muted)">Tick the APIs, fill in each value once, and run them all in one go.</span></button>
+    <h1 class="ez-h">What do you want to try?</h1>
     <p class="ez-lead">Each card is one thing this API can do. Pick one — you can't break anything by trying.</p>
     <input class="ez-search" id="ezSearch" placeholder="Search, e.g. “posts” or “users”" aria-label="Search" value="${esc(state.ezSearch || "")}"
            oninput="state.ezSearch=this.value;ezRenderCards()" />
@@ -6590,6 +6605,206 @@ function ezCheckWords(a) {
   if (a.type === "json" && a.path === "[0]") return "The list is not empty";
   if (a.type === "json") return `“${String(a.path).replace(/^\[0\]\./, "")}” is filled in`;
   return a.label || assertionLabel(a);
+}
+
+/* ---- test many at once ---------------------------------------------------
+   Import a doc → tick the APIs → fill each value once → everything runs.
+   A value such as {id} or a required ?page= is asked for once however many
+   APIs use it; it's pre-filled from the doc, offered as a dropdown when the
+   doc lists the choices, and left to the run when an earlier "Add" call will
+   produce it (captured values chain into later calls). Choices are kept per
+   doc so the next import starts where this one left off.
+   ------------------------------------------------------------------------- */
+function ezBatchOps() {
+  const spec = state.swaggerSpec; if (!spec) return [];
+  return specEndpoints().map(e => ({ ...e, key: `${e.method} ${e.path}` }));
+}
+function ezBatch() {
+  const src = state.swaggerSource || "";
+  const b = state.batch && state.batch.src === src ? state.batch : null;
+  if (b) return b;
+  // Safe by default: only the calls that read. Writes change data on the server.
+  state.batch = { src, picked: ezBatchOps().filter(o => o.method === "GET").map(o => o.key), values: {} };
+  return state.batch;
+}
+function ezBatchStart() {
+  if (state.mode === "full") setMode("easy");
+  ezBatch();
+  closeModal("swagger");
+  ezGo("try", "batch");
+}
+
+/* Every value the picked APIs need, merged by name. */
+function ezBatchKeys() {
+  const spec = state.swaggerSpec, b = ezBatch();
+  const keys = new Map();
+  const picked = ezBatchOps().filter(o => b.picked.includes(o.key));
+  const creates = picked.filter(o => o.method === "POST");
+  picked.forEach(o => {
+    const hit = findOperation(spec, o.method, o.path); if (!hit) return;
+    const params = collectParams(spec, hit.path, hit.op);
+    const add = (name, where, p) => {
+      const k = where + ":" + name;
+      if (!keys.has(k)) {
+        const sc = (p && p.schema) || {};
+        const ex = p && (p.example !== undefined ? p.example : sc.example !== undefined ? sc.example : sc.default);
+        const choices = Array.isArray(sc.enum) ? sc.enum : sc.type === "boolean" ? [true, false] : null;
+        // A dropdown shows its first choice, so that's the value unless the doc gives one.
+        keys.set(k, { name, where, usedBy: [], description: (p && p.description) || "", choices,
+          type: sc.type || "", example: ex != null ? String(ex) : choices && where !== "path" ? String(choices[0]) : "" });
+      }
+      keys.get(k).usedBy.push(o);
+    };
+    extractPathVars(o.path).forEach(v => add(v, "path", params.find(p => p.in === "path" && p.name === v)));
+    params.filter(p => p.required && p.in === "query").forEach(p => add(p.name, "query", p));
+    params.filter(p => p.required && p.in === "header" && p.name.toLowerCase() !== "authorization").forEach(p => add(p.name, "header", p));
+  });
+  // Can an earlier "Add" in this run produce it? e.g. POST /posts returns {id} for GET /posts/{id}.
+  keys.forEach(k => {
+    if (k.where !== "path") return;
+    const producer = creates.find(c => k.usedBy.some(u => u.path.startsWith(c.path.replace(/\/$/, "") + "/{" + k.name + "}")) ||
+      (k.name !== "id" && CAPTURE_KEYS.includes(k.name) && c.path.split("/").filter(Boolean).length === 1));
+    if (producer) k.auto = producer;
+  });
+  return [...keys.values()];
+}
+
+function ezBatchHtml() {
+  const b = ezBatch(), ops = ezBatchOps();
+  const groups = {};
+  ops.forEach(o => { (groups[o.tag] = groups[o.tag] || []).push(o); });
+  const n = b.picked.length;
+  const writes = ops.filter(o => b.picked.includes(o.key) && o.method !== "GET").length;
+  const needsValues = ezBatchKeys().length > 0 || ezBatchNeedsSignIn();
+  const title = (state.swaggerSpec.info && state.swaggerSpec.info.title) || "your API";
+  return `<h1 class="ez-h">Test ${esc(title)}</h1>
+    <p class="ez-lead">It can do ${ops.length} thing${ops.length === 1 ? "" : "s"}. Tick the ones to test — they'll all run in one go.</p>
+    <div class="ez-row" style="margin-bottom:16px">
+      <button class="btn" onclick="ezBatchPick('safe')">Only the safe ones (Get)</button>
+      <button class="btn" onclick="ezBatchPick('all')">Everything</button>
+      <button class="btn ghost" onclick="ezBatchPick('none')">Clear</button>
+    </div>
+    ${writes ? `<div class="tip" style="margin:0 0 16px">${writes} ticked ${writes === 1 ? "one changes" : "ones change"} data on the server (Add, Change, Replace, Delete). Only run ${writes === 1 ? "it" : "them"} against a test server.</div>` : ""}
+    ${Object.keys(groups).sort().map(tag => {
+      const all = groups[tag].every(o => b.picked.includes(o.key));
+      return `<div class="ez-panel" style="padding:12px 16px">
+        <label class="ez-check" style="font-weight:700;padding:4px 0 8px;border-bottom:1px solid var(--border)">
+          <input type="checkbox" ${all ? "checked" : ""} onchange="ezBatchGroup(${JSON.stringify(tag).replace(/"/g, "&quot;")}, this.checked)"> ${esc(tag)}
+          <span class="muted" style="font-weight:400">(${groups[tag].filter(o => b.picked.includes(o.key)).length} of ${groups[tag].length})</span></label>
+        ${groups[tag].map(o => `<label class="ez-check" style="padding:8px 0">
+          <input type="checkbox" ${b.picked.includes(o.key) ? "checked" : ""} onchange="ezBatchToggle(${JSON.stringify(o.key).replace(/"/g, "&quot;")}, this.checked)">
+          <span class="ez-verb ${o.method}" style="flex:none">${EZ_VERBS[o.method] || o.method}</span>
+          <span><b>${esc(o.summary || o.path)}</b> <span class="mono muted" style="font-size:13px">${esc(o.path)}</span></span></label>`).join("")}
+      </div>`;
+    }).join("")}
+    <div style="position:sticky;bottom:0;padding:12px 0;background:var(--bg)">
+      <button class="btn primary ez-big" ${n ? "" : "disabled"} onclick="${needsValues ? "ezGo('try','batchValues')" : "ezBatchRun()"}">
+        ${!n ? "Tick at least one" : needsValues ? `Next: fill in the values (${n} ticked)` : `Run ${n} test${n === 1 ? "" : "s"} now`}</button>
+    </div>`;
+}
+function ezBatchPick(which) {
+  const b = ezBatch(), ops = ezBatchOps();
+  b.picked = which === "all" ? ops.map(o => o.key) : which === "safe" ? ops.filter(o => o.method === "GET").map(o => o.key) : [];
+  save(); renderEasy();
+}
+function ezBatchToggle(key, on) {
+  const b = ezBatch();
+  b.picked = on ? [...new Set(b.picked.concat(key))] : b.picked.filter(k => k !== key);
+  save(); renderEasy();
+}
+function ezBatchGroup(tag, on) {
+  const b = ezBatch(), keys = ezBatchOps().filter(o => o.tag === tag).map(o => o.key);
+  b.picked = on ? [...new Set(b.picked.concat(keys))] : b.picked.filter(k => !keys.includes(k));
+  save(); renderEasy();
+}
+function ezBatchNeedsSignIn() {
+  const s = state.swaggerSpec || {};
+  const schemes = (s.components && s.components.securitySchemes) || s.securityDefinitions || {};
+  return Object.keys(schemes).length > 0 && (state.authType || "bearer") !== "none";
+}
+
+function ezBatchValuesHtml() {
+  const b = ezBatch(), keys = ezBatchKeys();
+  const val = k => b.values[k.where + ":" + k.name] != null ? b.values[k.where + ":" + k.name]
+    : (k.where === "path" && state.vars && state.vars[k.name] != null && !k.auto ? state.vars[k.name] : k.example);
+  const signIn = ezBatchNeedsSignIn();
+  const kindWord = { path: "Which", query: "", header: "" };
+  return `<button class="ez-back" onclick="ezGo('try','batch')">← Change which APIs</button>
+    <h1 class="ez-h">Fill in the values once</h1>
+    <p class="ez-lead">Each value is used by every API that needs it. Most are already filled in from the doc — just check them.</p>
+    ${signIn ? `<div class="ez-panel"><div class="ez-field" style="margin:0"><label for="ezb_token">Your sign-in ${state.authType === "apikey" ? "key" : "token"}</label>
+        <small>This API asks you to sign in. Paste it once; every test uses it.</small>
+        <input id="ezb_token" type="password" class="mono" value="${esc(state.authToken || "")}" oninput="ezBatchToken(this.value)" placeholder="Leave empty to try without signing in" /></div></div>` : ""}
+    ${keys.length ? `<div class="ez-panel">${keys.map(k => {
+      const id = "ezb_" + k.where + "_" + k.name.replace(/[^A-Za-z0-9_-]/g, "_");
+      const v = val(k);
+      const used = k.usedBy.map(o => esc(o.summary || o.path)).slice(0, 3).join(", ") + (k.usedBy.length > 3 ? ` +${k.usedBy.length - 3} more` : "");
+      const input = k.choices
+        ? `<select id="${id}" onchange="ezBatchValue('${k.where}', ${JSON.stringify(k.name).replace(/"/g, "&quot;")}, this.value)">
+            ${k.auto ? `<option value="">Fill in automatically</option>` : ""}${k.choices.map(c => `<option ${String(c) === String(v) ? "selected" : ""}>${esc(String(c))}</option>`).join("")}</select>`
+        : `<input id="${id}" class="mono" value="${esc(v == null ? "" : String(v))}" ${k.type === "integer" || k.type === "number" ? 'inputmode="numeric"' : ""}
+            placeholder="${k.auto ? "Leave empty — filled in automatically" : "Type a value"}" oninput="ezBatchValue('${k.where}', ${JSON.stringify(k.name).replace(/"/g, "&quot;")}, this.value)" />`;
+      return `<div class="ez-field">
+        <label for="${id}">${k.where === "path" ? `Which ${esc(k.name)}?` : esc(k.name)}</label>
+        <small>${k.description ? esc(k.description) + " · " : ""}Used by ${used}</small>
+        ${input}
+        ${k.auto ? `<small style="color:var(--success)">✓ “${esc(k.auto.summary || k.auto.path)}” runs first and creates one, so this can stay empty.</small>`
+          : !String(v == null ? "" : v) ? `<small style="color:var(--warning)">Empty — the APIs that use it will probably say “not found”.</small>` : ""}
+      </div>`;
+    }).join("")}</div>` : ""}
+    <p class="muted" style="font-size:14px">Anything an API sends (like a new post's title) uses the doc's example. You can change it in each test later.</p>
+    <button class="btn primary ez-big" id="ezBatchGo" onclick="ezBatchRun()">Run ${ezBatch().picked.length} test${ezBatch().picked.length === 1 ? "" : "s"}</button>`;
+}
+function ezBatchValue(where, name, v) { ezBatch().values[where + ":" + name] = v; save(); }
+function ezBatchToken(v) { state.authToken = v.trim(); if ($("#authToken")) $("#authToken").value = state.authToken; save(); renderAuthChip(); }
+
+/* Build (or reuse) one test per ticked API, put the values in, run them. */
+async function ezBatchRun() {
+  const b = ezBatch(), spec = state.swaggerSpec;
+  const picked = ezBatchOps().filter(o => b.picked.includes(o.key));
+  if (!picked.length) return;
+  const btn = $("#ezBatchGo"); if (btn) { btn.disabled = true; btn.textContent = "Running…"; }
+  const keys = ezBatchKeys();
+  const value = k => {
+    const v = b.values[k.where + ":" + k.name];
+    return v != null ? v : (k.where === "path" && k.auto) ? "" : (k.where === "path" && state.vars && state.vars[k.name] != null ? state.vars[k.name] : k.example);
+  };
+  // Path values are shared vars, so {id} resolves everywhere and a create can refresh it mid-run.
+  state.vars = state.vars || {}; state.varSource = state.varSource || {};
+  keys.filter(k => k.where === "path").forEach(k => {
+    const v = String(value(k) == null ? "" : value(k));
+    if (v) { state.vars[k.name] = v; state.varSource[k.name] = "you"; }
+    else if (k.auto) delete state.vars[k.name];
+  });
+  const ids = picked.map(o => {
+    let c = state.cases.find(x => x.method === o.method && (x._specPath || x.path) === o.path);
+    if (!c) {
+      const hit = findOperation(spec, o.method, o.path);
+      c = newCaseFromSpec(hit.path, o.method.toLowerCase(), hit.op);
+      state.cases.push(c);
+    }
+    // The call that creates an auto value hands it on, whatever it's called ({postId} ← id).
+    keys.filter(k => k.auto && k.auto.key === o.key && k.name !== "id").forEach(k => {
+      c.captures = (c.captures || []).filter(x => x.name !== k.name).concat([{ name: k.name, from: "id" }]);
+    });
+    // Path values: what you typed goes into the test; an automatic one is left
+    // blank so it comes from the captured value and the test runs after its creator.
+    keys.filter(k => k.where === "path" && k.usedBy.some(u => u.key === o.key)).forEach(k => {
+      c.pathVars = c.pathVars || {};
+      const v = String(value(k) == null ? "" : value(k));
+      if (v) c.pathVars[k.name] = v; else delete c.pathVars[k.name];
+    });
+    keys.filter(k => k.where !== "path" && k.usedBy.some(u => u.key === o.key)).forEach(k => {
+      const list = k.where === "query" ? (c.query = c.query || []) : (c.headers = c.headers || []);
+      const row = list.find(r => r.key === k.name) || (list.push({ key: k.name, value: "", enabled: true }), list[list.length - 1]);
+      row.value = String(value(k) == null ? "" : value(k)); row.enabled = true;
+    });
+    return c.id;
+  });
+  save();
+  state.selection = ids;
+  try { await runAll({ confirmed: true }); }
+  finally { state.selection = []; save(); ezGo("tests"); }
 }
 
 /* ---- my tests ------------------------------------------------------------ */
