@@ -90,13 +90,24 @@
   .guide-note{font-size:13px;color:var(--text-muted);margin-left:auto}
   @media (max-width:1000px){ .guide-note{display:none} }
 
+  /* ---------- connection chip + popover ---------- */
+  .connchip{display:inline-flex;align-items:center;gap:8px;min-height:var(--control-sm);padding:4px 12px;border-radius:var(--radius-pill);
+    border:1px solid var(--border-strong);background:var(--bg-elev);font-size:14px;cursor:pointer;flex-shrink:1;min-width:0;max-width:440px}
+  .connchip:hover{background:var(--bg-hover)}
+  .connchip .cc-main{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .connchip .cc-sub{font-size:13px;color:var(--text-muted);white-space:nowrap}
+  .connchip .cc-sub::before{content:"·";margin-right:8px;color:var(--text-dim)}
+  .connchip .cc-sub.warn{color:var(--warning)}
+  .connchip .mc-caret{color:var(--text-dim);font-size:12px}
+  .connpop{width:380px}
+  .pop.connpop h5{margin:16px 0 6px;font-size:13px;font-weight:700;color:var(--text)}
+  .pop.connpop h5:first-child{margin-top:0}
+  .cp-row{display:flex;align-items:center;gap:8px}
+  .cp-val{flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cp-row .env-select{flex:none}
+  .cp-host{flex:1;min-width:0;font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
   /* ---------- module chip + picker ---------- */
-  .mchip{display:inline-flex;align-items:center;gap:8px;padding:5px 11px;border-radius:999px;
-    border:1px solid var(--border);background:var(--bg-elev-2);font-size:13px;cursor:pointer;flex-shrink:0;max-width:320px}
-  .mchip:hover{border-color:var(--border-strong);background:var(--bg-hover)}
-  .mchip .mc-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mchip .mc-meta{color:var(--text-dim);font-family:var(--mono);font-size:12px;white-space:nowrap}
-  .mchip .mc-caret{color:var(--text-dim);font-size:12px}
   .mpicker{position:absolute;top:52px;left:16px;z-index:70;width:380px;max-width:92vw;display:none;
     background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
   .mpicker.open{display:block}
@@ -114,13 +125,7 @@
   .mp-foot{display:flex;gap:6px;padding:9px 12px;border-top:1px solid var(--border);background:var(--bg-elev-2)}
   .danger-text{color:var(--danger)}
 
-  /* ---------- auth chip + popovers ---------- */
-  .authchip{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;
-    border:1px solid var(--border);background:var(--bg-elev-2);font-size:13px;cursor:pointer;flex-shrink:0}
-  .authchip:hover{border-color:var(--border-strong);background:var(--bg-hover)}
-  .authchip .ad{width:7px;height:7px;border-radius:50%;background:var(--danger)}
-  .authchip.set .ad{background:var(--success)}
-  .authchip .at{font-family:var(--mono);font-size:12px;color:var(--text-dim)}
+  /* ---------- popovers ---------- */
   .pop{position:absolute;top:52px;z-index:70;width:340px;max-width:92vw;display:none;padding:12px 14px;
     background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:12px;box-shadow:var(--shadow)}
   .pop.open{display:block}
@@ -448,6 +453,8 @@
   .tp-url select{border:0;border-right:1px solid var(--border);border-radius:0;background:var(--bg-elev-2);width:auto;min-width:96px;font-weight:700;font-family:var(--mono);font-size:13px;padding:8px 10px}
   .tp-url input{border:0;border-radius:0;background:var(--bg-elev);font-family:var(--mono);font-size:13px}
   .tp-url input:focus,.tp-url select:focus{border:0;box-shadow:none}
+  .tp-base{align-self:center;padding-left:12px;max-width:55%;font-size:13px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1}
+  .tp-base + input{padding-left:2px}
   .tp-send{width:100%;min-height:var(--control-lg);margin-top:10px;background:var(--accent-strong);color:var(--on-accent);border-radius:var(--radius-md);font-weight:700;font-size:15px;transition:.15s}
   .tp-send:hover{background:var(--accent-hover)}
   .tp-send:disabled{opacity:.6;cursor:wait}
@@ -469,6 +476,7 @@
   /* response */
   .resp-header{display:flex;align-items:center;flex-wrap:wrap;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;background:var(--bg-elev)}
   .resp-status{display:inline-flex;align-items:center;font-family:var(--mono);font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);font-size:12px}
+  .resp-header:empty{display:none}
   .resp-hint{font-size:13px;color:var(--text-muted);flex-basis:100%}
   .resp-status.ok{background:var(--success-soft);color:var(--success)}
   .resp-status.err{background:var(--danger-soft);color:var(--danger)}
@@ -562,7 +570,8 @@
   .pv-row input{height:var(--control-sm);font-family:var(--mono);font-size:13px}
 
   /* url preview */
-  .url-preview{font-family:var(--mono);font-size:12px;color:var(--text-dim);padding:4px 2px;word-break:break-all;line-height:1.4;min-height:14px}
+  .url-preview{font-family:var(--mono);font-size:12px;color:var(--text-dim);padding:6px 2px 0;word-break:break-all;line-height:1.4}
+  .url-preview:empty{display:none}
   .url-preview b{color:var(--accent)}
 
   /* tip / banner */
@@ -602,7 +611,6 @@
     .resp-panel{min-width:0;min-height:50vh;border-top:1px solid var(--border)}
     .topbar{padding:8px 12px}
     .tb-actions{width:100%;justify-content:flex-start}
-    .mchip{max-width:60vw}
     .as-row{grid-template-columns:auto 1fr 1fr;row-gap:6px}
     .rp-open-grid{grid-template-columns:1fr}
     .runtray{left:8px;right:8px;transform:none;max-width:none}
@@ -627,16 +635,13 @@
       <div class="brand-logo">A</div>
       <span>API Test Studio</span>
     </div>
-    <div class="mchip" id="moduleChip" onclick="toggleModulePicker()" title="Which API area you're testing — cases, spec and host travel with it"></div>
-    <div class="tb-field" id="envField" title="Which environment every request goes to">
+    <!-- one chip answers "what am I testing, where do requests go, am I signed in" -->
+    <button class="connchip" id="connChip" onclick="toggleAuthPop()" aria-haspopup="dialog">
       <span class="env-dot" id="envDot"></span>
-      <select id="envSelect" class="env-select">
-        <option value="stage">Stage</option>
-        <option value="local">Local</option>
-        <option value="custom">Custom…</option>
-      </select>
-    </div>
-    <div class="authchip" id="authChip" onclick="toggleAuthPop()" title="Auth for every request in every module"></div>
+      <span class="cc-main" id="connMain"></span>
+      <span class="cc-sub" id="connSub"></span>
+      <span class="mc-caret" aria-hidden="true">▾</span>
+    </button>
     <div class="viewsw" id="viewSwitch" role="tablist" aria-label="Workspace view" title="Explore = send requests. Results = what happened in the last test run.">
       <button data-v="cases" onclick="setView('cases')">Explore</button>
       <button data-v="report" onclick="setView('report')">Results<span class="badge" id="viewFailBadge" style="display:none">0</span></button>
@@ -712,6 +717,7 @@
             <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option>
             <option>DELETE</option><option>HEAD</option><option>OPTIONS</option>
           </select>
+          <span class="tp-base mono" id="tpBase" aria-hidden="true"></span>
           <input id="tryPath" placeholder="/path" aria-label="Path" />
         </div>
         <div class="url-preview" id="urlPreview"></div>
@@ -734,7 +740,7 @@
 
     <!-- response: what came back -->
     <section class="resp-panel" aria-label="Response">
-      <div class="resp-header" id="respHeader"><span class="muted">No response yet</span></div>
+      <div class="resp-header" id="respHeader"></div>
       <div class="resp-body empty" id="respBody">Send a request to see the response here.</div>
     </section>
   </div>
@@ -752,24 +758,38 @@
 <!-- module picker -->
 <div class="mpicker" id="modulePicker"></div>
 
-<!-- auth popover -->
-<div class="pop" id="authPop" style="left:auto">
-  <h5>Auth — shared by every module</h5>
-  <div class="form-row">
-    <select id="authType" style="height:30px;font-size:13px">
-      <option value="bearer">Bearer</option>
-      <option value="apikey">API Key</option>
-      <option value="basic">Basic</option>
-      <option value="none">None</option>
+<!-- connection popover: API, environment, sign-in -->
+<div class="pop connpop" id="authPop" style="left:auto" role="dialog" aria-label="Connection">
+  <h5>API you're testing</h5>
+  <div class="cp-row">
+    <span id="ccApi" class="cp-val"></span>
+    <button class="btn small" onclick="closeAllPops();openModulePicker()">Switch…</button>
+  </div>
+  <h5>Send requests to</h5>
+  <div class="cp-row" id="envField">
+    <select id="envSelect" class="env-select" aria-label="Environment">
+      <option value="stage">Stage</option>
+      <option value="local">Local</option>
+      <option value="custom">Custom…</option>
+    </select>
+    <span id="ccHost" class="cp-host mono"></span>
+  </div>
+  <h5>Sign in <span class="dim" style="font-weight:400">— used for every request</span></h5>
+  <div class="form-row" style="margin-bottom:6px">
+    <select id="authType" aria-label="Sign-in type">
+      <option value="bearer">Bearer token</option>
+      <option value="apikey">API key</option>
+      <option value="basic">Username and password (Basic)</option>
+      <option value="none">No sign-in</option>
     </select>
   </div>
-  <div class="form-row" style="margin-top:8px">
-    <input id="authToken" placeholder="paste token / key / user:pass" />
-    <small class="muted" id="authExpiry" style="margin-top:5px;font-size:12px;line-height:1.5"></small>
+  <div class="form-row" style="margin-bottom:0">
+    <input id="authToken" placeholder="Paste your token, key, or user:pass" aria-label="Token" />
+    <small class="muted" id="authExpiry" style="font-size:12px;line-height:1.5"></small>
   </div>
-  <div style="display:flex;gap:6px;margin-top:10px">
+  <div style="display:flex;gap:6px;margin-top:12px">
     <button class="btn small" onclick="checkEnvHealth(true)">Test connection</button>
-    <button class="btn ghost small" style="margin-left:auto" onclick="closeAllPops()">Done</button>
+    <button class="btn primary small" style="margin-left:auto" onclick="closeAllPops()">Done</button>
   </div>
 </div>
 
@@ -1728,13 +1748,27 @@ function moduleFailCount(m) {
   const r = (m.runs || [])[m.runs.length - 1];
   return r ? r.counts.fail : 0;
 }
-function renderModuleChip() {
-  const el = $("#moduleChip"); if (!el) return;
-  const m = activeModule(); if (!m) return;
-  const fails = moduleFailCount(m);
-  el.innerHTML = `<span class="mc-name">${esc(m.name)}</span>
-    <span class="mc-meta">${m.cases.length} case${m.cases.length === 1 ? "" : "s"}${fails ? ` · <span style="color:var(--danger)">${fails} failing</span>` : ""}</span>
-    <span class="mc-caret">▾</span>`;
+function renderModuleChip() { renderConnChip(); }
+
+/* The top bar's one chip: which API, which environment, signed in or not.
+   Its popover is where all three are changed. */
+function renderConnChip() {
+  const el = $("#connChip"); if (!el) return;
+  const m = activeModule();
+  const env = ENVS[state.env] ? ENVS[state.env].label : "Custom";
+  const type = state.authType || "bearer";
+  const hasToken = !!(state.authToken || "").trim();
+  $("#connMain").textContent = `${m ? m.name : "No API"} · ${env}`;
+  const sub = $("#connSub");
+  sub.textContent = type === "none" ? "No sign-in" : hasToken ? "Signed in" : "Not signed in";
+  sub.className = "cc-sub" + (/expired/.test(jwtExpiryNote(state.authToken)) ? " warn" : "");
+  el.title = `Requests go to ${state.baseUrl || "no host set yet"}. Click to change the API, environment or sign-in.`;
+  if (m) {
+    const fails = moduleFailCount(m);
+    $("#ccApi").innerHTML = `${esc(m.name)} <span class="dim" style="font-weight:400">· ${m.cases.length} saved test${m.cases.length === 1 ? "" : "s"}${fails ? ` · <span style="color:var(--danger)">${fails} failing</span>` : ""}</span>`;
+  }
+  $("#ccHost").textContent = state.baseUrl || "no host set";
+  $("#ccHost").title = state.baseUrl || "";
 }
 
 function openModulePicker() {
@@ -1769,7 +1803,7 @@ function openModulePicker() {
   setTimeout(() => document.addEventListener("click", closeModulePickerOnce, { once: true }), 0);
 }
 function closeModulePickerOnce(e) {
-  if (e.target.closest("#modulePicker") || e.target.closest("#moduleChip")) {
+  if (e.target.closest("#modulePicker") || e.target.closest("#connChip")) {
     setTimeout(() => document.addEventListener("click", closeModulePickerOnce, { once: true }), 0);
     return;
   }
@@ -2143,10 +2177,11 @@ function renderExplorer() {
   const active = isDraft(currentCase()) ? `${currentCase().method} ${currentCase().path}` : null;
   const recent = (state.recentEndpoints || []).filter(r => eps.some(e => `${e.method} ${e.path}` === r));
 
-  let html = `<div class="sb-methods">
-    ${methods.map(m => `<span class="mf ${state.methodFilter === m ? "on" : ""}" onclick="toggleMethodFilter('${m}')">${m}</span>`).join("")}
-    ${state.methodFilter ? `<span class="mf clear" onclick="toggleMethodFilter(null)">clear</span>` : ""}
-  </div>`;
+  // Method filters are a refinement of a search, so they appear once you search.
+  let html = (q || state.methodFilter) ? `<div class="sb-methods" role="toolbar" aria-label="Filter by method">
+    ${methods.map(m => `<span class="mf ${state.methodFilter === m ? "on" : ""}" role="button" tabindex="0" onclick="toggleMethodFilter('${m}')">${m}</span>`).join("")}
+    ${state.methodFilter ? `<span class="mf clear" role="button" tabindex="0" onclick="toggleMethodFilter(null)">clear</span>` : ""}
+  </div>` : "";
 
   if (recent.length && !q && !state.methodFilter) {
     html += `<div class="sb-tag" style="cursor:default">Recent</div>`;
@@ -2358,7 +2393,7 @@ function renderTry() {
   const draft = isDraft(c);
   $("#tpTitle").textContent = (c.scenario && c.scenario !== "Untitled request") ? c.scenario
     : (c.path ? `${c.method} ${c.path}` : "Untitled request");
-  $("#tpSaved").innerHTML = draft ? `<span>Not saved</span>` : `<span class="case">Saved test · ${esc(c.id)}</span>`;
+  $("#tpSaved").innerHTML = draft ? `<span>Not saved</span>` : `<span class="case" title="ID ${esc(c.id)}">Saved test</span>`;
   $("#tpSaveBtn").style.display = draft && !state.savingDraft ? "" : "none";
   $("#tabDetails").textContent = draft ? "History" : "Details";
   $("#tryMethod").value = c.method;
@@ -2439,9 +2474,14 @@ function renderTry() {
   $("#docPanel").hidden = tab !== "details";
   $("#tpContent").innerHTML = html;
   if (tab === "body") showBodyValidity();
-  // show/hide "From spec" button
+  // "Reset from spec" only when the request has drifted from the spec in a
+  // way a reset fixes (an unfilled path variable is yours to fill, not drift).
   const specBtn = $("#syncFromSpecBtn");
-  if (specBtn) specBtn.style.display = state.swaggerSpec ? "inline-block" : "none";
+  if (specBtn) {
+    const cmp = compareCaseToSpec(c);
+    const drift = cmp && cmp.matched && cmp.issues.some(i => i.kind !== "missing-path");
+    specBtn.style.display = drift ? "" : "none";
+  }
 }
 
 /* Render a full request preview: resolved URL, all headers (auto-injected visible), body, cURL */
@@ -2962,11 +3002,18 @@ function renderVarsPanel() {
     </div>`).join("")}
   </div>`;
 }
+/* The host sits greyed in front of the path, so the bar reads as the whole
+   address. The line under it only appears when the URL actually sent differs
+   from what's typed — path variables filled in, or query params added. */
 function renderUrlPreview(c) {
   const el = $("#urlPreview");
   if (!el) return;
+  const base = (state.baseUrl || "").replace(/\/+$/, "");
+  const b = $("#tpBase");
+  if (b) { b.textContent = base.replace(/^https?:\/\//, ""); b.title = base; }
   const finalUrl = buildUrl(c);
-  el.innerHTML = `→ <b>${esc(finalUrl)}</b>`;
+  const differs = finalUrl !== base + (c.path || "");
+  el.innerHTML = differs ? `Sends to <b>${esc(finalUrl)}</b>` : "";
 }
 function setPathVar(key, val) {
   const c = currentCase(); if (!c) return;
@@ -3880,7 +3927,7 @@ function renderResp() {
       $("#respBody").className = "resp-body";
       $("#respBody").innerHTML = previewHtml;
     } else {
-      $("#respHeader").innerHTML = `<span class="muted">No response yet — click <b>Send request</b> or press <span class="mono">⌘↵</span></span>`;
+      $("#respHeader").innerHTML = "";
       $("#respBody").className = "resp-body empty";
       $("#respBody").textContent = c
         ? "Press Send request. The server's answer shows up here, with its status explained in plain words."
@@ -4001,7 +4048,7 @@ function renderGuide() {
     `<li class="${i < reached ? "done" : i === reached ? "now" : ""}"${i === reached ? ' aria-current="step"' : ""}><i></i><span>${s}</span></li>`).join("");
   $("#guideNote").textContent = [
     "Start by picking an endpoint from the list on the left.",
-    "Fill in any params, headers or body, then press Send request.",
+    "Change anything you need, then press Send request.",
     "",
     last && !last.status ? "The request didn't reach the server — the response pane says why."
       : "The response pane explains what this status means.",
@@ -5860,6 +5907,7 @@ function renderEnv() {
   const label = ENVS[state.env] ? ENVS[state.env].label : "Custom";
   sel.title = `${label} — ${state.baseUrl || "no base URL set"}`;
   const f = $("#envField"); if (f) f.title = `${label} — ${state.baseUrl || "no host set"}`;
+  renderConnChip();
 }
 
 /* Fire one lightweight request at the current base URL just to prove it is
@@ -5894,14 +5942,7 @@ async function checkEnvHealth(loud) {
    ========================================================================= */
 /* --- auth chip + popovers (what the topbar shed) --- */
 function renderAuthChip() {
-  const el = $("#authChip"); if (!el) return;
-  const type = state.authType || "bearer";
-  const has = type === "none" || !!(state.authToken || "").trim();
-  el.classList.toggle("set", has);
-  const label = type === "none" ? "no auth"
-    : has ? `${type} · set` : `${type} · none`;
-  el.innerHTML = `<span class="ad"></span><span class="at">${esc(label)}</span><span class="mc-caret">▾</span>`;
-  el.title = has ? "Auth is set — shared by every module" : "No token set — most cases will 401";
+  renderConnChip();
   const exp = $("#authExpiry");
   if (exp) exp.innerHTML = jwtExpiryNote(state.authToken);
 }
@@ -5942,7 +5983,7 @@ function popToggle(id, anchorId) {
     el.classList.remove("open");
   }, { once: true }), 0);
 }
-function toggleAuthPop() { popToggle("authPop", "authChip"); renderAuthChip(); }
+function toggleAuthPop() { popToggle("authPop", "connChip"); renderAuthChip(); }
 function toggleMoreMenu() { popToggle("moreMenu"); }
 
 /* =========================================================================
